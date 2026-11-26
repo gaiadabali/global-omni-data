@@ -9,6 +9,9 @@
 #                                         and the workspace packages it uses ("all" = every package)
 #            shots-site | shots-dashboard the same build, then screenshots of every route listed in
 #                                         tools/shots/routes.<app>.json (Playwright, Chromium)
+#            db-test                      no turbo build: starts a throwaway postgres:18 on a private docker network,
+#                                         applies packages/db roles + migrations, runs the @god/db and the dashboard
+#                                         Postgres store tests, removes it all (scripts/server-f/db-test.sh). Ends DB-TEST-OK.
 #   name     folder on server-f (default: the tree's folder name). Use a distinct name per worktree.
 #
 # What comes back to <tree-dir>:
@@ -22,7 +25,8 @@ case "$TARGET" in
   site|dashboard|all) APP="$TARGET"; SHOTS="" ;;
   shots-site) APP=site; SHOTS=site ;;
   shots-dashboard) APP=dashboard; SHOTS=dashboard ;;
-  *) echo "target must be site, dashboard, all, shots-site or shots-dashboard" >&2; exit 2 ;;
+  db-test) APP=dashboard; SHOTS="" ;;
+  *) echo "target must be site, dashboard, all, shots-site, shots-dashboard or db-test" >&2; exit 2 ;;
 esac
 [[ "$NAME" =~ ^[A-Za-z0-9._-]+$ ]] || { echo "bad name: $NAME" >&2; exit 2; }
 HOST="${GOD_BUILD_HOST:-server-f}"; BASE=/opt/god-build; DEST="$BASE/src/$NAME"
@@ -45,6 +49,9 @@ for v in PUBLIC_NOINDEX PUBLIC_CONTACT_ENDPOINT; do
 done
 
 # One build at a time on the box; wait up to 30 minutes for the lock.
+if [ "$TARGET" = db-test ]; then
+  ssh "$HOST" "flock -w 1800 $BASE/build.lock bash '$DEST/scripts/server-f/db-test.sh' '$DEST' '$NAME'"
+else
 ssh "$HOST" "flock -w 1800 $BASE/build.lock docker run --rm --cpus 4 --memory 6g $PASS \
   -v $BASE:$BASE -w '$DEST' -e CI=1 -e NEXT_TELEMETRY_DISABLED=1 -e ASTRO_TELEMETRY_DISABLED=1 \
   -e TURBO_TELEMETRY_DISABLED=1 -e npm_config_cache=$BASE/cache/npm \
@@ -55,6 +62,7 @@ ssh "$HOST" "flock -w 1800 $BASE/build.lock docker run --rm --cpus 4 --memory 6g
     echo \"== typecheck, lint, test, build $FILTER\"
     pnpm exec turbo run typecheck lint test build $FILTER --output-logs=errors-only
     echo BUILD-OK'"
+fi
 
 # Bring the lockfile back when the install changed it.
 if ssh "$HOST" "test -f '$DEST/pnpm-lock.yaml'"; then

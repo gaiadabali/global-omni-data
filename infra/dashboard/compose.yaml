@@ -1,0 +1,45 @@
+# GOD dashboard on Helios (staging: dashboard.god.gaiada.com). Shipped to /opt/god-dashboard/compose.yaml by
+# scripts/deploy/dashboard-to-helios.sh, which also sets GOD_IMAGE_TAG (the git sha of the image it just loaded)
+# and GOD_PORT. No secret is in this file: they live in /etc/god-dashboard/dashboard.env (root, mode 600).
+#
+# Host networking, on purpose. The database is Helios's native Postgres on 127.0.0.1:5432. With the default bridge
+# the container would reach it only if Postgres listened on the docker bridge address and pg_hba.conf allowed that
+# subnet: a listen_addresses change (a restart) on a shared production database server, for one small app.
+# With host networking the app connects to 127.0.0.1 like any local client and Postgres stays untouched. The
+# app binds 127.0.0.1:${GOD_PORT} itself (HOSTNAME below), so it is never reachable from outside; only nginx is.
+# What host networking costs: the container shares the host's loopback, so it could reach other local-only services.
+# It is held down instead by a non-root user, a read-only root filesystem, no capabilities, no-new-privileges and
+# a database role that can touch nothing outside schema god_app.
+name: god-dashboard
+
+services:
+  dashboard:
+    image: god-dashboard:${GOD_IMAGE_TAG:?set GOD_IMAGE_TAG to the image tag to run}
+    container_name: god-dashboard
+    network_mode: host
+    restart: unless-stopped
+    init: true
+    env_file:
+      - /etc/god-dashboard/dashboard.env
+    environment:
+      NODE_ENV: production
+      HOSTNAME: 127.0.0.1
+      PORT: "${GOD_PORT:-3120}"
+      NODE_OPTIONS: --max-old-space-size=384
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /app/apps/dashboard/.next/cache:uid=1000,gid=1000,mode=0755
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 640m
+    cpus: 1.0
+    pids_limit: 256
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "5"
+    # The HEALTHCHECK is in the image (GET /healthz on $PORT).

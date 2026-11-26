@@ -1,0 +1,18 @@
+# Docker build context = the repo root. Keep it to source: dependencies are installed and the app built inside the image.
+**/node_modules
+**/.next
+**/.turbo
+**/dist
+**/.astro
+**/coverage
+**/*.tsbuildinfo
+.git
+.claude
+.shots
+.pnpm-store
+**/.env
+**/.env.*
+!**/.env.example
+**/*.log
+# Not part of the dashboard image
+apps/site/public
