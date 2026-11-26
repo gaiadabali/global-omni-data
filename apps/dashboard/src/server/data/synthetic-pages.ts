@@ -16,7 +16,6 @@ import {
 } from "@god/synthetic";
 import { TODAY } from "@/lib/dates";
 import type { CountKind } from "../privacy";
-import { allowListStore } from "./allowlist";
 import {
   count,
   countSeries,
@@ -29,7 +28,6 @@ import {
   type PersonGetRaw,
   type PersonSearchRow,
   type QualityRaw,
-  type SessionRow,
   type TeensRaw,
 } from "./types";
 
@@ -38,7 +36,12 @@ import {
  * the presentation layer thresholds them. Composed into `syntheticData` in ./synthetic.ts.
  */
 
-const ref = (e: InsightEntity): EntityRef => ({ id: e.id, name: e.name, kind: e.kind, group: e.group });
+const ref = (e: InsightEntity): EntityRef => ({
+  id: e.id,
+  name: e.name,
+  kind: e.kind,
+  group: e.group,
+});
 
 function godPeople(): number {
   return getWorld().peopleByMonth.god[CURRENT_INDEX]!;
@@ -59,12 +62,27 @@ function reportRaw(e: InsightEntity, teen: boolean): AudienceReportRaw {
     growth90: r.growth90,
     visitsPerMonth: r.visitsPerMonth,
     shareOfGod: r.audience / godPeople(),
-    homeAreas: r.homeAreas.map((a) => ({ name: a.name, postcode: a.postcode, state: a.state, people: count(a.n, kind) })),
-    activityAreas: r.activityAreas.map((a) => ({ name: a.name, postcode: a.postcode, state: a.state, people: count(a.n, kind) })),
+    homeAreas: r.homeAreas.map((a) => ({
+      name: a.name,
+      postcode: a.postcode,
+      state: a.state,
+      people: count(a.n, kind),
+    })),
+    activityAreas: r.activityAreas.map((a) => ({
+      name: a.name,
+      postcode: a.postcode,
+      state: a.state,
+      people: count(a.n, kind),
+    })),
     age: rows(r.age),
     occupation: rows(r.occupation),
     income: rows(r.income),
-    segments: r.segments.map((s) => ({ name: s.name, audience: count(s.n, kind), areaShare: s.areaShare, index: s.index })),
+    segments: r.segments.map((s) => ({
+      name: s.name,
+      audience: count(s.n, kind),
+      areaShare: s.areaShare,
+      index: s.index,
+    })),
     frequency: rows(r.frequency),
     spend: rows(r.spend),
     alsoShopsAt: rows(r.alsoShopsAt),
@@ -83,7 +101,8 @@ async function teens(q: { entity?: string }): Promise<TeensRaw> {
   const id = q.entity ?? "kidzone";
   const e = insightEntity(id);
   if (!e) throw new RangeError(`unknown report: ${id}`);
-  if (isSensitiveEntity(e)) throw new RangeError("sensitive categories never appear in teen figures");
+  if (isSensitiveEntity(e))
+    throw new RangeError("sensitive categories never appear in teen figures");
 
   const m = teenMarket();
   const teensTotal = getWorld().teenPeople;
@@ -126,7 +145,11 @@ async function personSearch(q: string): Promise<PersonSearchRow[]> {
   for (const p of allProfiles()) {
     const hay = p.id.replace(/-/g, "");
     if (key && !(hay.startsWith(key) || hay.slice(1).startsWith(key))) continue;
-    out.push(p.teen ? { id: p.id, teen: true } : { id: p.id, teen: false, ageBand: p.ageBand, brands: [...p.brands] });
+    out.push(
+      p.teen
+        ? { id: p.id, teen: true }
+        : { id: p.id, teen: false, ageBand: p.ageBand, brands: [...p.brands] },
+    );
   }
   return out.sort((a, b) => a.id.localeCompare(b.id));
 }
@@ -150,7 +173,8 @@ async function quality(): Promise<QualityRaw> {
   const peopleAll = godPeople();
 
   const lagR = mulberry32(5);
-  const lag = (base: number) => Array.from({ length: 24 }, () => Math.round(base * (0.6 + lagR() * 0.9)));
+  const lag = (base: number) =>
+    Array.from({ length: 24 }, () => Math.round(base * (0.6 + lagR() * 0.9)));
   const row = (app: string, table: string, inGod: number, inApp: number) => ({
     app,
     table,
@@ -198,7 +222,12 @@ async function quality(): Promise<QualityRaw> {
       row("YourTal", "Viewers", people("yourtal"), people("yourtal")),
       row("YourTal", "Businesses", biz("yourtal"), biz("yourtal")),
       row("YourTal", "Watch events", 612408, 612411),
-      row("SnapApp", "Workspaces", people("snapapp") + biz("snapapp"), people("snapapp") + biz("snapapp")),
+      row(
+        "SnapApp",
+        "Workspaces",
+        people("snapapp") + biz("snapapp"),
+        people("snapapp") + biz("snapapp"),
+      ),
       row("SnapApp", "Receipts", 1984310, 1984310),
       row("Free Tax Returns", "Accounts", people("ftr"), people("ftr")),
       row("Free Tax Returns", "Returns lodged", 4611, 4613),
@@ -210,21 +239,85 @@ async function quality(): Promise<QualityRaw> {
     ],
     merges: { bySignIn: count(5912), byEmail: count(2104), undone: count(7) },
     jobs: [
-      { name: "sync-yourtal", schedule: "every 1 min", lastRun: "2026-11-26T14:48:00+11:00", duration: "4.1 s", result: "ok" },
-      { name: "sync-snapapp", schedule: "every 1 min", lastRun: "2026-11-26T14:48:00+11:00", duration: "6.8 s", result: "ok" },
-      { name: "sync-ftr", schedule: "every 1 min", lastRun: "2026-11-26T14:47:00+11:00", duration: "11.3 s", result: "warn" },
-      { name: "geocode-batch", schedule: "every 15 min", lastRun: "2026-11-26T14:45:00+11:00", duration: "48 s", result: "ok" },
-      { name: "identity-merge", schedule: "hourly", lastRun: "2026-11-26T14:00:00+11:00", duration: "2 min 12 s", result: "ok" },
-      { name: "build-affinities", schedule: "nightly", lastRun: "2026-11-26T02:10:00+11:00", duration: "9 min 41 s", result: "ok" },
-      { name: "build-map-tiles", schedule: "nightly", lastRun: "2026-11-26T02:30:00+11:00", duration: "6 min 5 s", result: "ok" },
-      { name: "export-audit-archive", schedule: "nightly", lastRun: "2026-11-25T23:55:00+11:00", duration: "37 s", result: "crit" },
+      {
+        name: "sync-yourtal",
+        schedule: "every 1 min",
+        lastRun: "2026-11-26T14:48:00+11:00",
+        duration: "4.1 s",
+        result: "ok",
+      },
+      {
+        name: "sync-snapapp",
+        schedule: "every 1 min",
+        lastRun: "2026-11-26T14:48:00+11:00",
+        duration: "6.8 s",
+        result: "ok",
+      },
+      {
+        name: "sync-ftr",
+        schedule: "every 1 min",
+        lastRun: "2026-11-26T14:47:00+11:00",
+        duration: "11.3 s",
+        result: "warn",
+      },
+      {
+        name: "geocode-batch",
+        schedule: "every 15 min",
+        lastRun: "2026-11-26T14:45:00+11:00",
+        duration: "48 s",
+        result: "ok",
+      },
+      {
+        name: "identity-merge",
+        schedule: "hourly",
+        lastRun: "2026-11-26T14:00:00+11:00",
+        duration: "2 min 12 s",
+        result: "ok",
+      },
+      {
+        name: "build-affinities",
+        schedule: "nightly",
+        lastRun: "2026-11-26T02:10:00+11:00",
+        duration: "9 min 41 s",
+        result: "ok",
+      },
+      {
+        name: "build-map-tiles",
+        schedule: "nightly",
+        lastRun: "2026-11-26T02:30:00+11:00",
+        duration: "6 min 5 s",
+        result: "ok",
+      },
+      {
+        name: "export-audit-archive",
+        schedule: "nightly",
+        lastRun: "2026-11-25T23:55:00+11:00",
+        duration: "37 s",
+        result: "crit",
+      },
     ],
     verification: [
-      fixture("v-f1", "Teen aged 17 turns 18 mid-month", "Moves to the adult band; the profile stays closed until re-verified"),
+      fixture(
+        "v-f1",
+        "Teen aged 17 turns 18 mid-month",
+        "Moves to the adult band; the profile stays closed until re-verified",
+      ),
       fixture("v-f2", "Teen account with no guardian notice", "Excluded from every count"),
-      fixture("v-f3", "Group of 19 teens in one area", 'Printed as "<20" for every role, the Owner included'),
-      fixture("v-f4", "Teen id typed into Person 360 search", "Refused and logged; no profile body exists to return"),
-      fixture("v-f5", "Pharmacy and health in a teen report", "Not reported: sensitive categories never appear in teen figures"),
+      fixture(
+        "v-f3",
+        "Group of 19 teens in one area",
+        'Printed as "<20" for every role, the Owner included',
+      ),
+      fixture(
+        "v-f4",
+        "Teen id typed into Person 360 search",
+        "Refused and logged; no profile body exists to return",
+      ),
+      fixture(
+        "v-f5",
+        "Pharmacy and health in a teen report",
+        "Not reported: sensitive categories never appear in teen figures",
+      ),
       sampled(
         "v-s-2026-11",
         "2026-11-19T03:20:00+11:00",
@@ -264,26 +357,13 @@ async function quality(): Promise<QualityRaw> {
   };
 }
 
-/* ---------------- Admin ---------------- */
-
-async function adminSessions(): Promise<SessionRow[]> {
-  return [
-    { id: "s-1", personId: "dev-owner", person: "Alex Morgan", device: "Chrome on Windows", near: "Sydney, AU", started: "2026-11-26T09:12:00+11:00", lastActive: "now", passkey: true, current: false },
-    { id: "s-2", personId: "dev-data", person: "Jordan Lee", device: "Edge on Windows", near: "Brisbane, AU", started: "2026-11-26T08:41:00+11:00", lastActive: "12 min ago", passkey: true, current: false },
-    { id: "s-3", personId: "dev-executive", person: "Priya Nair", device: "Safari on iPhone", near: "Melbourne, AU", started: "2026-11-25T16:40:00+11:00", lastActive: "20 h ago", passkey: true, current: false },
-    { id: "s-4", personId: "dev-bl-yourtal", person: "Sam Ortega", device: "Chrome on macOS", near: "Brisbane, AU", started: "2026-11-24T11:03:00+11:00", lastActive: "2 days ago", passkey: true, current: false },
-  ];
-}
-
 export const syntheticPages: Pick<
   DashboardData,
-  "insight" | "teens" | "personSearch" | "personGet" | "quality" | "adminAllowList" | "adminSessions"
+  "insight" | "teens" | "personSearch" | "personGet" | "quality"
 > = {
   insight,
   teens,
   personSearch,
   personGet,
   quality,
-  adminAllowList: async () => allowListStore.list(),
-  adminSessions,
 };

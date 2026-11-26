@@ -11,7 +11,8 @@ import { ThemeToggle } from "./ThemeToggle";
 
 /**
  * The phone bottom bar (up to 860 px wide): up to four pages and a "More" sheet with everything else, the dev
- * role switch (dev only), and the theme. Hidden by CSS above 860 px.
+ * role switch (dev only), the theme, and Sign out (real sign-in only; dev signs out from the role switch). Hidden by
+ * CSS above 860 px.
  */
 export function PhoneBar({
   items,
@@ -56,6 +57,14 @@ export function PhoneBar({
           ))}
           <div className="navgroup">Account</div>
           <ThemeToggle initial={theme} />
+          {devRole ? null : (
+            <form method="post" action="/auth/signout">
+              <button type="submit" className="nav">
+                <Icon name="key" />
+                <span className="lbl">Sign out</span>
+              </button>
+            </form>
+          )}
         </div>
       ) : null}
       <nav className="phonebar" aria-label="Main, phone">

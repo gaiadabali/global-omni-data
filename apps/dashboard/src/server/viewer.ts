@@ -1,14 +1,17 @@
 import { cache } from "react";
 import { cookies } from "next/headers";
+import { getSessionState } from "./auth/current";
 import { isDevAuthEnabled } from "./dev-auth";
 import { DEV_ROLE_COOKIE, isDevRoleValue, type DevRoleValue } from "./dev-roles";
 import type { Viewer } from "./types";
 
 /**
  * THE VIEWER SEAM. Everything that needs to know who is signed in calls getViewer(), and nothing else reads
- * identity. In this phase it honours only the dev cookie (god_dev_role), and only while dev sign-in is on.
- * Real sign-in (Sign in with YourTal, allow-list, passkey) replaces the inside of getViewer() later, and
- * nothing else changes: pages, access checks and the data layer only ever see a Viewer or null.
+ * identity. Exactly one source answers, never both:
+ *   - dev sign-in on (GOD_DEV_AUTH=1 and GOD_DEPLOYMENT=dev): the dev cookie (god_dev_role), nothing else;
+ *   - otherwise: the real session (Sign in with YourTal, allow-list, passkey), checked on every request for the
+ *     idle and absolute limits, revocation and the person's allow-list status (src/server/auth/session.ts).
+ * Pages, access checks and the data layer only ever see a Viewer or null.
  */
 
 /** Fictional people. Nothing here is real. */
@@ -51,9 +54,12 @@ export function devRoleValueOf(viewer: Viewer): DevRoleValue {
 
 /** The signed-in person, or null. Cached for the length of one request. */
 export const getViewer = cache(async (): Promise<Viewer | null> => {
-  if (!isDevAuthEnabled()) return null;
-  const jar = await cookies();
-  return viewerFromDevCookie(jar.get(DEV_ROLE_COOKIE)?.value);
+  if (isDevAuthEnabled()) {
+    const jar = await cookies();
+    return viewerFromDevCookie(jar.get(DEV_ROLE_COOKIE)?.value);
+  }
+  const state = await getSessionState();
+  return state.kind === "ok" ? { ...state.viewer } : null;
 });
 
 export { DEV_ROLE_COOKIE, DEV_ROLE_VALUES, DEV_ROLE_LABELS, isDevRoleValue } from "./dev-roles";

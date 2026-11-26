@@ -490,6 +490,52 @@
     ]
   },
   {
+    "name": "signin-retry",
+    "path": "/signin?reason=retry",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440,
+      390
+    ]
+  },
+  {
+    "name": "signin-unavailable",
+    "path": "/signin?reason=unavailable",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440,
+      390
+    ]
+  },
+  {
+    "name": "signin-signed-out",
+    "path": "/signin?reason=signed-out",
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "widths": [
+      1440,
+      390
+    ]
+  },
+  {
+    "name": "signin-dev-owner",
+    "path": "/signin",
+    "role": "owner",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440,
+      390
+    ]
+  },
+  {
     "name": "no-role-home",
     "path": "/",
     "themes": [

@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { Shell } from "@/components/shell/Shell";
 import { THEME_COOKIE, parseTheme } from "@/lib/theme";
+import { getSessionState } from "@/server/auth/current";
 import { getViewer } from "@/server/viewer";
 
 /**
@@ -10,7 +11,9 @@ import { getViewer } from "@/server/viewer";
  */
 export default async function ShellLayout({ children }: { children: React.ReactNode }) {
   const viewer = await getViewer();
-  if (!viewer) redirect("/signin");
+  // An ended session says so; on a client navigation the page's own check sends to /signin, which says it too.
+  if (!viewer)
+    redirect((await getSessionState()).kind === "ended" ? "/signin?reason=expired" : "/signin");
   const theme = parseTheme((await cookies()).get(THEME_COOKIE)?.value);
   return (
     <Shell viewer={viewer} theme={theme}>

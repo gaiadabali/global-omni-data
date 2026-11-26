@@ -1,7 +1,15 @@
 import { canAccessPage, canQueryBrand } from "../access";
-import { AUDIT_ACTION_LABELS, getAuditLog, type AuditAction, type AuditFilter, type AuditLog } from "../audit";
+import {
+  AUDIT_ACTION_LABELS,
+  getAuditLog,
+  type AuditAction,
+  type AuditFilter,
+  type AuditLog,
+} from "../audit";
 import type { BrandId, Viewer } from "../types";
-import { allowListStore } from "./allowlist";
+import { deviceLabel } from "../auth/session";
+import { getStores } from "../store";
+import type { AllowEntry, Stores } from "../store/types";
 import {
   presentActivity,
   presentInfluence,
@@ -14,7 +22,6 @@ import {
 import { syntheticData } from "./synthetic";
 import type {
   ActivityQuery,
-  AllowListEntry,
   AudienceQuery,
   BrandRawMap,
   DashboardData,
@@ -30,7 +37,14 @@ import type {
 } from "./types";
 
 export * from "./types";
-export type { InfluenceCell, ActivityMerchant, ActivityHeatCell, PresentedInfluence, PresentedActivity, PresentedOverview } from "./present";
+export type {
+  InfluenceCell,
+  ActivityMerchant,
+  ActivityHeatCell,
+  PresentedInfluence,
+  PresentedActivity,
+  PresentedOverview,
+} from "./present";
 export type { LegendBreak } from "./legend";
 
 /**
@@ -62,9 +76,7 @@ export type PersonOutcome =
   | { kind: "not-found" };
 
 export type PersonOpenOutcome =
-  | { kind: "opened"; id: string }
-  | { kind: "teen-refused"; id: string }
-  | { kind: "not-found" };
+  { kind: "opened"; id: string } | { kind: "teen-refused"; id: string } | { kind: "not-found" };
 
 export interface AccessEntry {
   who: string;
@@ -105,16 +117,24 @@ export interface ViewerData {
   personGet(id: string): Promise<PersonOutcome>;
   personAccessedBy(id: string): Promise<AccessEntry[]>;
   quality(): Promise<Present<QualityRaw>>;
-  adminAllowList(): Promise<AllowListEntry[]>;
-  adminSessions(): Promise<SessionRow[]>;
+  adminAllowList(): Promise<AllowEntry[]>;
+  /** `currentSessionId` marks "This session"; null (dev sign-in) marks the viewer's own sessions instead. */
+  adminSessions(currentSessionId: string | null): Promise<SessionRow[]>;
   adminAudit(filter?: AuditFilter): Promise<AuditView>;
 }
 
 /** What a brand would see: the executive-level threshold view, used for printed reports. */
 const EXPORT_VIEW = { role: "executive" } as const;
 
-function nameOf(who: string): string {
-  return allowListStore.find(who)?.name ?? who;
+/** Audit "who" values that are not people on the allow-list. */
+const SYSTEM_NAMES: Record<string, string> = {
+  "sign-in": "Someone signing in",
+  yourtal: "YourTal",
+};
+
+async function namer(stores: Pick<Stores, "allowList">): Promise<(who: string) => string> {
+  const names = new Map((await stores.allowList.list()).map((e) => [e.id, e.name]));
+  return (who) => names.get(who) ?? SYSTEM_NAMES[who] ?? who;
 }
 
 /**
@@ -126,14 +146,17 @@ export function getDashboardData(
   viewer: Viewer,
   source: DashboardData = provider(),
   audit: AuditLog = getAuditLog(),
+  stores: Pick<Stores, "allowList" | "sessions"> = getStores(),
 ): ViewerData {
   const need = (page: "insight" | "teens" | "person" | "quality" | "admin") => {
-    if (!canAccessPage(viewer, page)) throw new DataAccessError(`This role cannot read ${page} data`);
+    if (!canAccessPage(viewer, page))
+      throw new DataAccessError(`This role cannot read ${page} data`);
   };
 
   return {
     async overview(q) {
-      if (!canAccessPage(viewer, "home")) throw new DataAccessError("Group figures are not part of this role");
+      if (!canAccessPage(viewer, "home"))
+        throw new DataAccessError("Group figures are not part of this role");
       return presentOverview(await source.overview(q), viewer);
     },
     async brand(brand, q) {
@@ -141,7 +164,8 @@ export function getDashboardData(
       return presentTree(await source.brand(brand, q), viewer);
     },
     async influenceMap(q) {
-      if (!canQueryBrand(viewer, q.brand)) throw new DataAccessError(`This role cannot see ${q.brand}`);
+      if (!canQueryBrand(viewer, q.brand))
+        throw new DataAccessError(`This role cannot see ${q.brand}`);
       return presentInfluence(await source.influenceMap(q), q, viewer);
     },
     async activityMap(q) {
@@ -169,7 +193,8 @@ export function getDashboardData(
     },
     async personOpen(id, reason) {
       need("person");
-      if (reason.trim().length < 8) throw new DataAccessError("A reason is required to open a profile");
+      if (reason.trim().length < 8)
+        throw new DataAccessError("A reason is required to open a profile");
       const raw = await source.personGet(id);
       if (raw.kind === "not-found") return { kind: "not-found" };
       if (raw.kind === "teen") {
@@ -215,6 +240,7 @@ export function getDashboardData(
     async personAccessedBy(id) {
       need("person");
       const events = await audit.list({ action: "person.open", target: id, outcome: "done" });
+      const nameOf = await namer(stores);
       return events.map((e) => ({ who: nameOf(e.who), when: e.when, reason: e.reason }));
     },
 
@@ -225,16 +251,33 @@ export function getDashboardData(
 
     async adminAllowList() {
       need("admin");
-      return source.adminAllowList();
+      return stores.allowList.list();
     },
-    async adminSessions() {
+    async adminSessions(currentSessionId) {
       need("admin");
-      const rows = await source.adminSessions();
-      return rows.map((s) => ({ ...s, current: s.personId === viewer.id }));
+      const [rows, nameOf] = await Promise.all([
+        stores.sessions.listActive(new Date().toISOString()),
+        namer(stores),
+      ]);
+      return rows.map((s) => ({
+        id: s.id,
+        personId: s.userId,
+        person: nameOf(s.userId),
+        device: deviceLabel(s.userAgent),
+        near: s.ipPrefix ?? "Unknown",
+        started: s.createdAt,
+        lastActive: s.lastSeenAt,
+        passkey: s.amr.includes("hwk"),
+        current: currentSessionId === null ? s.userId === viewer.id : s.id === currentSessionId,
+      }));
     },
     async adminAudit(filter = {}) {
       need("admin");
-      const [events, everything] = await Promise.all([audit.list({ ...filter, limit: filter.limit ?? 200 }), audit.list()]);
+      const [events, everything, nameOf] = await Promise.all([
+        audit.list({ ...filter, limit: filter.limit ?? 200 }),
+        audit.list(),
+        namer(stores),
+      ]);
       const ids = [...new Set(everything.map((e) => e.who))];
       return {
         rows: events.map((e) => ({
@@ -249,7 +292,9 @@ export function getDashboardData(
           reason: e.reason,
           outcome: e.outcome,
         })),
-        whoOptions: ids.map((id) => ({ id, name: nameOf(id) })).sort((a, b) => a.name.localeCompare(b.name)),
+        whoOptions: ids
+          .map((id) => ({ id, name: nameOf(id) }))
+          .sort((a, b) => a.name.localeCompare(b.name)),
       };
     },
   };

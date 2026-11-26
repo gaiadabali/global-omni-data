@@ -1,13 +1,14 @@
 # @god/dashboard
 
 The GOD group dashboard (dashboard.god.gaiada.com). Allow-listed GOD staff only. Next 16 App Router, React 19,
-Tailwind 4. In this phase every figure is synthetic (`@god/synthetic`) and sign-in is a dev cookie. Two seams
-replace those later, and nothing else changes:
+Tailwind 4. In this phase every figure is synthetic (`@god/synthetic`). Sign-in is Sign in with YourTal with a
+passkey, or the dev cookie while dev sign-in is on. Three seams:
 
-| Seam | File | Today | Later |
-|---|---|---|---|
-| **Viewer** (who is signed in) | `src/server/viewer.ts` `getViewer()` | the `god_dev_role` cookie, only while dev sign-in is on | Sign in with YourTal, allow-list, passkey |
-| **Data** (where numbers come from) | `src/server/data/` `DashboardData` | `synthetic.ts` over `@god/synthetic` | the warehouse |
+| Seam                                   | File                                 | Today                                                                                                                   | Later                                   |
+| -------------------------------------- | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------- | --------------------------------------- |
+| **Viewer** (who is signed in)          | `src/server/viewer.ts` `getViewer()` | Sign in with YourTal (allow-list, passkey, session); the `god_dev_role` cookie only while dev sign-in is on, never both | —                                       |
+| **Stores** (the dashboard's own state) | `src/server/store/` `getStores()`    | in memory (`memory.ts`)                                                                                                 | Postgres when `GOD_DATABASE_URL` is set |
+| **Data** (where numbers come from)     | `src/server/data/` `DashboardData`   | `synthetic.ts` over `@god/synthetic`                                                                                    | the warehouse                           |
 
 Build and test on server-f only (`scripts/server-f/remote-build.sh`), never on the laptop. See the repo `CLAUDE.md`.
 
@@ -45,7 +46,7 @@ src/
 ## The rules that make this safe
 
 1. **Every page and route handler checks access on the server, first.** Pages: `const viewer = requirePage(await
-   getViewer(), "pageId")`. No viewer redirects to `/signin`; a role that may not open the page gets a real 403.
+getViewer(), "pageId")`. No viewer redirects to `/signin`; a role that may not open the page gets a real 403.
    Route handlers use `requireApi` (401 or 403). The shell layout redirects too, but a layout does not re-run on client
    navigation, so it is never the check.
 2. **Hiding a link is cosmetic.** The nav is built by `navFor(viewer)` from the same table the checks use.
@@ -83,8 +84,7 @@ UI-ready form `{ value, display, suppressed }` (`value` is 0 for a suppressed co
 
 ### Map API
 
-Both are `GET`, JSON, `Cache-Control: private, no-cache`, `Vary: Cookie`. Thresholds are applied on the server. Bad query:
-400. Not signed in: 401. Role or brand not allowed: 403.
+Both are `GET`, JSON, `Cache-Control: private, no-cache`, `Vary: Cookie`. Thresholds are applied on the server. Bad query: 400. Not signed in: 401. Role or brand not allowed: 403.
 
 `/api/map/influence?brand=yourtal|snapapp|ftr|all&audience=businesses|people|both&measure=count|per1000&month=YYYY-MM&level=state|h3&res=3..8&bbox=w,s,e,n`
 returns `{ query, unit, cells: [{ id, label?, value, display, suppressed, population?, band }], legend: [{ band, label, min, max }], truncated }`.
@@ -120,8 +120,8 @@ Use these before writing a new one.
    ```tsx
    export const metadata: Metadata = { title: PAGES.insight.title };
    export default async function Page() {
-     const viewer = requirePage(await getViewer(), "insight");   // first line, always
-     const data = getDashboardData(viewer);                      // already thresholded for this viewer
+     const viewer = requirePage(await getViewer(), "insight"); // first line, always
+     const data = getDashboardData(viewer); // already thresholded for this viewer
      return (
        <div className="page-body">
          <PageHeader title={PAGES.insight.title} sub={PAGES.insight.sub} />
@@ -130,9 +130,62 @@ Use these before writing a new one.
      );
    }
    ```
+
 4. Need a new number? Add it to the right type in `data/types.ts` as a `RawCount`, produce it in `synthetic.ts`, and use
    the `Present<...>` result. Never import the provider into a page.
 5. Add the route to `tools/shots/routes.dashboard.json`.
+
+## Sign in with YourTal (`src/server/auth/`)
+
+YourTal is the OpenID Connect provider (YourTal `docs/26-sign-in-with-yourtal.md`). The dashboard is the confidential
+client `god-dashboard` (private_key_jwt, redirect `https://dashboard.god.gaiada.com/auth/callback`, its own pairwise
+sector). `openid-client` 6.8.8 does all the protocol: code flow, PKCE S256, `state`, `nonce`, the `iss` response
+parameter, and the ID token checks including the signature (`enableNonRepudiationChecks`). YourTal's tokens are never
+stored, logged or sent to the browser.
+
+| Route                                    | What                                                                                                                                                                                                                                                                     |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `GET /auth/start[?fresh=1&return=/path]` | Starts a sign-in. The transaction (state, nonce, PKCE verifier, return path) goes only in `__Host-god_oidc`: AES-256-GCM under a key derived (HKDF) from `GOD_SESSION_SECRET`, 10 minutes. `fresh=1` is the fresh passkey check for the signed-in session (`max_age=0`). |
+| `GET /auth/callback`                     | Deletes the transaction cookie, then refuses or signs in (below).                                                                                                                                                                                                        |
+| `POST /auth/signout`                     | POST only, Origin must be `GOD_PUBLIC_URL`; revokes the session, clears the cookie, goes to `/signin?reason=signed-out`.                                                                                                                                                 |
+| `POST /auth/yourtal/events`              | YourTal's signed events (SET, verified with `jose` against YourTal's JWKS): `account-deleted` and `access-ended` end the person's sessions.                                                                                                                              |
+| `GET /healthz`                           | `{ ok, signIn: "yourtal" \| "dev" \| "off", store }`. Nothing else.                                                                                                                                                                                                      |
+
+**The callback, in order, before any session exists** (`callback.ts`): the transaction cookie opens and `state`
+matches; the code is redeemed and the ID token validated; `amr` must contain `hwk` (else `/signin?reason=password`);
+`age_band` must be `adult` (a teen: `reason=teen`; missing: `reason=retry`); the allow-list by `sub`, or an unbound
+entry bound by its email once (`bindSub`; a second sub for a bound entry is refused); the entry must be invited or
+active (else `reason=not-listed`, with no hint whether the email exists). Every refusal writes `signin.refused` with a
+keyed hash of the sub (`sub#…`), never the sub or the email. A sign-in writes `signin.ok`; sign-out writes `signout`.
+
+**Sessions** (`session.ts`, `store/limits.ts`): a random 256-bit token in `__Host-god_session` (Secure, HttpOnly,
+SameSite=Lax, Path=/, 8 hours); the store holds only its SHA-256. `getViewer()` checks on every request: not revoked,
+under 30 minutes idle and 8 hours old, and the person still active on the allow-list. `lastSeenAt` is written at most
+once a minute. An ended session lands on `/signin?reason=expired`.
+
+**Fresh passkey check** (`fresh.ts`): exports (insight and teens), opening a Person 360 profile, invites and allow-list
+changes need the session's last YourTal sign-in under 5 minutes old with `amr` containing `hwk`. Otherwise the action
+answers with `/auth/start?fresh=1`, the modal sends the browser there (YourTal asks for the passkey again) and back,
+and the person presses the button again. The handlers refuse when no gate is passed. Revoking sessions needs no fresh
+check: it only protects.
+
+**Settings** (`config.ts`, names in `.env.example`): `YOURTAL_ISSUER`, `GOD_OIDC_CLIENT_ID`, `GOD_OIDC_KEY_FILE`
+(secret), `GOD_PUBLIC_URL`, `GOD_SESSION_SECRET` (secret, 32 bytes or more). With dev sign-in off, a missing or bad
+one stops the server at start, like the dev guard. The key file holds a private RSA JWK with a `kid`; make one with:
+
+```bash
+node -e 'const c=require("node:crypto");const{privateKey:k}=c.generateKeyPairSync("rsa",{modulusLength:2048});const j={...k.export({format:"jwk"}),kid:"god-"+Date.now(),alg:"RS256",use:"sig"};const{d,p,q,dp,dq,qi,...pub}=j;require("fs").writeFileSync("god-oidc.jwk.json",JSON.stringify(j),{mode:0o400});console.log(JSON.stringify({keys:[pub]}))'
+```
+
+It prints the public JWKS: that goes to YourTal as `/opt/yourtal/secrets/oidc/clients/god-dashboard.jwks.json`.
+
+**CSP.** `connect-src 'self'` stays: the callback is a navigation. The sign-in button and the fresh check are links
+(GET navigations), never form posts, so `form-action 'self'` never meets the redirect to YourTal (browsers apply
+`form-action` to a form's redirects too). Sign-out is a form POST to this origin, answered with a redirect to
+`/signin`, also this origin.
+
+**TODO (founder decision, god TASKS 9.0.d): the break-glass Owner login** for when YourTal is down. Nothing is built
+for it: until it is decided, a YourTal outage stops new sign-ins (open sessions carry on).
 
 ## Dev sign-in
 
@@ -140,6 +193,8 @@ On only when `GOD_DEV_AUTH=1` **and** `GOD_DEPLOYMENT=dev` (`src/server/dev-auth
 `GOD_DEPLOYMENT` stops the server at start (`instrumentation.ts`). Staging and production set neither. The role switch
 ("Prototype: signed in as", and `/dev-role`) calls server actions that check the guard themselves. Cookie values:
 `owner`, `executive`, `data`, `brand_lead_yourtal`, `brand_lead_snapapp`, `brand_lead_ftr`. `tools/shots` sets it.
+While dev sign-in is on, real sign-in is off (`/auth/*` go to `/signin?reason=unavailable`), the fresh passkey check
+passes (dev has no passkeys), and Admin lists seeded fictional sessions.
 
 ## Security headers
 

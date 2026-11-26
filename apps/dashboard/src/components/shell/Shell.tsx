@@ -41,7 +41,13 @@ export function Shell({
       <div className="app">
         <aside className="side" aria-label="Main">
           {/* eslint-disable-next-line @next/next/no-img-element -- a static logo; next/image would add an inline style, which the CSP blocks */}
-          <img className="logo" src="/god-logo.png" alt="GOD, Global Omni Data" width="86" height="34" />
+          <img
+            className="logo"
+            src="/god-logo.png"
+            alt="GOD, Global Omni Data"
+            width="86"
+            height="34"
+          />
           {devRole ? <RoleSwitch value={devRole} /> : null}
           {groups.map((g) => (
             <Fragment key={g.title}>
@@ -67,7 +73,15 @@ export function Shell({
                   <span className="lbl">Sign out (dev)</span>
                 </button>
               </form>
-            ) : null}
+            ) : (
+              // A plain POST to this origin (CSP form-action 'self'); the response redirects to /signin, also 'self'.
+              <form method="post" action="/auth/signout">
+                <button type="submit" className="nav">
+                  <Icon name="key" />
+                  <span className="lbl">Sign out</span>
+                </button>
+              </form>
+            )}
           </div>
         </aside>
         <div className="shell">

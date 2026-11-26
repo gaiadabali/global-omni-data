@@ -17,7 +17,7 @@ export function InviteForm({ holders, today }: { holders: readonly string[]; tod
   const router = useRouter();
   const { toast } = useToast();
   const [name, setName] = useState("");
-  const [handle, setHandle] = useState("");
+  const [email, setEmail] = useState("");
   const [role, setRole] = useState<string>("executive");
   const [brand, setBrand] = useState<string>("yourtal");
   const [date, setDate] = useState("");
@@ -30,8 +30,8 @@ export function InviteForm({ holders, today }: { holders: readonly string[]; tod
   function submit(e: FormEvent) {
     e.preventDefault();
     if (!date) return;
-    if (name.trim().length < 2 || handle.trim().length < 2) {
-      setHint("Add a name and a YourTal account.");
+    if (name.trim().length < 2 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setHint("Add a name and the email address of their YourTal account.");
       return;
     }
     setHint(null);
@@ -43,17 +43,24 @@ export function InviteForm({ holders, today }: { holders: readonly string[]; tod
       <form className="grid invite-grid" onSubmit={submit} noValidate>
         <div className="field">
           <label htmlFor={idOf("name")}>Full name</label>
-          <input id={idOf("name")} type="text" autoComplete="off" value={name} onChange={(e) => setName(e.target.value)} />
+          <input
+            id={idOf("name")}
+            type="text"
+            autoComplete="off"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
         </div>
         <div className="field">
-          <label htmlFor={idOf("handle")}>YourTal account</label>
+          <label htmlFor={idOf("email")}>Email of their YourTal account</label>
           <input
-            id={idOf("handle")}
-            type="text"
-            placeholder="@handle"
+            id={idOf("email")}
+            type="email"
+            placeholder="name@example.com"
             autoComplete="off"
-            value={handle}
-            onChange={(e) => setHandle(e.target.value)}
+            spellCheck={false}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
           />
         </div>
         <div className="field">
@@ -80,7 +87,13 @@ export function InviteForm({ holders, today }: { holders: readonly string[]; tod
         ) : null}
         <div className="field">
           <label htmlFor={idOf("date")}>Paper agreement signed on</label>
-          <input id={idOf("date")} type="date" max={today} value={date} onChange={(e) => setDate(e.target.value)} />
+          <input
+            id={idOf("date")}
+            type="date"
+            max={today}
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+          />
         </div>
         <div className="field">
           <label htmlFor={idOf("held")}>Paper original held by</label>
@@ -110,25 +123,38 @@ export function InviteForm({ holders, today }: { holders: readonly string[]; tod
         confirmLabel="Check my passkey and invite"
         intro={
           <p>
-            {name.trim() || "This person"} ({handle.trim() || "no account yet"}) will be added to the allow-list as{" "}
-            {ROLE_LABELS[(ROLES as readonly string[]).includes(role) ? (role as (typeof ROLES)[number]) : "executive"]}. They
-            register a passkey the first time they sign in.
+            {name.trim() || "This person"} ({email.trim().toLowerCase() || "no email yet"}) will be
+            added to the allow-list as{" "}
+            {
+              ROLE_LABELS[
+                (ROLES as readonly string[]).includes(role)
+                  ? (role as (typeof ROLES)[number])
+                  : "executive"
+              ]
+            }
+            . They sign in with YourTal using a passkey, and their account is matched to this email
+            once, at their first sign-in.
           </p>
         }
         onClose={() => setAsking(false)}
         onConfirm={async () => {
           const res = await inviteAction({
             name,
-            handle,
+            email,
             role,
             ...(role === "brand_lead" ? { brand } : {}),
             agreementSigned: date,
             originalHeldBy: heldBy,
           });
-          if (!res.ok) return { ok: false, error: res.error };
-          toast(`Invited ${res.name}. They register a passkey on first sign-in.`);
+          if (!res.ok)
+            return {
+              ok: false,
+              error: res.error,
+              ...(res.freshUrl ? { freshUrl: res.freshUrl } : {}),
+            };
+          toast(`Invited ${res.name}. They sign in with YourTal and a passkey.`);
           setName("");
-          setHandle("");
+          setEmail("");
           setDate("");
           router.refresh();
           return { ok: true };

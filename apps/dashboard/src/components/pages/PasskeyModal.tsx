@@ -2,13 +2,14 @@
 
 import { useState, type ReactNode } from "react";
 import { Modal } from "@/components/ui/Modal";
+import { FRESH_STEP_TEXT, goToFreshCheck } from "@/lib/fresh-step";
 
-export type ConfirmResult = { ok: true } | { ok: false; error: string };
+export type ConfirmResult = { ok: true } | { ok: false; error: string; freshUrl?: string };
 
 /**
- * "Confirm with your passkey." Exports and invitations need a fresh passkey check. Real sign-in does not exist
- * yet, so in this phase the step says so plainly and then carries on. When real sign-in arrives, the check goes
- * inside `onConfirm`'s caller and this modal stays as it is.
+ * "Confirm with your passkey." Exports and allow-list changes need a passkey sign-in in the last 5 minutes. The
+ * server decides: when the last check is older, the action answers with `freshUrl`, and this modal sends the
+ * browser to YourTal (max_age=0) and back to this page, where the person presses the button again.
  */
 export function PasskeyModal({
   open,
@@ -41,7 +42,11 @@ export function PasskeyModal({
     try {
       const r = await onConfirm();
       if (r.ok) close();
-      else setError(r.error);
+      else if (r.freshUrl) {
+        setError(FRESH_STEP_TEXT);
+        goToFreshCheck(r.freshUrl);
+        return;
+      } else setError(r.error);
     } catch {
       setError("Something went wrong, and nothing was recorded. Try again.");
     } finally {
@@ -70,9 +75,9 @@ export function PasskeyModal({
       {intro ? <div>{intro}</div> : null}
       <div className="callout" role="note">
         <div>
-          <b>Confirm with your passkey.</b> There is no passkey sign-in yet. A passkey check will happen here once
-          real sign-in exists, and this step will not carry on without it. For now it carries on, and what you do
-          next is written to the audit log.
+          <b>Confirm with your passkey.</b> If you have not used your passkey in the last 5 minutes,
+          YourTal asks for it first and brings you back here. What you do next is written to the
+          audit log.
         </div>
       </div>
       <div className="small muted" aria-live="polite">
