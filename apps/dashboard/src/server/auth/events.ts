@@ -89,6 +89,9 @@ export async function handleSecurityEvent(
     if (entry) {
       const at = new Date(now).toISOString();
       const ended = await deps.stores.sessions.revokeAllForUser(entry.id, "yourtal", at);
+      // A deleted YourTal account never signs in again under this sub: suspend the entry so Admin shows it
+      // (the Owner removes it and re-invites if the person comes back with a new account).
+      if (type === DELETED && entry.status !== "removed") await deps.stores.allowList.setStatus(entry.id, "suspended");
       const detail =
         type === DELETED
           ? "YourTal account deleted"

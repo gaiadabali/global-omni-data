@@ -86,6 +86,8 @@ describe("YourTal's signed events", () => {
       action: "session.revoke",
       target: "dev-data",
     });
+    // A deleted account's entry is suspended, so Admin shows it and it can never sign in again.
+    expect((await w.stores.allowList.find("dev-data"))?.status).toBe("suspended");
   });
 
   it("access-ended does the same; an unknown sub or event type is acknowledged and changes nothing", async () => {
@@ -107,6 +109,8 @@ describe("YourTal's signed events", () => {
     });
     expect((await handleSecurityEvent(CT, ended, w.deps)).status).toBe(202);
     expect(await w.active()).toBe(0);
+    // Access ended (not deleted) leaves the entry as it was: the person may come back.
+    expect((await w.stores.allowList.find("dev-data"))?.status).toBe("active");
   });
 
   const refusals: [string, () => Promise<string>, string, string?][] = [

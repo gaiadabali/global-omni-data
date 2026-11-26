@@ -106,7 +106,7 @@ const query = (over: Record<string, string> = {}) =>
 const expected = { state: "s-1", nonce: "n-1", codeVerifier: "v".repeat(43) };
 
 describe("the authorization URL", () => {
-  it("asks for the code flow with PKCE S256, state, nonce and the four scopes; a fresh check adds max_age=0", async () => {
+  it("asks for the code flow with PKCE S256, state, nonce and the four scopes; a normal sign-in sends max_age=28800 and a fresh check max_age=0", async () => {
     const c = config("x");
     const plain = new URL((await buildStart(c, REDIRECT, false)).url);
     expect(plain.origin + plain.pathname).toBe(META.authorization_endpoint);
@@ -119,7 +119,8 @@ describe("the authorization URL", () => {
     expect(p.get("code_challenge")).toMatch(/^[A-Za-z0-9_-]{43}$/);
     expect(p.get("state")).toBeTruthy();
     expect(p.get("nonce")).toBeTruthy();
-    expect(p.has("max_age")).toBe(false);
+    // A normal sign-in accepts a YourTal sign-in of up to 8 hours, never an older one.
+    expect(p.get("max_age")).toBe("28800");
     const fresh = await buildStart(c, REDIRECT, true);
     expect(new URL(fresh.url).searchParams.get("max_age")).toBe("0");
     // The verifier never goes in the URL.

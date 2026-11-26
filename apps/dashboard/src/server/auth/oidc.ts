@@ -109,6 +109,9 @@ export interface Started {
   codeVerifier: string;
 }
 
+/** Longest a YourTal sign-in may be when it opens a dashboard session: 8 hours. */
+export const SIGNIN_MAX_AGE_S = 8 * 60 * 60;
+
 /** The authorization URL, and the secrets the callback must match. A fresh check sends max_age=0, which YourTal
  *  treats as prompt=login: the person signs in again before anything is issued. */
 export async function buildStart(
@@ -129,7 +132,9 @@ export async function buildStart(
     nonce,
     ui_locales: "en-AU",
   };
-  if (fresh) params.max_age = "0";
+  // A fresh check forces a new sign-in now. A normal sign-in accepts a YourTal sign-in of up to 8 hours (the
+  // session's own absolute limit), so a weeks-old YourTal session cannot open the dashboard (lead review 2026-11-26).
+  params.max_age = fresh ? "0" : String(SIGNIN_MAX_AGE_S);
   return { url: oidc.buildAuthorizationUrl(config, params).href, state, nonce, codeVerifier };
 }
 
