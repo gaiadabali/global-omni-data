@@ -1,0 +1,261 @@
+/*
+ * Styles for Brand insight, Teen market, Person 360, Data quality and Admin, plus the print stylesheet for the
+ * exported report. Imported by those pages, so they stay out of globals.css. Same rules as everywhere: tokens
+ * only, no style="" attributes (the CSP has no 'unsafe-inline' for styles).
+ */
+
+.pad {
+  padding: 0 16px 6px;
+}
+.err {
+  color: var(--crit);
+  min-height: 1.2em;
+}
+.between {
+  justify-content: space-between;
+}
+.nowrap {
+  white-space: nowrap;
+}
+.field.end {
+  justify-content: flex-end;
+}
+.id-title {
+  font-size: 18px;
+}
+.plainlist {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.picker-row,
+.search-row {
+  align-items: flex-end;
+}
+.picker {
+  min-width: min(100%, 320px);
+  flex: 1 1 280px;
+}
+.grow-note {
+  flex: 1 1 200px;
+  padding-bottom: 8px;
+}
+.grow-field {
+  flex: 1 1 260px;
+}
+.invite-grid {
+  --min: 200px;
+  align-items: end;
+}
+.filter-grid {
+  --min: 170px;
+  align-items: end;
+}
+.rules {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13.5px;
+}
+.ixbar {
+  display: block;
+}
+.ixcell {
+  min-width: 160px;
+}
+.pmap {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.pmap .pmap-label {
+  font: 600 10.5px "Inter Variable", system-ui, sans-serif;
+  fill: var(--ink2);
+}
+.tl {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-left: 2px solid var(--line);
+  padding-left: 16px;
+  margin-left: 4px;
+}
+.tl > div {
+  position: relative;
+}
+.tl > div::before {
+  content: "";
+  position: absolute;
+  left: -22px;
+  top: 6px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--acc);
+}
+td .btn.sm,
+td .pill {
+  vertical-align: middle;
+}
+dialog.modal textarea {
+  resize: vertical;
+}
+
+/* ---------- the exported report (print view) ---------- */
+
+/* The report is a clean page: no side bar, no phone bar, on screen as well as on paper. */
+body:has(.report-sheet) .side,
+body:has(.report-sheet) .topbar,
+body:has(.report-sheet) .phonebar,
+body:has(.report-sheet) .skip {
+  display: none;
+}
+body:has(.report-sheet) main {
+  max-width: 980px;
+  padding-bottom: 40px;
+}
+.report-sheet {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.report-sheet::before {
+  /* The watermark: the same text, faint and slanted, behind the report and on every printed page. */
+  content: attr(data-watermark);
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%) rotate(-24deg);
+  padding: 0 8%;
+  text-align: center;
+  font: 700 28px/1.3 "Lexend Variable", system-ui, sans-serif;
+  color: var(--ink);
+  opacity: 0.055;
+  pointer-events: none;
+  z-index: 0;
+}
+.report-sheet > * {
+  position: relative;
+  z-index: 1;
+}
+.printbar {
+  padding: 4px 0 2px;
+}
+.report-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 22px;
+  align-items: flex-start;
+  padding-bottom: 14px;
+  border-bottom: 2px solid var(--acc);
+}
+.report-head .logo {
+  height: 52px;
+}
+.report-title {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1 1 260px;
+}
+.report-mark {
+  font-weight: 600;
+  color: var(--ink2);
+}
+.report-foot {
+  border-top: 1px solid var(--line);
+  padding-top: 8px;
+  font-size: 11px;
+  color: var(--muted);
+  text-align: center;
+}
+
+@page {
+  size: A4;
+  margin: 14mm 12mm 18mm;
+}
+
+@media print {
+  /* Always the light theme on paper, whatever the screen was showing. */
+  :root:root:root,
+  :root:root:root[data-theme="dark"],
+  :root:root:root[data-theme="system"] {
+    --bg: #ffffff;
+    --panel: #ffffff;
+    --panel2: #f1f2f9;
+    --raise: #ffffff;
+    --side: #ffffff;
+    --ink: #10122b;
+    --ink2: #363a5c;
+    --muted: #5a5f82;
+    --faint: #868baa;
+    --line: #c9cde2;
+    --line2: #e3e5f0;
+    --acc: #0c158e;
+    --acc-solid: #0c158e;
+    --acc-tint: rgba(12, 21, 142, 0.09);
+    --yt: #b1279b;
+    --sa: #0a8574;
+    --ftr: #b87500;
+    --god: #0c158e;
+    --ok: #1b7a4b;
+    --warn: #a8530a;
+    --crit: #c02a40;
+    --info: #2a62b8;
+    --map-bg: #e9ebf6;
+    --heat: #d2561b;
+    --c-fuel: #d2561b;
+    --c-groc: #2e8b3f;
+    --c-cafe: #8a5a33;
+    --c-retail: #2262c9;
+    --c-pharm: #c7285f;
+    --c-ent: #6d45d6;
+    color-scheme: light;
+  }
+  body {
+    background: #ffffff !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .logo {
+    filter: none !important;
+  }
+  .printbar,
+  .toast,
+  .menu {
+    display: none !important;
+  }
+  main {
+    padding: 0 !important;
+    max-width: none !important;
+  }
+  .card {
+    break-inside: avoid;
+    box-shadow: none;
+  }
+  .report-head {
+    break-after: avoid;
+  }
+  .report-sheet::before {
+    opacity: 0.07;
+  }
+  .report-foot {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #ffffff;
+    padding-bottom: 2px;
+  }
+  .report-sheet {
+    padding-bottom: 28px;
+  }
+}
