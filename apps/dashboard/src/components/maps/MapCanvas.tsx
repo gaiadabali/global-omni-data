@@ -140,8 +140,28 @@ function fitBox(map: MapLibreMap, b: BBox, ins: Insets, pad: number, maxZoom: nu
   const dy = (mercY(b[3]) - mercY(b[1])) / (2 * Math.PI);
   const z = Math.log2(Math.min(rw / dx, rh / dy) / 512);
   const zoom = Math.max(MIN_ZOOM, Math.min(maxZoom, z));
-  const c = centreFor((b[0] + b[2]) / 2, invMercY((mercY(b[1]) + mercY(b[3])) / 2), zoom, ins);
-  map.easeTo({ center: c, zoom, duration });
+  const lon = (b[0] + b[2]) / 2;
+  const lat = invMercY((mercY(b[1]) + mercY(b[3])) / 2);
+  goTo(map, lon, lat, zoom, ins, duration);
+}
+
+/**
+ * Move the camera so a place lands in the middle of the free part of the canvas. The centre is worked out first; then, once
+ * the move is over, the place's real position on screen is read back and any difference is panned away, so the result does
+ * not depend on how the camera treats the centre.
+ */
+function goTo(map: MapLibreMap, lon: number, lat: number, zoom: number, ins: Insets, duration: number): void {
+  const settle = () => {
+    const el = map.getContainer();
+    const want = [el.clientWidth / 2 + (ins.left - ins.right) / 2, el.clientHeight / 2 + (ins.top - ins.bottom) / 2];
+    const at = map.project([lon, lat]);
+    const dx = at.x - want[0]!;
+    const dy = at.y - want[1]!;
+    if (Math.abs(dx) > 1 || Math.abs(dy) > 1) map.panBy([dx, dy], { duration: 0 });
+  };
+  map.easeTo({ center: centreFor(lon, lat, zoom, ins), zoom, duration });
+  if (duration === 0) settle();
+  else map.once("moveend", settle);
 }
 
 /**
@@ -203,7 +223,7 @@ export function MapCanvas(props: MapCanvasProps) {
         const i = stage ? readInsets(stage) : { left: 0, right: 0, top: 0, bottom: 0 };
         const z = zoom ?? map.getZoom();
         touchedRef.current = true;
-        map.easeTo({ center: centreFor(lon, lat, z, i), zoom: z, duration: latest.current.reducedMotion ? 0 : 500 });
+        goTo(map, lon, lat, z, i, latest.current.reducedMotion ? 0 : 500);
       },
       fitBounds(b) {
         const map = mapRef.current;
