@@ -77,7 +77,8 @@ describe.skipIf(!enabled)("god_dashboard: roles, grants and the append-only audi
     });
 
     it("god_app cannot choose seq or the time", async () => {
-      expect(await code(app, "INSERT INTO god_app.audit_log (seq, who, action, target) VALUES (1, 'x', 'person.open', 'y')")).toBe("42501");
+      // GENERATED ALWAYS refuses an explicit seq (428C9) before the column privilege check (42501) even runs.
+      expect(["428C9", "42501"]).toContain(await code(app, "INSERT INTO god_app.audit_log (seq, who, action, target) VALUES (1, 'x', 'person.open', 'y')"));
       expect(await code(app, "INSERT INTO god_app.audit_log (occurred_at, who, action, target) VALUES ('2001-01-01', 'x', 'person.open', 'y')")).toBe("42501");
     });
 
