@@ -1,7 +1,7 @@
 # Dashboard on Helios: runbook (staging, dashboard.god.gaiada.com)
 
 For the lead, step by step. The dashboard is one container (`god-dashboard`, `node:24-bookworm-slim`, non-root) bound to
-`127.0.0.1:3120`, behind nginx, talking to Helios's native PostgreSQL 18 on `127.0.0.1:5432`. It still reports on
+`127.0.0.1:3125`, behind nginx, talking to Helios's native PostgreSQL 18 on `127.0.0.1:5432`. It still reports on
 synthetic data; its own state (allow-list, sessions, audit log) is in its own database `god_dashboard`.
 
 Anything marked **[UNVERIFIED]** was not checked on Helios: this runbook was written without touching the box. Check it
@@ -27,7 +27,7 @@ Files in this folder: `compose.yaml` (how it runs), `nginx.dashboard.god.gaiada.
 The container uses `network_mode: host`. With the default bridge it could only reach Postgres if Postgres listened on the
 docker bridge address and `pg_hba.conf` allowed that subnet: a `listen_addresses` change (which needs a restart) on a
 shared production database server, for one small app. With host networking the app connects to `127.0.0.1` like any local
-client and Postgres is not touched. The app itself binds `127.0.0.1:3120` (`HOSTNAME=127.0.0.1` in `compose.yaml`), so the
+client and Postgres is not touched. The app itself binds `127.0.0.1:3125` (`HOSTNAME=127.0.0.1` in `compose.yaml`), so the
 port is never reachable from outside. The price is a shared loopback, so the container is held down: non-root, read-only
 root filesystem, all capabilities dropped, `no-new-privileges`, 640 MB and 1 CPU, and a database role that can touch nothing
 outside schema `god_app`.
@@ -38,7 +38,7 @@ outside schema `god_app`.
 ssh helios
 docker --version && docker compose version          # the compose PLUGIN must be there. If not: apt install docker-compose-plugin
 psql --version; runuser -u postgres -- psql -Atc 'show server_version; show listen_addresses; show port;'   # expect 18.x, localhost, 5432   [UNVERIFIED]
-ss -ltnH 'sport = :3120' | wc -l                      # 0 = port 3120 is free. If not, pick another and use it in step 5 and in the vhost (GOD_PORT)   [UNVERIFIED]
+ss -ltnH 'sport = :3125' | wc -l                      # 0 = port 3125 is free. If not, pick another and use it in step 5 and in the vhost (GOD_PORT)   [UNVERIFIED]
 nginx -v; ls /etc/nginx/sites-enabled | head; command -v certbot   # nginx 1.25.1 or newer (the vhost uses "http2 on")   [UNVERIFIED]
 dig +short god.gaiada.com                             # the address dashboard.god.gaiada.com must also point to
 ```
@@ -141,7 +141,7 @@ scp infra/dashboard/nginx.dashboard.god.gaiada.com.conf helios:/etc/nginx/sites-
 nginx -t && systemctl reload nginx
 ```
 
-What it does: HTTP to HTTPS (with the `.well-known` webroot left open for renewal); proxy to `127.0.0.1:3120` with
+What it does: HTTP to HTTPS (with the `.well-known` webroot left open for renewal); proxy to `127.0.0.1:3125` with
 `X-Forwarded-Proto`; gzip for text, CSS, JS, JSON and SVG; `client_max_body_size 1m`; HSTS for a year, **no preload**;
 `X-Robots-Tag: noindex, nofollow` (staging only; remove it when this becomes production).
 **There is no Content-Security-Policy in nginx on purpose**: the app sends its own nonce-based policy per request, and a
@@ -183,9 +183,9 @@ curl -sI $H/ | grep -iE '^(HTTP|location|strict-transport|x-robots|content-secur
 #   exactly ONE content-security-policy line, with a nonce and no 'unsafe-inline'/'unsafe-eval'; no x-powered-by
 curl -sI -H 'Accept-Encoding: gzip' $H/signin | grep -i content-encoding     # gzip
 curl -s -o /dev/null -w '%{http_code}\n' $H/api/map/influence                # 401 (not signed in)
-curl -s -o /dev/null -w '%{http_code}\n' --connect-timeout 3 http://<helios public ip>:3120/healthz   # must FAIL (000): not reachable from outside
+curl -s -o /dev/null -w '%{http_code}\n' --connect-timeout 3 http://<helios public ip>:3125/healthz   # must FAIL (000): not reachable from outside
 # on Helios
-ss -ltnp 'sport = :3120'                              # 127.0.0.1:3120 only
+ss -ltnp 'sport = :3125'                              # 127.0.0.1:3125 only
 docker ps --filter name=god-dashboard --format '{{.Status}}'     # Up ... (healthy)
 docker exec god-dashboard id -u                       # 1000
 cat /opt/god-dashboard/current.tag /opt/god-dashboard/previous.tag
@@ -251,7 +251,7 @@ as soon as a path works. Until then, a disk loss loses this database.
 | `GOD_DATABASE_URL`, `GOD_MIGRATE_DATABASE_URL` | `dashboard.env`, `migrate.env` | this branch (`fe/backend`) |
 | `GOD_PUBLIC_URL`, `GOD_SESSION_SECRET`, `YOURTAL_ISSUER`, `GOD_OIDC_CLIENT_ID`, the client secret | `dashboard.env` | the sign-in branch (`fe/auth`); confirm against its `apps/dashboard/.env.example` |
 | `GOD_BASEMAP_PMTILES` | `dashboard.env`, optional | the dashboard |
-| `GOD_PORT` | the deploy command, default 3120; must match the vhost | the deploy script |
+| `GOD_PORT` | the deploy command, default 3125; must match the vhost | the deploy script |
 | `NODE_ENV`, `HOSTNAME`, `PORT`, `NODE_OPTIONS` | `compose.yaml` | here |
 | `GOD_BUILD_SHA` | baked into the image | the Dockerfile |
 | `GOD_DEV_AUTH`, `GOD_DEPLOYMENT` | **never set on Helios** | the dashboard |

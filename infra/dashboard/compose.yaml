@@ -24,7 +24,7 @@ services:
     environment:
       NODE_ENV: production
       HOSTNAME: 127.0.0.1
-      PORT: "${GOD_PORT:-3120}"
+      PORT: "${GOD_PORT:-3125}"
       NODE_OPTIONS: --max-old-space-size=384
     read_only: true
     tmpfs:

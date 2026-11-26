@@ -22,13 +22,13 @@
 # running (add columns and tables; never drop or rename in the same release). See infra/dashboard/RUNBOOK.md.
 #
 # Needs on Helios (the runbook creates them): /etc/god-dashboard/dashboard.env and migrate.env, the database,
-# docker with the compose plugin. Environment: GOD_PORT (default 3120, must match the nginx vhost), HELIOS_SSH
+# docker with the compose plugin. Environment: GOD_PORT (default 3125, must match the nginx vhost), HELIOS_SSH
 # (default "helios"), BUILD_HOST (default "server-f").
 set -euo pipefail
 
 die() { echo "error: $*" >&2; exit 1; }
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-BUILD_HOST="${BUILD_HOST:-server-f}"; HELIOS="${HELIOS_SSH:-helios}"; PORT="${GOD_PORT:-3120}"
+BUILD_HOST="${BUILD_HOST:-server-f}"; HELIOS="${HELIOS_SSH:-helios}"; PORT="${GOD_PORT:-3125}"
 BASE=/opt/god-build
 [[ "$PORT" =~ ^[0-9]{4,5}$ ]] || die "bad GOD_PORT"
 
