@@ -30,6 +30,7 @@
     "h3-js": "4.5.0",
     "maplibre-gl": "6.19.0",
     "next": "16.4.5",
+    "pg": "8.23.1",
     "pmtiles": "4.5.0",
     "react": "19.3.0",
     "react-dom": "19.3.0"
@@ -40,6 +41,7 @@
     "@types/d3-scale": "4.0.9",
     "@types/d3-shape": "3.2.0",
     "@types/node": "26.6.2",
+    "@types/pg": "8.23.1",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
     "eslint": "9.39.4",
