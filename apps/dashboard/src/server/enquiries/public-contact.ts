@@ -1,6 +1,6 @@
 import { ipPrefixOf } from "../auth/session";
 import { getStores } from "../store";
-import type { Stores } from "../store/types";
+import type { Enquiry, Stores } from "../store/types";
 import {
   buildEnquiryMail,
   dashboardEnquiriesUrl,
@@ -154,7 +154,7 @@ export async function handlePublicContact(request: Request, deps: PublicContactD
 
   // 6. Store FIRST.
   const stores = deps.stores ?? getStores();
-  let saved;
+  let saved: Enquiry;
   try {
     saved = await stores.enquiries.create({ ...checked.value, ipPrefix: prefix });
   } catch (e) {
@@ -168,15 +168,16 @@ export async function handlePublicContact(request: Request, deps: PublicContactD
     const dashboardUrl = dashboardEnquiriesUrl();
     const mail = buildEnquiryMail(mailer, saved, dashboardUrl ? { dashboardUrl } : {});
     // Promise.resolve().then: a mailer that throws before it returns a promise is still only a logged failure.
+    const id = saved.id;
     const sending = Promise.resolve()
       .then(() => mailer.send(mail))
       .then(
-      () => undefined,
-      (e: unknown) => {
-        // The reason code only: an SMTP error text can quote an address.
-        log("enquiry.mail.failed", { id: saved.id, error: (e as { code?: string }).code ?? (e as Error).name });
-      },
-    );
+        () => undefined,
+        (e: unknown) => {
+          // The reason code only: an SMTP error text can quote an address.
+          log("enquiry.mail.failed", { id, error: (e as { code?: string }).code ?? (e as Error).name });
+        },
+      );
     let timer: ReturnType<typeof setTimeout> | undefined;
     const patience = new Promise<void>((resolve) => {
       timer = setTimeout(resolve, deps.emailWaitMs ?? EMAIL_WAIT_MS);

@@ -467,7 +467,7 @@ describe("header injection", () => {
       "a@example.com\rBcc: evil@example.com",
       "a@example.com%0d%0aBcc:evil@example.com ",
       "a@example.com, evil@example.com",
-      "evil@example.com Bcc: x@example.com",
+      "evil@example.com\u2028Bcc: x@example.com",
     ]) {
       const res = await post(request({ ...good, email }));
       expect(res.status, JSON.stringify(email)).toBe(422);

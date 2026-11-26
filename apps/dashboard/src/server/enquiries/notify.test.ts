@@ -39,13 +39,14 @@ describe("buildEnquiryMail", () => {
     const hostile = {
       ...enquiry,
       name: "Sam\r\nBcc: evil@example.com",
-      company: "Acme\r\nSubject: pwned\nX-Evil: 1 \u0085\u0000done",
+      company: "Acme\r\nSubject: pwned\nX-Evil: 1\u2028\u0085\u0000done",
       email: "sam@example.com\r\nBcc: evil@example.com",
     };
     const m = buildEnquiryMail({ to: "hello@god.gaiada.com\r\nBcc: x@example.com", from: "GOD <a@god.gaiada.com>\nX: y" }, hostile);
     for (const [k, v] of Object.entries(m)) {
       if (k === "text") continue;
-      expect(v, k).not.toMatch(/[\r\n\u0000 \u0085]/);
+      // eslint-disable-next-line no-control-regex
+      expect(v, k).not.toMatch(/[\r\n\u0000\u2028\u0085]/);
     }
     expect(m.subject).toBe("New enquiry from Acme Subject: pwned X-Evil: 1 done");
     // An address that is not an address any more gets no Reply-To at all.

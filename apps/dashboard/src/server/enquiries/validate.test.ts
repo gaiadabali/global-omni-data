@@ -76,11 +76,11 @@ describe("validateEnquiry: cleaning", () => {
       ok: true,
       value: { name: "Sam Bcc: evil@example.com", company: "A B", budget: "x y" },
     });
-    expect(cleanLine("a b\u0085c")).toBe("a b c");
+    expect(cleanLine("a\u2028b\u0085c")).toBe("a b c");
   });
 
   it("keeps the line breaks of a message, as LF, and drops other control characters", () => {
-    expect(cleanMessage("one\r\ntwo\rthree four\u0000\u0007five\tsix")).toBe("one\ntwo\nthree\nfourfive six");
+    expect(cleanMessage("one\r\ntwo\rthree\u2028four\u0000\u0007five\tsix")).toBe("one\ntwo\nthree\nfourfive six");
     const v = validateEnquiry({ ...good, want: "line one\r\n\r\nline two" });
     expect(v).toMatchObject({ ok: true, value: { want: "line one\n\nline two" } });
   });

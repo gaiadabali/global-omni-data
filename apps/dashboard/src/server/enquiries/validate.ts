@@ -27,9 +27,9 @@ const SITE_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const EMAIL_FORBIDDEN = /[<>(),;:"[\]\\]/;
 /** Every C0 control (CR, LF, tab and NUL among them), DEL, the C1 controls, and the Unicode line and paragraph separators. */
 // eslint-disable-next-line no-control-regex
-const CONTROLS = /[\u0000-\u001f\u007f-\u009f  ]/;
+const CONTROLS = /[\u0000-\u001f\u007f-\u009f\u2028\u2029]/;
 // eslint-disable-next-line no-control-regex
-const CONTROL_RUNS = /[\u0000-\u001f\u007f-\u009f  ]+/g;
+const CONTROL_RUNS = /[\u0000-\u001f\u007f-\u009f\u2028\u2029]+/g;
 /** Controls a message does not keep. Tab and line breaks are handled apart. */
 // eslint-disable-next-line no-control-regex
 const MESSAGE_CONTROLS = /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f-\u009f]/g;
@@ -50,7 +50,7 @@ export function cleanLine(s: string): string {
 /** The message: CRLF, CR and the Unicode separators become LF, tabs become spaces, other control characters go. */
 export function cleanMessage(s: string): string {
   return s
-    .replace(/\r\n?| | |\u0085/g, "\n")
+    .replace(/\r\n?|\u2028|\u2029|\u0085/g, "\n")
     .replace(/\t/g, " ")
     .replace(MESSAGE_CONTROLS, "")
     .trim();
