@@ -13,7 +13,7 @@ function isDark(): boolean {
 const themeBtn = document.getElementById("themebtn");
 function labelTheme(): void {
   if (!themeBtn) return;
-  themeBtn.textContent = isDark() ? "Light" : "Dark";
+  themeBtn.dataset.mode = isDark() ? "dark" : "light";
   themeBtn.setAttribute("aria-label", isDark() ? "Switch to light theme" : "Switch to dark theme");
 }
 themeBtn?.addEventListener("click", () => {
