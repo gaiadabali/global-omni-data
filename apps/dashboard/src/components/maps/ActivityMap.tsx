@@ -16,6 +16,8 @@ import { activityLayers, visibleMerchants } from "./activity-layers";
 import { MapCanvas, type MapHandle, type MapViewChange, type TipContent } from "./MapCanvas";
 import {
   HeadlineStrip,
+  IconNext,
+  IconPrev,
   IconClose,
   MapLegend,
   PerfLine,
@@ -132,6 +134,7 @@ export default function ActivityMap({ initial, meta, basemapUrl, lockedBrandName
     () => initial.sel !== null || new URLSearchParams(window.location.search).get("panel") === "areas",
   );
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [listOpen, setListOpen] = useState(true);
   // Merchants named by an area's detail, so one can be opened even when it is not in the box on screen yet.
   const [known, setKnown] = useState<Record<string, ActivityMerchant>>({});
 
@@ -431,7 +434,7 @@ export default function ActivityMap({ initial, meta, basemapUrl, lockedBrandName
   };
 
   return (
-    <div className="pd" data-pd="activity" onKeyDown={onKeyDown}>
+    <div className="pd" data-pd="activity" data-list={listOpen ? "open" : "closed"} onKeyDown={onKeyDown}>
       <h1 className="sr-only">Activity map</h1>
       {error ? (
         <div className="pd-alert">
@@ -458,7 +461,7 @@ export default function ActivityMap({ initial, meta, basemapUrl, lockedBrandName
         >
           <HeadlineStrip tiles={tiles} label="Headline figures" busy={hotQ.loading} />
 
-          <div className="pd-toolbar pd-toolbar-chips">
+          <div className="pd-toolbar pd-toolbar-chips" data-occ-d="top" data-occ-c="top">
             <div className="pd-chips" role="group" aria-label="Merchant dots by category. Press to show or hide.">
               {meta.categories.map((c) => {
                 const blocked = teen && c.sensitive;
@@ -495,6 +498,17 @@ export default function ActivityMap({ initial, meta, basemapUrl, lockedBrandName
               }
             />
           ) : null}
+
+          <button
+            type="button"
+            className="pd-expand"
+            aria-label="Show the list"
+            title="Show the list"
+            onClick={() => setListOpen(true)}
+            data-occ-d="left"
+          >
+            <IconNext />
+          </button>
 
           <div
             className="pd-dock"
@@ -535,7 +549,18 @@ export default function ActivityMap({ initial, meta, basemapUrl, lockedBrandName
 
             <aside className="pd-left pd-panel" aria-label="Hotspots and merchants" data-occ-d="left">
               <header className="pd-phead">
-                <h2 className="pd-title">Activity map</h2>
+                <div className="pd-titlerow">
+                  <h2 className="pd-title">Activity map</h2>
+                  <button
+                    type="button"
+                    className="pd-collapse"
+                    aria-label="Hide the list"
+                    title="Hide the list"
+                    onClick={() => setListOpen(false)}
+                  >
+                    <IconPrev />
+                  </button>
+                </div>
                 <button
                   type="button"
                   className="pd-ftoggle"

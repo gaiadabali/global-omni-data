@@ -244,7 +244,27 @@ export function influenceLayers(i: InfluenceLayerInput): LayersList {
       sizeUnits: "pixels" as const,
       pickable: false,
     };
-    if (stateLevel) {
+    if (stateLevel && drawing === "bubbles" && data) {
+      // A label sits inside a bubble big enough to hold it, at the bubble's centre, with a halo so it reads over any
+      // bubble it overlaps. Small bubbles go without: the list and the tooltip name them.
+      const big = data.cells
+        .filter((c) => c.value > 0 && bubbleRadius(c.value, i.bubbleRef, bubbleMaxPx(level) * i.bubbleScale) >= 15)
+        .map((c) => ({ code: c.id, position: c.centroid }));
+      layers.push(
+        new TextLayer<(typeof big)[number]>({
+          id: "state-labels",
+          data: big,
+          getPosition: (d) => d.position,
+          getText: (d) => d.code,
+          getSize: 13,
+          getColor: withAlpha(tokens.ink, 1),
+          ...text,
+          outlineWidth: 3,
+          outlineColor: withAlpha(tokens.bg, 0.95),
+          updateTriggers: { getColor: [tokens] },
+        }),
+      );
+    } else if (stateLevel) {
       // Each label takes the colour that reads on its own fill: white on a dark state, ink on a light one. As bubbles the
       // label sits on the land or on a translucent bubble, so it takes the ink.
       const labels = i.labels.map((l) => {

@@ -27,7 +27,7 @@
   },
   {
     "name": "perf-map-pan-sa2",
-    "path": "/map?perf=pan&z=7.4&lat=-33.87&lon=151&mode=shaded",
+    "path": "/map?perf=pan&z=7.4&lat=-33.87&lon=151",
     "role": "owner",
     "themes": [
       "light"

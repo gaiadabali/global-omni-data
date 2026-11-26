@@ -401,20 +401,22 @@ export function MapLegend({
   brandClass: string;
   /** The label for blank land, when the map has some. */
   noneLabel?: string;
-  note?: ReactNode;
+  /** One short sentence, shown as a tooltip and read by screen readers. */
+  note?: string;
   /** Bubbles only: the value that gets the biggest circle, and that circle's size in pixels. */
   bubble?: { ref: number; maxPx: number };
 }) {
   const n = legend.length;
   return (
-    <section className={`pd-legend ${brandClass}`} aria-label={`Legend: ${title}`}>
+    <section className={`pd-legend ${brandClass}`} aria-label={`Legend: ${title}`} title={note}>
       <h3 className="pd-legend-t">{title}</h3>
       <ul className={kind === "bubbles" ? "pd-legend-b" : "pd-legend-s"}>
         {legend.map((b) => {
           if (kind === "bubbles" && bubble) {
-            const r = bubbleRadius(bandValue(b), bubble.ref, bubble.maxPx);
+            // Drawn small (the biggest circle is 8 px): the ratios between the circles are the map's.
+            const r = bubbleRadius(bandValue(b), bubble.ref, bubble.maxPx) * (8 / Math.max(1, bubble.maxPx));
             const hollow = b.band === 0;
-            const rr = hollow ? 3 : Math.max(3, r);
+            const rr = hollow ? 2.5 : Math.max(2.5, r);
             const size = Math.ceil(rr * 2 + 2);
             return (
               <li key={b.band}>
@@ -442,7 +444,7 @@ export function MapLegend({
           </li>
         ) : null}
       </ul>
-      {note ? <p className="pd-legend-n">{note}</p> : null}
+      {note ? <span className="sr-only">{note}</span> : null}
     </section>
   );
 }

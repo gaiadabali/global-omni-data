@@ -10,8 +10,8 @@
 
 /* ---------- the page: the map is the page ---------- */
 .pd-page {
-  --pd-left: 336px;
-  --pd-right: 344px;
+  --pd-left: 304px;
+  --pd-right: 328px;
   --pd-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --pd-shadow:
     0 1px 2px rgb(0 0 0 / 0.1),
@@ -992,15 +992,21 @@ main:has(> .pd-page) {
   z-index: 3;
   left: calc(var(--pd-left) + 24px);
   bottom: 104px;
-  max-width: min(520px, calc(100% - var(--pd-left) - 48px));
-  padding: 12px 16px;
-  border-radius: 14px;
+  max-width: calc(100% - var(--pd-left) - 48px - 56px);
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 .pd-legend-t {
+  flex: none;
+  margin: 0;
   font: 500 12px/16px "Inter Variable", system-ui, sans-serif;
   letter-spacing: 0;
   color: var(--ink2);
-  margin-bottom: 8px;
+  white-space: nowrap;
 }
 .pd-legend-b,
 .pd-legend-s {
@@ -1008,22 +1014,30 @@ main:has(> .pd-page) {
   margin: 0;
   padding: 0;
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px 16px;
-  align-items: flex-end;
+  flex-wrap: nowrap;
+  gap: 12px;
+  align-items: center;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
 }
 .pd-legend-b li,
 .pd-legend-s li {
+  flex: none;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  font: 400 12px/16px "Inter Variable", system-ui, sans-serif;
+  justify-content: center;
+  gap: 2px;
+  font: 400 11px/14px "Inter Variable", system-ui, sans-serif;
   color: var(--ink2);
   white-space: nowrap;
 }
-.pd-legend-s li {
-  align-items: flex-start;
+.pd-legend-b li svg {
+  display: block;
+}
+.pd-legend-b li {
+  min-height: 32px;
 }
 .pd-lg-dot {
   fill: color-mix(in srgb, var(--rc, var(--god)) 40%, transparent);
@@ -1057,10 +1071,8 @@ main:has(> .pd-page) {
 .gm-stage[data-detail="open"] .pd-legend {
   max-width: calc(100% - var(--pd-left) - var(--pd-right) - 96px);
 }
-.pd-legend-n {
-  margin: 8px 0 0;
-  font: 400 12px/16px "Inter Variable", system-ui, sans-serif;
-  color: var(--muted);
+.gm-stage[data-detail="open"] .pd-legend-t {
+  display: none;
 }
 
 /* category colours (dots, chips and the legend) */
@@ -1086,9 +1098,58 @@ main:has(> .pd-page) {
 /* ---------- screens narrower than the sidebar rail: the sheet ---------- */
 @media (max-width: 1300px) {
   .pd-page {
-    --pd-left: 296px;
-    --pd-right: 320px;
+    --pd-left: 288px;
+    --pd-right: 312px;
   }
+}
+@media (min-width: 1101px) {
+  /* The list can be folded away to give the map the room. A small button brings it back. */
+  .pd[data-list="closed"] {
+    --pd-left: 40px;
+  }
+  .pd[data-list="closed"] .pd-left {
+    display: none;
+  }
+}
+.pd-titlerow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.pd-titlerow .pd-title {
+  margin: 0;
+}
+.pd-collapse,
+.pd-expand {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line2);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--ink2);
+  cursor: pointer;
+}
+.pd-collapse:hover,
+.pd-expand:hover {
+  color: var(--ink);
+  border-color: var(--acc);
+}
+.pd-expand {
+  position: absolute;
+  z-index: 4;
+  top: 12px;
+  left: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  box-shadow: var(--pd-shadow);
+}
+.pd[data-list="open"] .pd-expand {
+  display: none;
 }
 @media (max-width: 1100px) {
   .pd-page {
@@ -1157,15 +1218,7 @@ main:has(> .pd-page) {
   }
   .pd-legend-b,
   .pd-legend-s {
-    flex-wrap: nowrap;
-    gap: 8px;
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-  .pd-legend-b li,
-  .pd-legend-s li {
-    flex: none;
-    font-size: 11px;
+    gap: 10px;
   }
   .gm-zoom button {
     width: 36px;
@@ -1175,9 +1228,10 @@ main:has(> .pd-page) {
     left: 8px;
     bottom: 120px;
     max-width: calc(100% - 16px);
-    padding: 8px 12px;
+    padding: 0 12px;
+    gap: 12px;
   }
-  .pd-legend-n {
+  .pd-legend-t {
     display: none;
   }
   .pd .maplibregl-ctrl-bottom-right {
@@ -1323,7 +1377,8 @@ main:has(> .pd-page) {
   .pd-phead {
     padding: 8px 16px 0;
   }
-  .pd-title {
+  .pd-titlerow,
+  .pd-expand {
     display: none;
   }
   .pd-ftoggle {

@@ -124,6 +124,29 @@ function readInsets(stage: HTMLElement): Insets {
   };
 }
 
+const mercY = (lat: number) => Math.log(Math.tan(Math.PI / 4 + (lat * Math.PI) / 360));
+const invMercY = (y: number) => ((2 * Math.atan(Math.exp(y)) - Math.PI / 2) * 180) / Math.PI;
+
+/**
+ * Fit a box into the part of the canvas the panels leave free. Worked out here, from the Web Mercator maths, and applied
+ * with the camera's `offset` (which does not persist): MapLibre's own `padding` option is stored on the camera and then
+ * counted again on the next fit, which drifted the view when the panels were wide.
+ */
+function fitBox(map: MapLibreMap, b: BBox, ins: Insets, pad: number, maxZoom: number, duration: number): void {
+  const el = map.getContainer();
+  const rw = Math.max(80, el.clientWidth - ins.left - ins.right - pad * 2);
+  const rh = Math.max(80, el.clientHeight - ins.top - ins.bottom - pad * 2);
+  const dx = (b[2] - b[0]) / 360;
+  const dy = (mercY(b[3]) - mercY(b[1])) / (2 * Math.PI);
+  const z = Math.log2(Math.min(rw / dx, rh / dy) / 512);
+  map.easeTo({
+    center: [(b[0] + b[2]) / 2, invMercY((mercY(b[1]) + mercY(b[3])) / 2)],
+    zoom: Math.max(MIN_ZOOM, Math.min(maxZoom, z)),
+    offset: [(ins.left - ins.right) / 2, (ins.top - ins.bottom) / 2],
+    duration,
+  });
+}
+
 export function MapCanvas(props: MapCanvasProps) {
   const { basemapUrl, ariaLabel, tokens, layers, dataReady, busy, handleRef, detailOpen, children } = props;
   const stageRef = useRef<HTMLDivElement>(null);
@@ -156,11 +179,7 @@ export function MapCanvas(props: MapCanvasProps) {
         const map = mapRef.current;
         const stage = stageRef.current;
         if (!map || !stage) return;
-        const i = readInsets(stage);
-        map.fitBounds(AUSTRALIA_BOUNDS, {
-          padding: { left: i.left + 16, right: i.right + 16, top: i.top + 16, bottom: i.bottom + 16 },
-          duration: latest.current.reducedMotion ? 0 : 400,
-        });
+        fitBox(map, AUSTRALIA_BOUNDS, readInsets(stage), 16, MAX_ZOOM, latest.current.reducedMotion ? 0 : 400);
       },
       flyTo(lon, lat, zoom) {
         const map = mapRef.current;
@@ -178,18 +197,7 @@ export function MapCanvas(props: MapCanvasProps) {
         const map = mapRef.current;
         const stage = stageRef.current;
         if (!map || !stage) return;
-        const i = readInsets(stage);
-        map.fitBounds(
-          [
-            [b[0], b[1]],
-            [b[2], b[3]],
-          ],
-          {
-            padding: { left: i.left + 32, right: i.right + 32, top: i.top + 32, bottom: i.bottom + 32 },
-            maxZoom: 9,
-            duration: latest.current.reducedMotion ? 0 : 500,
-          },
-        );
+        fitBox(map, b, readInsets(stage), 32, 9, latest.current.reducedMotion ? 0 : 500);
       },
     }),
     [latest],
@@ -208,18 +216,12 @@ export function MapCanvas(props: MapCanvasProps) {
       // Only this origin: a tile URL on another host would be a third party at runtime.
       const sameOrigin = absolute !== null && new URL(absolute).origin === window.location.origin;
       const style = buildStyle(t0, sameOrigin ? absolute : null);
-      const i = readInsets(stage);
       map = new MapLibreMap({
         container,
         style: style as unknown as ConstructorParameters<typeof MapLibreMap>[0]["style"],
         ...(initialView
           ? { center: [initialView.lon, initialView.lat] as [number, number], zoom: initialView.z }
-          : {
-              bounds: AUSTRALIA_BOUNDS as [number, number, number, number],
-              fitBoundsOptions: {
-                padding: { left: i.left + 16, right: i.right + 16, top: i.top + 16, bottom: i.bottom + 16 },
-              },
-            }),
+          : { center: [133.5, -28.5] as [number, number], zoom: 3.4 }),
         minZoom: MIN_ZOOM,
         maxZoom: MAX_ZOOM,
         attributionControl: false,
@@ -232,6 +234,7 @@ export function MapCanvas(props: MapCanvasProps) {
         renderWorldCopies: false,
       });
       if (sameOrigin) map.addControl(new AttributionControl({ compact: false, customAttribution: BASEMAP_ATTRIBUTION }));
+      if (!initialView) fitBox(map, AUSTRALIA_BOUNDS, readInsets(stage), 16, MAX_ZOOM, 0);
     } catch (e) {
       // No WebGL, or the worker could not start: say so instead of leaving an empty box.
       queueMicrotask(() => setFailed(e instanceof Error ? e.message : "The map could not start."));
@@ -275,25 +278,14 @@ export function MapCanvas(props: MapCanvasProps) {
       // Once the page around the map has settled, fit Australia into the part the panels leave free (the panels were
       // measured while the layout was still arriving). Nothing happens if the person has already moved the map.
       map.once("idle", () => {
-        if (touched) return;
-        const i = readInsets(stage);
-        map.fitBounds(AUSTRALIA_BOUNDS, {
-          padding: { left: i.left + 16, right: i.right + 16, top: i.top + 16, bottom: i.bottom + 16 },
-          duration: 0,
-        });
+        if (!touched) fitBox(map, AUSTRALIA_BOUNDS, readInsets(stage), 16, MAX_ZOOM, 0);
       });
     });
     map.on("moveend", () => latest.current.onView(currentView(map)));
     // The canvas settles after the first view was reported (the layout and the fonts arrive after the map loads, so the
     // first box can be a small one). A resize is not a move, so report the view again: the page asks for a bigger box.
     map.on("resize", () => {
-      if (!touched) {
-        const i = readInsets(stage);
-        map.fitBounds(AUSTRALIA_BOUNDS, {
-          padding: { left: i.left + 16, right: i.right + 16, top: i.top + 16, bottom: i.bottom + 16 },
-          duration: 0,
-        });
-      }
+      if (!touched) fitBox(map, AUSTRALIA_BOUNDS, readInsets(stage), 16, MAX_ZOOM, 0);
       latest.current.onView(currentView(map));
     });
     const watcher = new ResizeObserver(() => map.resize());
@@ -449,11 +441,7 @@ export function MapCanvas(props: MapCanvasProps) {
             const map = mapRef.current;
             const stage = stageRef.current;
             if (!map || !stage) return;
-            const i = readInsets(stage);
-            map.fitBounds(AUSTRALIA_BOUNDS, {
-              padding: { left: i.left + 16, right: i.right + 16, top: i.top + 16, bottom: i.bottom + 16 },
-              duration: props.reducedMotion ? 0 : 400,
-            });
+            fitBox(map, AUSTRALIA_BOUNDS, readInsets(stage), 16, MAX_ZOOM, props.reducedMotion ? 0 : 400);
           }}
         >
           <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">

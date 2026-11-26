@@ -9,6 +9,8 @@ import { InfluenceDetail } from "./InfluenceDetail";
 import { MapCanvas, type MapHandle, type MapViewChange, type TipContent } from "./MapCanvas";
 import {
   HeadlineStrip,
+  IconNext,
+  IconPrev,
   MapLegend,
   PerfLine,
   RankedList,
@@ -53,7 +55,7 @@ import {
   type MapMode,
   type Measure,
 } from "./url-state";
-import { HEX_WIDTH_KM, MAX_ZOOM, inBBox, kmLabel, levelLabel, type InfluenceLevel } from "./zoom";
+import { MAX_ZOOM, inBBox, levelLabel, type InfluenceLevel } from "./zoom";
 
 export interface InfluenceMapProps {
   initial: InfluenceState;
@@ -159,6 +161,7 @@ export default function InfluenceMap({ initial, meta, basemapUrl, lockedBrand, s
     () => initial.sel !== null || new URLSearchParams(window.location.search).get("panel") === "areas",
   );
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [listOpen, setListOpen] = useState(true);
   // The value that gets the biggest bubble, per level and filter, learned from the current month so that a time-lapse
   // through earlier months shows the bubbles growing instead of renormalising every frame.
   const [bubbleRefs, setBubbleRefs] = useState<Record<string, number>>({});
@@ -422,13 +425,16 @@ export default function InfluenceMap({ initial, meta, basemapUrl, lockedBrand, s
   const newNow = h ? visibleCount(h.newThisMonth) : null;
   const newDelta =
     newNow !== null && prevNew !== null && prevNew > 0 ? ((newNow - prevNew) / prevNew) * 100 : null;
-  const inView = useMemo(() => {
-    const box = view?.bbox;
-    if (!shown) return 0;
-    if (stateLevel || !box) return shown.cells.length;
-    return shown.cells.filter((c) => inBBox(c.centroid[0], c.centroid[1], box)).length;
-  }, [shown, view, stateLevel]);
   const nounKey = typeof shownLevel === "string" ? shownLevel : shownLevel === null ? "state" : "hex";
+  // The leading area at this level (in view, from SA2 down) and, for a count, its share of the whole.
+  const leadCell = rankedRows[0] ? cellsById.get(rankedRows[0].id) : undefined;
+  const totalNow = h ? visibleCount(h.total) : null;
+  const leadNow = leadCell
+    ? visibleCount({ value: leadCell.value, display: leadCell.display, suppressed: leadCell.suppressed })
+    : null;
+  const leadShare =
+    !measureRate && leadNow !== null && totalNow !== null && totalNow > 0 ? Math.round((leadNow / totalNow) * 100) : null;
+  const leadNoun = typeof shownLevel === "number" || nounKey === "sa2" ? "in view" : (NOUN[nounKey] ?? "areas");
   const tiles: Tile[] = [
     {
       key: "total",
@@ -461,13 +467,12 @@ export default function InfluenceMap({ initial, meta, basemapUrl, lockedBrand, s
       sub: "residents of Australia",
     },
     {
-      key: "areas",
-      label: "Areas covered",
-      value: shown ? fmtInt(inView) : "–",
-      sub:
-        typeof shownLevel === "number"
-          ? `${kmLabel(HEX_WIDTH_KM[shownLevel] ?? 5.6)} cells in view`
-          : `${NOUN[nounKey] ?? "areas"}${stateLevel || nounKey === "sa4" || nounKey === "sa3" ? "" : " in view"}`,
+      key: "lead",
+      label: measureRate ? `Highest rate, ${leadNoun}` : `Largest, ${leadNoun}`,
+      value: leadCell ? leadCell.name : "–",
+      sub: leadCell
+        ? `${leadCell.display}${measureRate ? " per 1,000" : leadShare !== null ? ` · ${leadShare}% of all` : ""}`
+        : undefined,
     },
   ];
 
@@ -497,7 +502,7 @@ export default function InfluenceMap({ initial, meta, basemapUrl, lockedBrand, s
   };
 
   return (
-    <div className="pd" data-pd="influence" onKeyDown={onKeyDown}>
+    <div className="pd" data-pd="influence" data-list={listOpen ? "open" : "closed"} onKeyDown={onKeyDown}>
       <h1 className="sr-only">Influence map</h1>
       {error ? (
         <div className="pd-alert">
@@ -524,7 +529,7 @@ export default function InfluenceMap({ initial, meta, basemapUrl, lockedBrand, s
         >
           <HeadlineStrip tiles={tiles} label="Headline figures" busy={headQ.loading} />
 
-          <div className="pd-toolbar">
+          <div className="pd-toolbar" data-occ-d="top" data-occ-c="top">
             <Segmented
               label="How to draw the areas"
               value={ui.mode}
@@ -555,6 +560,17 @@ export default function InfluenceMap({ initial, meta, basemapUrl, lockedBrand, s
               }
             />
           ) : null}
+
+          <button
+            type="button"
+            className="pd-expand"
+            aria-label="Show the list"
+            title="Show the list"
+            onClick={() => setListOpen(true)}
+            data-occ-d="left"
+          >
+            <IconNext />
+          </button>
 
           <div
             className="pd-dock"
@@ -595,7 +611,18 @@ export default function InfluenceMap({ initial, meta, basemapUrl, lockedBrand, s
 
             <aside className="pd-left pd-panel" aria-label="Areas ranked" data-occ-d="left">
               <header className="pd-phead">
-                <h2 className="pd-title">Influence map</h2>
+                <div className="pd-titlerow">
+                  <h2 className="pd-title">Influence map</h2>
+                  <button
+                    type="button"
+                    className="pd-collapse"
+                    aria-label="Hide the list"
+                    title="Hide the list"
+                    onClick={() => setListOpen(false)}
+                  >
+                    <IconPrev />
+                  </button>
+                </div>
                 <button
                   type="button"
                   className="pd-ftoggle"
