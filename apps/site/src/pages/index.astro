@@ -1,6 +1,7 @@
 ---
 import Base from "../layouts/Base.astro";
 import AustraliaMap from "../components/AustraliaMap.astro";
+import FlowGlyph from "../components/FlowGlyph.astro";
 ---
 
 <Base
@@ -10,7 +11,6 @@ import AustraliaMap from "../components/AustraliaMap.astro";
   <section class="block on-brand hero">
     <div class="wrap">
       <div>
-        <p class="eyebrow">Global Omni Data</p>
         <h1>Real-world data for Australian brands</h1>
         <p class="lede">
           Every receipt snapped, campaign watched and tax return started adds to a picture of how
@@ -38,7 +38,6 @@ import AustraliaMap from "../components/AustraliaMap.astro";
   <section class="block">
     <div class="wrap">
       <div class="sechead">
-        <p class="eyebrow">The group</p>
         <h2>Three apps people use for different reasons</h2>
         <p class="lede">
           Each one solves a real job. Together they show brands where customers live, what they buy
@@ -56,7 +55,10 @@ import AustraliaMap from "../components/AustraliaMap.astro";
             campaigns and reach local viewers by postcode. Teens join with a guardian.
           </p>
           <a class="go" href="/brands/#yourtal">
-            Read more<span class="visually-hidden"> about YourTal</span>
+            About YourTal
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M5 12h14M13 6l6 6-6 6"></path>
+            </svg>
           </a>
         </div>
         <div class="brandrow">
@@ -69,7 +71,10 @@ import AustraliaMap from "../components/AustraliaMap.astro";
             car logbook and sends deductions on to Free Tax Returns. Parents can add teens.
           </p>
           <a class="go" href="/brands/#snapapp">
-            Read more<span class="visually-hidden"> about SnapApp</span>
+            About SnapApp
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M5 12h14M13 6l6 6-6 6"></path>
+            </svg>
           </a>
         </div>
         <div class="brandrow">
@@ -82,7 +87,10 @@ import AustraliaMap from "../components/AustraliaMap.astro";
             that go with them.
           </p>
           <a class="go" href="/brands/#ftr">
-            Read more<span class="visually-hidden"> about Free Tax Returns</span>
+            About Free Tax Returns
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M5 12h14M13 6l6 6-6 6"></path>
+            </svg>
           </a>
         </div>
       </div>
@@ -92,11 +100,11 @@ import AustraliaMap from "../components/AustraliaMap.astro";
   <section class="block">
     <div class="wrap">
       <div class="sechead">
-        <p class="eyebrow">How the group connects</p>
-        <h2>One sign-in, one profile, one aggregate</h2>
+        <h2>How the three apps connect</h2>
       </div>
       <div class="flow">
         <div>
+          <FlowGlyph kind="thread" />
           <h3>One sign-in</h3>
           <p>
             "Sign in with YourTal" works in all three apps. People accept one group privacy notice,
@@ -104,6 +112,7 @@ import AustraliaMap from "../components/AustraliaMap.astro";
           </p>
         </div>
         <div>
+          <FlowGlyph kind="merge" />
           <h3>One profile</h3>
           <p>
             What a person does in each app builds a single profile, held by GOD. Using another app
@@ -111,10 +120,11 @@ import AustraliaMap from "../components/AustraliaMap.astro";
           </p>
         </div>
         <div>
+          <FlowGlyph kind="grid" />
           <h3>One aggregate</h3>
           <p>
             Brands receive counts by area, age band, occupation and income mix. Any group under 10
-            shows as "&lt;10".
+            shows as "&#8288;&lt;10".
           </p>
         </div>
       </div>
@@ -127,23 +137,24 @@ import AustraliaMap from "../components/AustraliaMap.astro";
     out until real, dated numbers are supplied.
   -->
 
-  <section class="block on-brand cta">
+  <section class="block cta">
     <div class="wrap">
-      <div>
-        <p class="eyebrow">For brands</p>
-        <h2>Ask a question about your market and get the aggregate</h2>
-        <p class="lede">
-          Tell us who you sell to. We reply with what a report would cover, what it would cost and
-          how long it takes.
-        </p>
-      </div>
-      <div class="row">
-        <a class="btn btn-primary" href="/contact/">
-          Start a conversation
-        </a>
-        <a class="btn btn-line" href="/for-brands/">
-          What brands get
-        </a>
+      <div class="cta-panel">
+        <div>
+          <h2>Ask a question about your market and get the aggregate</h2>
+          <p class="lede">
+            Tell us who you sell to. We reply with what a report would cover, what it would cost and
+            how long it takes.
+          </p>
+        </div>
+        <div class="row">
+          <a class="btn btn-primary" href="/contact/">
+            Start a conversation
+          </a>
+          <a class="btn btn-line" href="/for-brands/">
+            What brands get
+          </a>
+        </div>
       </div>
     </div>
   </section>

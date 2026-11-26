@@ -17,9 +17,9 @@ const map = buildAustralia();
   {map.cities.map((c) => (
     <circle class="city" cx={c.x} cy={c.y} r={c.r} />
   ))}
-  <g class="pulses">
+  <g class="halos">
     {map.cities.map((c) => (
-      <circle class="pulse" cx={c.x} cy={c.y} r={c.r * 1.2} />
+      <circle class="halo" cx={c.x} cy={c.y} r={c.r * 2.4} />
     ))}
   </g>
   <g class="labels">

@@ -9,13 +9,27 @@ interface Props {
 }
 
 const { label, width, value, hot = false } = Astro.props;
+
+// A row of 16 dots, the same dot as the map. A group too small to show ("<10") is one hollow ring.
+const DOTS = 16;
+const suppressed = value.startsWith("<");
+const filled = suppressed ? 0 : Math.max(1, Math.round((width / 100) * DOTS));
+const cells = Array.from({ length: DOTS }, (_, i) => ({
+  cx: 5 + i * 10,
+  state: i < filled ? "on" : "off",
+}));
 ---
 
 <div class:list={["br", { hot }]}>
   <span>{label}</span>
-  <svg class="bar" aria-hidden="true" focusable="false">
-    <rect class="bar-bg" width="100%" height="10" rx="2"></rect>
-    <rect class="bar-fg" width={`${width}%`} height="10" rx="2"></rect>
+  <svg class="bar" viewBox="0 0 160 8" aria-hidden="true" focusable="false">
+    {cells.map((c, i) =>
+      suppressed && i === 0 ? (
+        <circle class="ring" cx={c.cx} cy="4" r="3"></circle>
+      ) : (
+        <circle class={c.state} cx={c.cx} cy="4" r="3.5"></circle>
+      ),
+    )}
   </svg>
   <em>{value}</em>
 </div>
