@@ -15,8 +15,10 @@ import { getViewer } from "@/server/viewer";
 export const metadata: Metadata = { title: PAGES.person.title };
 
 const PAGE_SIZE = 20;
+/** What ?mapsel= may name: an activity area or an outlier on the map (the screenshots open a selection). */
+const MAP_SELECTION = /^(area:(home|work|weekend)|out:o\d{1,2})$/;
 
-type Props = { searchParams: Promise<{ q?: string | string[]; id?: string | string[]; all?: string | string[] }> };
+type Props = { searchParams: Promise<{ q?: string | string[]; id?: string | string[]; all?: string | string[]; mapview?: string | string[]; mapsel?: string | string[] }> };
 
 /** Person 360: Owner and Data team only. Search by GOD id, open an adult profile after giving a reason. */
 export default async function PersonPage({ searchParams }: Props) {
@@ -124,7 +126,14 @@ export default async function PersonPage({ searchParams }: Props) {
         )}
       </Card>
 
-      {outcome?.kind === "profile" ? <ProfileView p={outcome.profile} accessedBy={accessedBy} /> : null}
+      {outcome?.kind === "profile" ? (
+        <ProfileView
+          p={outcome.profile}
+          accessedBy={accessedBy}
+          {...(first(sp.mapview) === "all" ? { mapView: "all" as const } : {})}
+          {...(MAP_SELECTION.test(first(sp.mapsel) ?? "") ? { mapSelected: first(sp.mapsel)! } : {})}
+        />
+      ) : null}
 
       {outcome?.kind === "needs-reason" ? (
         <Card title="Reason needed">

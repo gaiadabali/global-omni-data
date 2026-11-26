@@ -12,7 +12,9 @@ import {
   teenEntities,
   teenMarket,
   trend,
+  type ActivityMapDetail,
   type InsightEntity,
+  type ProfileDetail,
 } from "@god/synthetic";
 import { TODAY } from "@/lib/dates";
 import type { CountKind } from "../privacy";
@@ -25,7 +27,9 @@ import {
   type DashboardData,
   type EntityRef,
   type InsightRaw,
+  type PersonActivityRaw,
   type PersonGetRaw,
+  type PersonProfileRaw,
   type PersonSearchRow,
   type QualityRaw,
   type TeensRaw,
@@ -154,6 +158,24 @@ async function personSearch(q: string): Promise<PersonSearchRow[]> {
   return out.sort((a, b) => a.id.localeCompare(b.id));
 }
 
+/** The activity map with every receipt count marked as a count, so the presentation layer thresholds it. */
+function activityRaw(a: ActivityMapDetail): PersonActivityRaw {
+  return {
+    ...a,
+    totalReceipts: count(a.totalReceipts),
+    areas: a.areas.map((x) => ({
+      ...x,
+      receipts: count(x.receipts),
+      categories: x.categories.map((c) => ({ ...c, receipts: count(c.receipts) })),
+    })),
+    points: a.points.map((p) => ({ ...p, receipts: count(p.receipts) })),
+  };
+}
+
+function profileRaw(d: ProfileDetail): PersonProfileRaw {
+  return { ...d, activity: d.activity ? activityRaw(d.activity) : null };
+}
+
 /** A teen id returns `{ kind: "teen" }` and nothing else. No code path here turns a teen profile into a body. */
 async function personGet(id: string): Promise<PersonGetRaw> {
   const key = id.trim().toUpperCase();
@@ -161,7 +183,7 @@ async function personGet(id: string): Promise<PersonGetRaw> {
   const p = allProfiles().find((x) => x.id === key);
   if (!p) return { kind: "not-found" };
   if (p.teen) return { kind: "teen", id: p.id };
-  return { kind: "profile", profile: generateProfileDetail(p, TODAY) };
+  return { kind: "profile", profile: profileRaw(generateProfileDetail(p, TODAY)) };
 }
 
 /* ---------------- Data quality ---------------- */

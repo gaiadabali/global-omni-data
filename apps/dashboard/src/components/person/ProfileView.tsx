@@ -1,9 +1,9 @@
 import { Badge, Card, Table } from "@/components/ui";
 import { fmtDate, fmtDateTime } from "@/lib/dates";
 import { monthLong } from "@/lib/format";
-import type { AccessEntry, PersonProfileRaw } from "@/server/data";
+import type { AccessEntry, PersonProfile } from "@/server/data";
 import { BRAND_LABELS } from "@/server/types";
-import { AreaMap } from "./AreaMap";
+import { PersonActivityPanel } from "./PersonActivity";
 
 const CATEGORY_NAME: Record<string, string> = {
   fuel: "Fuel",
@@ -14,8 +14,8 @@ const CATEGORY_NAME: Record<string, string> = {
 };
 
 /** Receipt places grouped by merchant, with the suburbs under each. */
-function groupByMerchant(places: PersonProfileRaw["places"]) {
-  const map = new Map<string, { category: string; total: number; rows: PersonProfileRaw["places"] }>();
+function groupByMerchant(places: PersonProfile["places"]) {
+  const map = new Map<string, { category: string; total: number; rows: PersonProfile["places"] }>();
   for (const p of places) {
     const g = map.get(p.merchant) ?? { category: p.category, total: 0, rows: [] };
     g.total += p.receipts;
@@ -29,7 +29,7 @@ function groupByMerchant(places: PersonProfileRaw["places"]) {
  * An opened adult profile (Owner and Data team only, after a recorded reason). Pseudonymous: a GOD id and bands,
  * no name, email, phone or address. The receipt figures are this one person's own history, not aggregates.
  */
-export function ProfileView({ p, accessedBy }: { p: PersonProfileRaw; accessedBy: AccessEntry[] }) {
+export function ProfileView({ p, accessedBy, mapView, mapSelected }: { p: PersonProfile; accessedBy: AccessEntry[]; mapView?: "areas" | "all"; mapSelected?: string }) {
   const groups = groupByMerchant(p.places);
   return (
     <div className="stack">
@@ -91,18 +91,15 @@ export function ProfileView({ p, accessedBy }: { p: PersonProfileRaw; accessedBy
         </Card>
       </div>
 
+      <Card title="Receipts and activity areas">
+        {p.activity ? (
+          <PersonActivityPanel activity={p.activity} {...(mapView ? { initialView: mapView } : {})} {...(mapSelected ? { initialSelected: mapSelected } : {})} />
+        ) : (
+          <p className="small muted">No receipts: this person does not use SnapApp.</p>
+        )}
+      </Card>
+
       <div className="cols">
-        <Card title="Receipts and activity areas">
-          {p.places.length ? (
-            <AreaMap areas={p.areas} dots={p.dots} />
-          ) : (
-            <p className="small muted">No receipts: this person does not use SnapApp.</p>
-          )}
-          <p className="xs muted">
-            Dots are shop locations. Circles are the 2 or 3 areas where this person&apos;s receipts cluster.
-            Pharmacy, health and other sensitive categories are not shown at person level.
-          </p>
-        </Card>
         <Card title="Receipt locations">
           {groups.length ? (
             <div className="list">
@@ -128,9 +125,6 @@ export function ProfileView({ p, accessedBy }: { p: PersonProfileRaw; accessedBy
             <p className="small muted">Nothing to list.</p>
           )}
         </Card>
-      </div>
-
-      <div className="cols">
         <Card title="Timeline">
           {p.timeline.length ? (
             <div className="tl">

@@ -505,6 +505,73 @@ export interface PersonAccount {
   linkedBy: "YourTal sign-in" | "Verified email" | "Verified mobile" | null;
   complete: boolean;
 }
+/* Activity map: suburb precision (H3 res 7 cells or an SA2), never a shop's own coordinates. */
+
+export type PersonAreaKind = "home" | "work" | "weekend";
+
+export type FenceGeometry =
+  | { type: "Polygon"; coordinates: number[][][] }
+  | { type: "MultiPolygon"; coordinates: number[][][][] };
+
+/** west, south, east, north as named fields (a tuple would lose its length through `Present`). */
+export interface MapBoxRaw {
+  west: number;
+  south: number;
+  east: number;
+  north: number;
+}
+
+export interface PersonAreaRaw {
+  kind: PersonAreaKind;
+  /** The area's name: its main suburb. */
+  label: string;
+  suburbs: string[];
+  /** "receipts": a fence of H3 cells. "declared": the SA2 of a declared home postcode. */
+  basis: "receipts" | "declared";
+  receipts: RawCount;
+  /** Share of this person's receipts in the window, 0 to 1. A share, not a count. */
+  share: number;
+  categories: { category: string; label: string; receipts: RawCount; share: number }[];
+  centre: { lon: number; lat: number };
+  fence: FenceGeometry;
+}
+
+export interface PersonPointRaw {
+  area: PersonAreaKind;
+  lon: number;
+  lat: number;
+  receipts: RawCount;
+}
+
+export interface PersonOutlierRaw {
+  id: string;
+  /** "YYYY-MM-DD" */
+  date: string;
+  suburb: string;
+  state: string;
+  category: string;
+  categoryName: string;
+  /** A business, so its name is shown. */
+  merchant: string;
+  lon: number;
+  lat: number;
+  /** Rounded distance to the nearest area. */
+  distanceKm: number;
+  from: PersonAreaKind | "home suburb";
+  /** "120 km from home area" */
+  distanceText: string;
+}
+
+export interface PersonActivityRaw {
+  days: number;
+  totalReceipts: RawCount;
+  areas: PersonAreaRaw[];
+  points: PersonPointRaw[];
+  outliers: PersonOutlierRaw[];
+  view: { areas: MapBoxRaw; all: MapBoxRaw };
+  context: { code: string; geometry: FenceGeometry }[];
+}
+
 export interface PersonProfileRaw {
   id: string;
   ageBand: string;
@@ -526,8 +593,8 @@ export interface PersonProfileRaw {
     receipts: number;
     lastVisit: string;
   }[];
-  dots: { lat: number; lon: number; label: string; category: string }[];
-  areas: { label: string; lat: number; lon: number; radiusKm: number }[];
+  /** Fenced activity areas, receipt dots and outliers at suburb precision; null when the person has no receipts. */
+  activity: PersonActivityRaw | null;
   interests: { label: string; kind: "Declared" | "Learned"; source: string; confidence: number }[];
 }
 

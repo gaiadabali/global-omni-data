@@ -87,8 +87,10 @@ export class DataAccessError extends Error {
 export const PERSON_GRANT_MS = 30 * 60_000;
 
 /** What a page gets for a Person 360 id. A teen is refused: there is no variant that carries a teen profile. */
+export type PersonProfile = Present<PersonProfileRaw>;
+
 export type PersonOutcome =
-  | { kind: "profile"; profile: PersonProfileRaw }
+  | { kind: "profile"; profile: PersonProfile }
   | { kind: "emergency-refused"; id: string }
   | { kind: "needs-reason"; id: string }
   | { kind: "teen-refused"; id: string }
@@ -330,7 +332,8 @@ export function getDashboardData(
       if (!latest || Date.now() - Date.parse(latest.when) > PERSON_GRANT_MS) {
         return { kind: "needs-reason", id: raw.profile.id };
       }
-      return { kind: "profile", profile: raw.profile };
+      // Every receipt count in the profile (the activity areas) goes through the presentation layer.
+      return { kind: "profile", profile: presentTree(raw.profile, viewer) };
     },
     async personAccessedBy(id) {
       need("person");
