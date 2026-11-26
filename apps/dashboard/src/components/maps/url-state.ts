@@ -74,14 +74,18 @@ export const AUDIENCES = ["both", "businesses", "people"] as const;
 export type Audience = (typeof AUDIENCES)[number];
 export const MEASURES = ["count", "per1000"] as const;
 export type Measure = (typeof MEASURES)[number];
+/** How the areas are drawn: proportional bubbles, shaded areas (a choropleth) or H3 hexagons. */
+export const MAP_MODES = ["bubbles", "shaded", "hex"] as const;
+export type MapMode = (typeof MAP_MODES)[number];
 
 export interface InfluenceState {
   brand: BrandChoice;
   audience: Audience;
   measure: Measure;
   month: string;
+  mode: MapMode;
   view: ViewState | null;
-  /** The selected area: a state code or an h3 index. */
+  /** The selected area: a state code, an ABS area code or an h3 index. */
   sel: string | null;
 }
 
@@ -100,6 +104,7 @@ export function parseInfluenceState(
     audience: pick(get(input, "audience"), AUDIENCES, "both"),
     measure: pick(get(input, "measure"), MEASURES, "count"),
     month: monthOf(get(input, "month"), meta),
+    mode: pick(get(input, "mode"), MAP_MODES, "bubbles"),
     view: parseView(input),
     sel: parseSel(get(input, "sel")),
   };
@@ -111,6 +116,7 @@ export function serialiseInfluenceState(s: InfluenceState, meta: MapMetaLike): s
   if (s.audience !== "both") p.set("audience", s.audience);
   if (s.measure !== "count") p.set("measure", s.measure);
   if (s.month !== meta.currentMonth) p.set("month", s.month);
+  if (s.mode !== "bubbles") p.set("mode", s.mode);
   viewParams(s.view, p);
   if (s.sel) p.set("sel", s.sel);
   return p.toString();
