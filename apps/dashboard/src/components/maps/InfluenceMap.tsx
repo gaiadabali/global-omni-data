@@ -161,6 +161,14 @@ export default function InfluenceMap({ initial, meta, basemapUrl, lockedBrand, s
     if (next !== window.location.pathname + window.location.search) window.history.replaceState(null, "", next);
   }, [ui, view, meta]);
 
+  const shownLevel = levelOf(shown?.query);
+  const stateLevel = shownLevel === null || shownLevel === "state";
+
+  // Real outlines for SA4, SA3 and SA2 come from the static boundary files.
+  const outlineUrl =
+    shownLevel === "sa4" || shownLevel === "sa3" || shownLevel === "sa2" ? (meta.geo?.levels[shownLevel] ?? null) : null;
+  const areaOutlines = useBoundaries(outlineUrl);
+
   const labels = useMemo(() => (outlines ? stateLabels(outlines) : []), [outlines]);
   const hasBasemap = basemapUrl !== null;
   const layers = useMemo(
@@ -181,8 +189,6 @@ export default function InfluenceMap({ initial, meta, basemapUrl, lockedBrand, s
     [tokens, outlines, areaOutlines, labels, shown, ui.brand, ui.sel, hasBasemap, fontReady],
   );
 
-  const shownLevel = levelOf(shown?.query);
-  const stateLevel = shownLevel === null || shownLevel === "state";
   const cellsById = useMemo(() => new Map((shown?.cells ?? []).map((c) => [c.id, c])), [shown]);
   // Every cell carries its centre ([lon, lat]): an area's label point, or the centre of an h3 cell.
   const positions = useMemo(() => {
@@ -190,11 +196,6 @@ export default function InfluenceMap({ initial, meta, basemapUrl, lockedBrand, s
     for (const c of shown?.cells ?? []) m.set(c.id, c.centroid);
     return m;
   }, [shown]);
-
-  // Real outlines for SA4, SA3 and SA2 come from the static boundary files.
-  const outlineUrl =
-    shownLevel === "sa4" || shownLevel === "sa3" || shownLevel === "sa2" ? (meta.geo?.levels[shownLevel] ?? null) : null;
-  const areaOutlines = useBoundaries(outlineUrl);
 
   const nameOf = useCallback((c: InfluenceCell): string => c.name, []);
 
