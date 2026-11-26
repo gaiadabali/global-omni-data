@@ -3,6 +3,7 @@ import type { Stores } from "../types";
 import { createPostgresAuditLog } from "./audit";
 import { createAllowListStore } from "./allow-list";
 import { createBreakGlassStore } from "./break-glass";
+import { createEnquiryStore } from "./enquiries";
 import { createSessionStore } from "./sessions";
 
 export { IDLE_MINUTES, ABSOLUTE_HOURS } from "./sessions";
@@ -37,6 +38,7 @@ export function createPostgresStores(url: string): PostgresStores {
     sessions: createSessionStore(pool),
     audit: createPostgresAuditLog(pool),
     breakGlass: createBreakGlassStore(pool),
+    enquiries: createEnquiryStore(pool),
     close: () => pool.end(),
   };
 }

@@ -3,10 +3,11 @@ import { isDevAuthEnabled } from "../dev-auth";
 import {
   createMemoryAllowList,
   createMemoryBreakGlassStore,
+  createMemoryEnquiryStore,
   createMemorySessionStore,
 } from "./memory";
 import { getPostgresStores } from "./pg-singleton";
-import { ALLOW_LIST_SEED, devBreakGlassSeed, devSessionSeed } from "./seed";
+import { ALLOW_LIST_SEED, ENQUIRY_SEED, devBreakGlassSeed, devSessionSeed } from "./seed";
 import type { Stores } from "./types";
 
 export type * from "./types";
@@ -32,6 +33,7 @@ export function getStores(): Stores {
     breakGlass: createMemoryBreakGlassStore(
       isDevAuthEnabled() ? { seed: devBreakGlassSeed(Date.now()) } : {},
     ),
+    enquiries: createMemoryEnquiryStore({ seed: ENQUIRY_SEED }),
     kind: "memory",
   };
   return g.__godStores;

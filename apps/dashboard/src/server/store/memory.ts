@@ -8,6 +8,10 @@ import type {
   BreakGlassKey,
   BreakGlassStore,
   CodeCheck,
+  Enquiry,
+  EnquiryFilter,
+  EnquiryStatus,
+  EnquiryStore,
   SessionRecord,
   SessionStore,
 } from "./types";
@@ -238,6 +242,60 @@ export function createMemoryBreakGlassStore(
       const code = newEnrolmentCode();
       codes.set(codeHash(normaliseCode(code)!), { ownerId, createdAt: t, expiresAt: t + CODE_TTL_MS, usedAt: null });
       return code;
+    },
+  };
+}
+
+/** Whether an enquiry passes a filter (status and text). Shared with the tests; the Postgres store does the same in SQL. */
+export function enquiryMatches(e: Enquiry, f: Omit<EnquiryFilter, "limit">): boolean {
+  const status = f.status ?? "all";
+  if (status === "open" ? e.status === "archived" : status !== "all" && e.status !== status) return false;
+  const q = (f.q ?? "").trim().toLowerCase();
+  if (!q) return true;
+  return [e.name, e.company, e.email, e.want].join("\n").toLowerCase().includes(q);
+}
+
+export function createMemoryEnquiryStore(
+  opts: { seed?: readonly Enquiry[]; now?: Clock } = {},
+): EnquiryStore {
+  const now = opts.now ?? Date.now;
+  const rows: Enquiry[] = (opts.seed ?? []).map((e) => ({ ...e }));
+  // Newest first; a later row wins a tie on the time.
+  const newestFirst = (a: Enquiry, b: Enquiry) =>
+    Date.parse(b.receivedAt) - Date.parse(a.receivedAt) || rows.indexOf(b) - rows.indexOf(a);
+  const byId = (id: string) => rows.find((r) => r.id === id);
+
+  return {
+    async create(input) {
+      const e: Enquiry = {
+        ...input,
+        id: `enq_${randomBytes(12).toString("hex")}`,
+        receivedAt: new Date(now()).toISOString(),
+        status: "new",
+        handledBy: null,
+        handledAt: null,
+      };
+      rows.push(e);
+      return { ...e };
+    },
+    async list(filter = {}) {
+      const out = rows.filter((e) => enquiryMatches(e, filter)).sort(newestFirst);
+      return (filter.limit && filter.limit > 0 ? out.slice(0, Math.floor(filter.limit)) : out).map((e) => ({ ...e }));
+    },
+    async count(filter = {}) {
+      return rows.filter((e) => enquiryMatches(e, filter)).length;
+    },
+    async find(id) {
+      const e = byId(id);
+      return e ? { ...e } : null;
+    },
+    async setStatus(id, status: EnquiryStatus, by, at) {
+      const e = byId(id);
+      if (!e) return null;
+      e.status = status;
+      e.handledBy = status === "new" ? null : by;
+      e.handledAt = status === "new" ? null : at;
+      return { ...e };
     },
   };
 }
