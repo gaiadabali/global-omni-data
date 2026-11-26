@@ -6,9 +6,12 @@ import {
   isRawSeries,
   type ActivityQuery,
   type ActivityRaw,
+  type Change,
   type InfluenceQuery,
   type InfluenceRaw,
+  type OverviewRaw,
   type Present,
+  type TextRaw,
 } from "./types";
 
 /**
@@ -157,4 +160,39 @@ export function presentActivity(raw: ActivityRaw, query: ActivityQuery, viewer: 
   );
   for (const h of heat) h.band = h.suppressed ? 0 : countBand(h.value, legend);
   return { query, merchants, heat, legend, truncated: raw.truncated };
+}
+
+/* ---------------- text with numbers in it ---------------- */
+
+/**
+ * Fills the {name} placeholders of a TextRaw with thresholded numbers, so a sentence cannot carry a raw count.
+ * A small number the viewer may see exactly (Owner and Data team) is printed in full and tagged "(small number)",
+ * the plain-text form of the small-number marker.
+ */
+export function fillText(t: TextRaw, viewer: V): string {
+  return t.text.replace(/\{(\w+)\}/g, (_, key: string) => {
+    const c = t.counts[key];
+    if (!c) throw new RangeError(`text placeholder {${key}} has no count`);
+    const p = toPNum(c.n, { kind: c.kind, viewer });
+    const exactSmall = p.suppressed && !p.display.startsWith("<");
+    return exactSmall ? `${p.display} (small number)` : p.display;
+  });
+}
+
+/** The overview as a page receives it: counts thresholded, and each "What changed" line printed as plain text. */
+export type PresentedOverview = Present<Omit<OverviewRaw, "changes">> & {
+  changes: { severity: Change["severity"]; title: string; detail: string; pageId: string }[];
+};
+
+export function presentOverview(raw: OverviewRaw, viewer: V): PresentedOverview {
+  const { changes, ...rest } = raw;
+  return {
+    ...presentTree(rest, viewer),
+    changes: changes.map((c) => ({
+      severity: c.severity,
+      title: fillText(c.title, viewer),
+      detail: fillText(c.detail, viewer),
+      pageId: c.pageId,
+    })),
+  };
 }

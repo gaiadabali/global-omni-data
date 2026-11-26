@@ -19,6 +19,7 @@ import {
   type World,
 } from "@god/synthetic";
 import { monthLong, monthShort } from "@/lib/format";
+import { syntheticPages } from "./synthetic-pages";
 import type { BrandId } from "../types";
 import {
   count,
@@ -28,6 +29,8 @@ import {
   type BBox,
   type BrandRawMap,
   type Change,
+  type RawCount,
+  type TextRaw,
   type DashboardData,
   type FtrRaw,
   type H3Res,
@@ -86,35 +89,37 @@ function totals(w: World, key: BrandId | "god"): number[] {
   return Array.from(p, (v, i) => v + b[i]!);
 }
 
+const txt = (text: string, counts: Record<string, RawCount> = {}): TextRaw => ({ text, counts });
+
 const CHANGES: Change[] = [
   {
     severity: "info",
-    title: "SnapApp receipts sent to Free Tax Returns reached 1,420 in the last 7 days",
-    detail: "Highest week since launch",
+    title: txt("SnapApp receipts sent to Free Tax Returns reached {sent} in the last 7 days", { sent: count(1420) }),
+    detail: txt("Highest week since launch"),
     pageId: "snapapp",
   },
   {
     severity: "ok",
-    title: "Teen accounts that accepted the GOD notice rose to 94%",
-    detail: "Was 91% a month ago",
+    title: txt("Teen accounts that accepted the GOD notice rose to 94%"),
+    detail: txt("Was 91% a month ago"),
     pageId: "teens",
   },
   {
     severity: "info",
-    title: "YourTal grew fastest in Brisbane and the Gold Coast",
-    detail: "+9.4% and +8.8% this month",
+    title: txt("YourTal grew fastest in Brisbane and the Gold Coast"),
+    detail: txt("+9.4% and +8.8% this month"),
     pageId: "map",
   },
   {
     severity: "warn",
-    title: "Free Tax Returns sync lag peaked at 5 min on Tuesday",
-    detail: "Back under 90 seconds since Wednesday",
+    title: txt("Free Tax Returns sync lag peaked at 5 min on Tuesday"),
+    detail: txt("Back under 90 seconds since Wednesday"),
     pageId: "quality",
   },
   {
     severity: "ok",
-    title: "Identity merge job linked 212 more accounts by YourTal sign-in",
-    detail: "3 merges undone by the data team",
+    title: txt("Identity merge job linked {linked} more accounts by YourTal sign-in", { linked: count(212) }),
+    detail: txt("{undone} merges undone by the data team", { undone: count(3) }),
     pageId: "quality",
   },
 ];
@@ -502,7 +507,7 @@ async function activityMap(q: ActivityQuery): Promise<ActivityRaw> {
   };
 }
 
-export const syntheticData: DashboardData = { overview, brand, influenceMap, activityMap };
+export const syntheticData: DashboardData = { overview, brand, influenceMap, activityMap, ...syntheticPages };
 
 /**
  * Build the sample and every h3 index ahead of the first request (the server does this in the background at

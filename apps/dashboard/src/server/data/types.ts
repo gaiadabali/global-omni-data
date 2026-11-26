@@ -1,5 +1,5 @@
 import type { CountKind, PNum } from "../privacy";
-import type { BrandId } from "../types";
+import type { BrandId, Role } from "../types";
 
 /**
  * THE DATA SEAM, contract side. `DashboardData` is what the real warehouse must provide. The synthetic provider
@@ -86,10 +86,19 @@ export interface ActivityQuery {
 
 /* ---------------- results ---------------- */
 
+/**
+ * A line of text with numbers in it. `text` holds {name} placeholders and `counts` the numbers they stand for, as
+ * RawCounts, so the presentation layer can threshold them before they are printed.
+ */
+export interface TextRaw {
+  text: string;
+  counts: Record<string, RawCount>;
+}
+
 export interface Change {
   severity: "ok" | "info" | "warn" | "crit";
-  title: string;
-  detail: string;
+  title: TextRaw;
+  detail: TextRaw;
   pageId: string;
 }
 
@@ -251,10 +260,211 @@ export interface ActivityRaw {
   truncated: boolean;
 }
 
+/* ---------------- brand insight and teen market ---------------- */
+
+export interface EntityRef {
+  id: string;
+  name: string;
+  kind: string;
+  group: string;
+}
+
+export interface AudienceQuery {
+  /** An entity id: a chain, merchant or category. */
+  entity: string;
+  /**
+   * Prepare the figures for a printed report: every count is presented as a brand would see it (an executive-level
+   * view), for every role, so no exact small number reaches a PDF. Set by the export view only.
+   */
+  forExport?: boolean;
+}
+
+export interface CountRow {
+  label: string;
+  value: RawCount;
+}
+export interface AreaRow {
+  name: string;
+  postcode: string;
+  state: string;
+  people: RawCount;
+}
+export interface SegmentRow {
+  name: string;
+  audience: RawCount;
+  /** Share (0..1) of the people in the same areas who fit the segment. A rate, not a count. */
+  areaShare: number;
+  /** 100 is average for the area. A rate, not a count. */
+  index: number;
+}
+
+export interface AudienceReportRaw {
+  entity: EntityRef;
+  /** True for the 13 to 17 version: every count is teen-kind. */
+  teen: boolean;
+  asOf: string;
+  audience: RawCount;
+  /** "YYYY-MM", oldest first. */
+  months: string[];
+  audienceSeries: RawSeries;
+  /** Growth in the last 90 days, a rate (0.12 is +12%). */
+  growth90: number;
+  visitsPerMonth: number;
+  /** Share (0..1) of all registered people in GOD. A rate. */
+  shareOfGod: number;
+  homeAreas: AreaRow[];
+  activityAreas: AreaRow[];
+  age: CountRow[];
+  occupation: CountRow[];
+  income: CountRow[];
+  segments: SegmentRow[];
+  frequency: CountRow[];
+  spend: CountRow[];
+  alsoShopsAt: CountRow[];
+  godBrands: CountRow[];
+  census: { medianWeeklyHouseholdIncome: number; householdsWithChildrenPct: number; bornOverseasPct: number };
+}
+
+export interface InsightRaw {
+  entities: EntityRef[];
+  report: AudienceReportRaw;
+}
+
+export interface TeensRaw {
+  /** The entities a teen report may cover (never a sensitive category). */
+  entities: EntityRef[];
+  report: AudienceReportRaw;
+  teensInGod: RawCount;
+  teensSeries: RawSeries;
+  months: string[];
+  /** Rates (0..1). */
+  guardianNoticeShare: number;
+  usesYourTalShare: number;
+  alsoSnapAppShare: number;
+  repeatRate: number;
+  cameBackWithin30Days: number;
+  alsoVisitedCompetitor: number;
+  visitsPerActiveTeen: number;
+  interestsDeclared: CountRow[];
+  interestsLearned: CountRow[];
+  /** Average A$ a month per active teen. Money, not a count. */
+  spendPerActiveTeen: { label: string; amount: number }[];
+  loyalty: CountRow[];
+  /** Which GOD brands teens use: YourTal only, YourTal and SnapApp, SnapApp only. */
+  brandMix: CountRow[];
+}
+
+/* ---------------- Person 360 ---------------- */
+
+/** One search hit. A teen hit is an id and nothing else: a teen profile has no body anywhere in this contract. */
+export type PersonSearchRow =
+  | { id: string; teen: true }
+  | { id: string; teen: false; ageBand: string; brands: BrandId[] };
+
+export interface PersonAccount {
+  brand: BrandId;
+  /** "YYYY-MM" */
+  since: string;
+  linkedBy: "YourTal sign-in" | "Verified email" | "Verified mobile" | null;
+  complete: boolean;
+}
+export interface PersonProfileRaw {
+  id: string;
+  ageBand: string;
+  homeArea: string;
+  state: string;
+  accounts: PersonAccount[];
+  occupation: { title: string; group: string; incomeBand: string } | null;
+  mergeConfidence: "high" | "medium";
+  linkedBy: "YourTal sign-in" | "Verified email" | "Verified mobile";
+  /** "YYYY-MM" */
+  lastSeen: string;
+  timeline: { date: string; title: string; detail: string }[];
+  /** One person's own receipts at a merchant and suburb. Their own history, not an aggregate. */
+  places: { merchant: string; suburb: string; state: string; category: string; receipts: number; lastVisit: string }[];
+  dots: { lat: number; lon: number; label: string; category: string }[];
+  areas: { label: string; lat: number; lon: number; radiusKm: number }[];
+  interests: { label: string; kind: "Declared" | "Learned"; source: string; confidence: number }[];
+}
+
+/** What a provider returns for an id. A teen is `{ kind: "teen" }` and nothing more. */
+export type PersonGetRaw =
+  | { kind: "profile"; profile: PersonProfileRaw }
+  | { kind: "teen"; id: string }
+  | { kind: "not-found" };
+
+/* ---------------- Data quality ---------------- */
+
+export interface QualityRaw {
+  asOf: string;
+  /** Replication lag per source. Seconds are a duration, not a count. */
+  lag: { source: string; seconds: number; status: "ok" | "warn"; series: number[] }[];
+  rows: { app: string; table: string; inGod: RawCount; inApp: RawCount }[];
+  geocoding: CountRow[];
+  merges: { bySignIn: RawCount; byEmail: RawCount; undone: RawCount };
+  jobs: { name: string; schedule: string; lastRun: string; duration: string; result: "ok" | "warn" | "crit" }[];
+  verification: {
+    id: string;
+    kind: "synthetic" | "sampled";
+    check: string;
+    ran: string;
+    result: "ok" | "warn" | "crit" | "pending";
+    detail: string;
+    /** For a sampled run on 20 real teens: the Owner and a second approver. Empty for synthetic fixtures. */
+    approvers: string[];
+    /** When the output of a sampled run is destroyed (7 days after it ran), "YYYY-MM-DD". */
+    destroyOn: string | null;
+    destroyed: boolean;
+  }[];
+}
+
+/* ---------------- Admin ---------------- */
+
+export type AllowStatus = "active" | "invited" | "passkey-needed";
+
+export interface AllowListEntry {
+  /** The viewer id this person signs in as. */
+  id: string;
+  name: string;
+  /** Their YourTal handle. */
+  handle: string;
+  role: Role;
+  /** Set for a brand lead. */
+  brand?: BrandId;
+  /** The date the paper agreement was signed, "YYYY-MM-DD". */
+  agreementSigned: string;
+  originalHeldBy: string;
+  status: AllowStatus;
+  /** ISO time, or null for never. */
+  lastSignIn: string | null;
+}
+
+export interface SessionRow {
+  id: string;
+  personId: string;
+  person: string;
+  device: string;
+  near: string;
+  /** ISO time */
+  started: string;
+  lastActive: string;
+  passkey: boolean;
+  current: boolean;
+}
+
 /** The future warehouse contract. Exact numbers in, thresholds applied later by the presentation layer. */
 export interface DashboardData {
   overview(q: { period: Period }): Promise<OverviewRaw>;
   brand<B extends BrandId>(brand: B, q: { period: Period }): Promise<BrandRawMap[B]>;
   influenceMap(q: InfluenceQuery): Promise<InfluenceRaw>;
   activityMap(q: ActivityQuery): Promise<ActivityRaw>;
+  insight(q: AudienceQuery): Promise<InsightRaw>;
+  teens(q: { entity?: string }): Promise<TeensRaw>;
+  /** Search by GOD id (or the start of one). Never by name, email or phone. */
+  personSearch(q: string): Promise<PersonSearchRow[]>;
+  /** An adult's profile, or a refusal for a teen. There is no method that returns a teen profile body. */
+  personGet(id: string): Promise<PersonGetRaw>;
+  quality(): Promise<QualityRaw>;
+  adminAllowList(): Promise<AllowListEntry[]>;
+  adminSessions(): Promise<SessionRow[]>;
 }

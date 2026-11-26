@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { BarChart, LineChart, StackedBar } from "@/components/charts";
 import { Badge, Card, PageHeader, Segmented, StatGrid, StatTile } from "@/components/ui";
 import { deltaText, fmtPct } from "@/lib/format";
 import { PAGES, isPageId } from "@/lib/pages";
 import { parsePeriod, periodNoun, periodOptions } from "@/lib/period";
-import { canAccessPage, requirePage } from "@/server/access";
+import { canAccessPage, homePathFor, requirePage } from "@/server/access";
 import { getDashboardData } from "@/server/data";
 import { getViewer } from "@/server/viewer";
 
@@ -27,7 +28,10 @@ export default async function HomePage({
 }: {
   searchParams: Promise<{ period?: string | string[] }>;
 }) {
-  const viewer = requirePage(await getViewer(), "home");
+  const signedIn = await getViewer();
+  // A brand lead's home is their own brand page, not a 403.
+  if (signedIn?.role === "brand_lead" && signedIn.brand) redirect(homePathFor(signedIn));
+  const viewer = requirePage(signedIn, "home");
   const period = parsePeriod((await searchParams).period);
   const o = await getDashboardData(viewer).overview({ period });
   const noun = periodNoun(period);
