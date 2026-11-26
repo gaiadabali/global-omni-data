@@ -1,6 +1,6 @@
 import type { AllowEntry, SessionRecord, Stores } from "../store/types";
 import { sameString, subLabel } from "./crypto";
-import { isFreshAuth } from "./fresh";
+import { isFreshAuth, strongEnough } from "./fresh";
 import { RedeemError } from "./oidc";
 import type { SigninReason } from "./paths";
 import { resolveSession, startSession, viewerOf } from "./session";
@@ -121,8 +121,8 @@ export async function handleCallback(
     return refuse("retry", "The ID token has no sub or auth_time", sub);
   const authTime = new Date(authTimeS * 1000).toISOString();
 
-  // 3. A passkey.
-  if (!amr.includes("hwk"))
+  // 3. A passkey (or, while the staging switch GOD_ALLOW_PASSWORD_SIGNIN=1 is on, a password).
+  if (!strongEnough(amr))
     return refuse("password", "Signed in without a passkey (amr has no hwk)", sub);
   // 4. Adults only. Anything but "adult" is refused; a missing band is not assumed to be adult.
   if (claims.age_band === "teen") return refuse("teen", "A teen account", sub);
@@ -197,7 +197,9 @@ export async function handleCallback(
     who: entry.id,
     action: "signin.ok",
     target: `session:${session.id}`,
-    reason: "Signed in with a passkey",
+    reason: amr.includes("hwk")
+      ? "Signed in with a passkey"
+      : "Signed in with a password (staging switch GOD_ALLOW_PASSWORD_SIGNIN)",
   });
   return { kind: "signed-in", token, session, entry, returnTo: txn.returnTo };
 }

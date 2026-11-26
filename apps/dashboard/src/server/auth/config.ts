@@ -87,6 +87,16 @@ export function readAuthConfig(env: Env = process.env): AuthConfig | null {
   };
 }
 
+/**
+ * STAGING-ONLY SWITCH (founder, 2026-11-27): GOD_ALLOW_PASSWORD_SIGNIN=1 also accepts a YourTal sign-in made with a
+ * password (amr "pwd", or "mfa" for password plus an authenticator code), for the Owners who have no passkey yet.
+ * A passkey is always accepted. The switch must be OFF before any real person's data reaches the dashboard
+ * (TASKS 9.11); /healthz reports it so nobody can miss it.
+ */
+export function passwordSignInAllowed(env: Env = process.env): boolean {
+  return env.GOD_ALLOW_PASSWORD_SIGNIN === "1";
+}
+
 /** Whether real sign-in runs: dev sign-in off and the settings usable. Never both. */
 export function isRealSignInOn(env: Env = process.env): boolean {
   return devAuthState(env) === "off" && readAuthConfig(env) !== null;

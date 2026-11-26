@@ -1,5 +1,18 @@
+import { passwordSignInAllowed } from "./config";
 import { FRESH_START_PATH } from "./paths";
 import type { SessionState } from "./session";
+
+/**
+ * Whether a YourTal sign-in is strong enough for the dashboard: a passkey (`hwk`) always; a password (`pwd`, or
+ * `mfa` for password plus an authenticator code) only while the staging switch GOD_ALLOW_PASSWORD_SIGNIN=1 is on.
+ */
+export function strongEnough(
+  amr: readonly string[],
+  env: Record<string, string | undefined> = process.env,
+): boolean {
+  if (amr.includes("hwk")) return true;
+  return passwordSignInAllowed(env) && (amr.includes("pwd") || amr.includes("mfa"));
+}
 
 /**
  * The fresh passkey check in front of exports, opening a Person 360 profile, and allow-list changes or invites:
@@ -11,7 +24,7 @@ export const FRESH_MS = 5 * 60_000;
 
 export function isFreshAuth(s: { authTime: string; amr: readonly string[] }, now: number): boolean {
   const t = Date.parse(s.authTime);
-  if (!Number.isFinite(t) || !s.amr.includes("hwk")) return false;
+  if (!Number.isFinite(t) || !strongEnough(s.amr)) return false;
   // Not from the future beyond a minute of clock skew, and under 5 minutes old.
   return t <= now + 60_000 && now - t < FRESH_MS;
 }

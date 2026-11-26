@@ -1,4 +1,4 @@
-import { isRealSignInOn } from "@/server/auth/config";
+import { isRealSignInOn, passwordSignInAllowed } from "@/server/auth/config";
 import { isDevAuthEnabled } from "@/server/dev-auth";
 import { getStores } from "@/server/store";
 
@@ -12,7 +12,13 @@ export const dynamic = "force-dynamic";
 export async function GET(): Promise<Response> {
   const signIn = isDevAuthEnabled() ? "dev" : isRealSignInOn() ? "yourtal" : "off";
   return Response.json(
-    { ok: true, build: process.env.GOD_BUILD_SHA ?? "unknown", signIn, store: getStores().kind },
+    {
+      ok: true,
+      build: process.env.GOD_BUILD_SHA ?? "unknown",
+      signIn,
+      passwordSignIn: passwordSignInAllowed(),
+      store: getStores().kind,
+    },
     { headers: { "Cache-Control": "no-store" } },
   );
 }
