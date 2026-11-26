@@ -335,7 +335,7 @@ async function readSuburbs(dbf, shp, findSa2) {
     const [lon, lat] = labelPoint(polygons);
     const sa2 = findSa2(lon, lat);
     if (!sa2) noSa2++;
-    const name = String(f.properties.SAL_NAME21).replace(/\s*\([^)]{1,8}\)$/, "");
+    const name = String(f.properties.SAL_NAME21).replace(/\s*\([^)]*\)$/, "");
     rows.push([
       String(f.properties.SAL_CODE21),
       name,
@@ -367,11 +367,8 @@ function versionOf(pkg) {
  */
 function writeData(name, value) {
   const file = join(OUT, `${name}.js`);
-  writeFileSync(file, `export default ${JSON.stringify(value)};
-`);
-  writeFileSync(join(OUT, `${name}.d.ts`), "declare const data: unknown;
-export default data;
-");
+  writeFileSync(file, `export default ${JSON.stringify(value)};\n`);
+  writeFileSync(join(OUT, `${name}.d.ts`), "declare const data: unknown;\nexport default data;\n");
   const size = statSync(file).size;
   log("wrote", `${name}.js`, kb(size));
   return size;
