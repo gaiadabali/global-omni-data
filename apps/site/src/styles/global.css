@@ -265,11 +265,6 @@ main[id] {
   color: var(--btn-ink);
   opacity: 0.88;
 }
-.nav a.navcta[aria-current="page"] {
-  box-shadow:
-    inset 0 0 0 2px var(--bg),
-    0 0 0 2px var(--btn-bg);
-}
 .iconbtn {
   display: inline-flex;
   align-items: center;
