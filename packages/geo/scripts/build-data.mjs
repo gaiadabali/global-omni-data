@@ -10,7 +10,7 @@
  * checked against the SHA-256 recorded below, so a changed upstream file stops the build instead of changing the data.
  * The output is deterministic: no timestamps, sorted by code.
  *
- * Writes to data/ (each .js is `export default <json>;`, with a .d.ts beside it):
+ * Writes to data/ (each .js is `export default JSON.parse("<json>");`, with a .d.ts beside it):
  *   ste.topo.js sa4.topo.js sa3.topo.js sa2.topo.js   simplified display boundaries (TopoJSON, ids = area codes)
  *   areas.js          per area: id, name, parents, centroid (a point inside the area), bbox, area in km2
  *   suburbs.js        one point per suburb or locality (SAL): code, name, state, lon, lat, SA2, km2
@@ -362,12 +362,14 @@ function versionOf(pkg) {
 }
 
 /**
- * Data files are ES modules (`export default <json>;`) with a one-line .d.ts beside them, not .json: TypeScript would
- * otherwise infer a type for every number in a 2 MB topology and run out of memory. manifest.json stays JSON (small).
+ * Data files are ES modules (`export default JSON.parse("<json>");`) with a one-line .d.ts beside them, not .json or an
+ * object literal: TypeScript would infer a type for every number in a 2 MB topology, and Turbopack would parse a literal
+ * with hundreds of thousands of numbers into a huge AST. Both run out of memory; one string literal costs nothing.
+ * manifest.json stays JSON (small).
  */
 function writeData(name, value) {
   const file = join(OUT, `${name}.js`);
-  writeFileSync(file, `export default ${JSON.stringify(value)};\n`);
+  writeFileSync(file, `export default JSON.parse(${JSON.stringify(JSON.stringify(value))});\n`);
   writeFileSync(join(OUT, `${name}.d.ts`), "declare const data: unknown;\nexport default data;\n");
   const size = statSync(file).size;
   log("wrote", `${name}.js`, kb(size));

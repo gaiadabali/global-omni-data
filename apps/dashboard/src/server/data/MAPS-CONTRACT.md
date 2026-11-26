@@ -124,7 +124,7 @@ suppressed band), so a hidden band cannot be worked back out from the others.
 
 ## 4. Activity map
 
-`GET /api/map/activity` is as before (`category`, `ageBand`, `month`, `h3=5|6|7`, `bbox`; `bbox` required at 6 and 7; **`h3=8` is a
+`GET /api/map/activity` is as before (`category`, `ageBand`, `month`, `h3=5|6|7`, `bbox`; `bbox` required at 7 (the UI sends one from 6); **`h3=8` is a
 400**), and now each heat cell has `name`, `parent` and `centroid`:
 `heat: [{ id, name, parent, centroid, value, display, suppressed, band }]`. Merchants are unchanged (id, name, category, lat, lon,
 value, display, suppressed). A brand lead gets only people who also use their brand.
