@@ -35,8 +35,17 @@ git ls-files -co --exclude-standard -z | grep -zv -e '/node_modules/' -e '^node_
   | tar --null -T - -czf - \
   | ssh "$HOST" "rm -rf '$DEST' && mkdir -p '$DEST' $BASE/store $BASE/cache/npm && tar -xzf - -C '$DEST'"
 
+# Build-time switches pass through from the caller's environment (values must be plain: letters, digits, : / . _ -).
+PASS=""
+for v in PUBLIC_NOINDEX PUBLIC_CONTACT_ENDPOINT; do
+  val="${!v:-}"
+  [ -z "$val" ] && continue
+  [[ "$val" =~ ^[A-Za-z0-9:/._-]+$ ]] || { echo "bad value for $v" >&2; exit 2; }
+  PASS="$PASS -e $v=$val"; echo "== passing $v=$val"
+done
+
 # One build at a time on the box; wait up to 30 minutes for the lock.
-ssh "$HOST" "flock -w 1800 $BASE/build.lock docker run --rm --cpus 4 --memory 6g \
+ssh "$HOST" "flock -w 1800 $BASE/build.lock docker run --rm --cpus 4 --memory 6g $PASS \
   -v $BASE:$BASE -w '$DEST' -e CI=1 -e NEXT_TELEMETRY_DISABLED=1 -e ASTRO_TELEMETRY_DISABLED=1 \
   -e TURBO_TELEMETRY_DISABLED=1 -e npm_config_cache=$BASE/cache/npm \
   $NODE_IMAGE bash -euo pipefail -c '
