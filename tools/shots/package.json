@@ -1,0 +1,9 @@
+{
+  "name": "@god/shots",
+  "private": true,
+  "type": "module",
+  "description": "Screenshots of the built apps, run on server-f by scripts/server-f/remote-build.sh",
+  "devDependencies": {
+    "playwright": "1.65.1"
+  }
+}

@@ -1,0 +1,11 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+  - "tools/*"
+# pnpm blocks dependency build scripts unless they are listed here. Only compiler and image binaries belong
+# in this list, never an arbitrary postinstall.
+allowBuilds:
+  esbuild: true
+  sharp: true
+# Supply-chain cooldown: refuse any version published less than a day ago (same as YourTal).
+minimumReleaseAge: 1440
