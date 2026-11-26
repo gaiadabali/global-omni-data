@@ -67,7 +67,15 @@ export function Shell({
                   <span className="lbl">Sign out (dev)</span>
                 </button>
               </form>
-            ) : null}
+            ) : (
+              // A plain POST to this origin (CSP form-action 'self'); the response redirects to /signin, also 'self'.
+              <form method="post" action="/auth/signout">
+                <button type="submit" className="nav">
+                  <Icon name="key" />
+                  <span className="lbl">Sign out</span>
+                </button>
+              </form>
+            )}
           </div>
         </aside>
         <div className="shell">

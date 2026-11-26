@@ -2,13 +2,18 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Callout } from "@/components/ui";
 import { homePathFor } from "@/server/access";
+import { isRealSignInOn } from "@/server/auth/config";
+import { getSessionState } from "@/server/auth/current";
 import { BACKDROP_SIZE, backdropDots } from "@/server/data/backdrop";
 import { isDevAuthEnabled } from "@/server/dev-auth";
 import { getViewer } from "@/server/viewer";
 
 export const metadata: Metadata = { title: "Sign in" };
 
-/** The refusal states the real sign-in will produce. Shown with ?reason=not-listed|password|teen|expired. */
+/**
+ * The states Sign in with YourTal produces, shown with ?reason=... (src/server/auth/paths.ts). An action, where
+ * there is one, starts a new sign-in. A browser whose session has ended sees "expired" even without a reason.
+ */
 const REASONS = {
   "not-listed": {
     title: "This account can't open the GOD dashboard",
@@ -30,6 +35,21 @@ const REASONS = {
     text: "For your safety, sessions end after a while. Sign in again to carry on.",
     action: "Sign in again",
   },
+  retry: {
+    title: "That sign-in did not finish",
+    text: "It may have taken too long, or started in another tab. Try again.",
+    action: "Try again",
+  },
+  unavailable: {
+    title: "Sign-in is not available right now",
+    text: "YourTal could not be reached. Try again in a few minutes.",
+    action: null,
+  },
+  "signed-out": {
+    title: "You're signed out",
+    text: "Close this tab if you are on a shared computer.",
+    action: null,
+  },
 } as const;
 type Reason = keyof typeof REASONS;
 
@@ -38,6 +58,9 @@ const DEMO: { reason: Reason; label: string }[] = [
   { reason: "password", label: "Password, no passkey" },
   { reason: "teen", label: "Teen account" },
   { reason: "expired", label: "Session ended" },
+  { reason: "retry", label: "Did not finish" },
+  { reason: "unavailable", label: "YourTal down" },
+  { reason: "signed-out", label: "Signed out" },
 ];
 
 export default async function SignInPage({
@@ -47,9 +70,12 @@ export default async function SignInPage({
 }) {
   const raw = (await searchParams).reason;
   const key = Array.isArray(raw) ? raw[0] : raw;
-  const reason = key && key in REASONS ? REASONS[key as Reason] : null;
   const dev = isDevAuthEnabled();
-  const viewer = dev ? await getViewer() : null;
+  const real = isRealSignInOn();
+  const session = dev ? null : await getSessionState();
+  const reasonKey: Reason | null = key && key in REASONS ? (key as Reason) : session?.kind === "ended" ? "expired" : null;
+  const reason = reasonKey ? REASONS[reasonKey] : null;
+  const viewer = dev ? await getViewer() : session?.kind === "ok" ? session.viewer : null;
   const dots = backdropDots();
 
   return (
@@ -76,22 +102,42 @@ export default async function SignInPage({
           </p>
         </div>
         <div className="stack">
-          <button type="button" className="btn primary wide" disabled aria-describedby="signin-note">
-            Coming with real sign-in
-          </button>
+          {real ? (
+            // A plain link, not a form: the redirect to YourTal is a navigation, so CSP form-action never applies.
+            <a className="btn primary wide" href="/auth/start" aria-describedby="signin-note">
+              Sign in with YourTal
+            </a>
+          ) : (
+            <button type="button" className="btn primary wide" disabled aria-describedby="signin-note">
+              Sign in with YourTal
+            </button>
+          )}
           <p className="small muted" id="signin-note">
-            Sign in with YourTal, with a passkey. Access is by invitation only.
+            {real
+              ? "Sign in with YourTal, with a passkey. Access is by invitation only."
+              : "Sign in with YourTal is off while dev sign-in is on. Use the role switch below."}
           </p>
+          {viewer && !dev ? (
+            <p className="small">
+              <Link href={homePathFor(viewer)}>Back to the dashboard</Link>
+            </p>
+          ) : null}
         </div>
         {reason ? (
           <div aria-live="polite">
-            <Callout tone="crit" role="alert">
+            <Callout tone={reasonKey === "signed-out" ? "default" : "crit"} role={reasonKey === "signed-out" ? "status" : "alert"}>
               <b>{reason.title}</b>
               <div className="small mt-1">{reason.text}</div>
               {reason.action ? (
-                <button type="button" className="btn primary sm mt-2.5" disabled>
-                  {reason.action}
-                </button>
+                real ? (
+                  <a className="btn primary sm mt-2.5" href="/auth/start">
+                    {reason.action}
+                  </a>
+                ) : (
+                  <button type="button" className="btn primary sm mt-2.5" disabled>
+                    {reason.action}
+                  </button>
+                )
               ) : null}
             </Callout>
           </div>

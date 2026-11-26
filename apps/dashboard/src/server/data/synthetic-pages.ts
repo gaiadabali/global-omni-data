@@ -16,7 +16,6 @@ import {
 } from "@god/synthetic";
 import { TODAY } from "@/lib/dates";
 import type { CountKind } from "../privacy";
-import { allowListStore } from "./allowlist";
 import {
   count,
   countSeries,
@@ -29,7 +28,6 @@ import {
   type PersonGetRaw,
   type PersonSearchRow,
   type QualityRaw,
-  type SessionRow,
   type TeensRaw,
 } from "./types";
 
@@ -264,26 +262,13 @@ async function quality(): Promise<QualityRaw> {
   };
 }
 
-/* ---------------- Admin ---------------- */
-
-async function adminSessions(): Promise<SessionRow[]> {
-  return [
-    { id: "s-1", personId: "dev-owner", person: "Alex Morgan", device: "Chrome on Windows", near: "Sydney, AU", started: "2026-11-26T09:12:00+11:00", lastActive: "now", passkey: true, current: false },
-    { id: "s-2", personId: "dev-data", person: "Jordan Lee", device: "Edge on Windows", near: "Brisbane, AU", started: "2026-11-26T08:41:00+11:00", lastActive: "12 min ago", passkey: true, current: false },
-    { id: "s-3", personId: "dev-executive", person: "Priya Nair", device: "Safari on iPhone", near: "Melbourne, AU", started: "2026-11-25T16:40:00+11:00", lastActive: "20 h ago", passkey: true, current: false },
-    { id: "s-4", personId: "dev-bl-yourtal", person: "Sam Ortega", device: "Chrome on macOS", near: "Brisbane, AU", started: "2026-11-24T11:03:00+11:00", lastActive: "2 days ago", passkey: true, current: false },
-  ];
-}
-
 export const syntheticPages: Pick<
   DashboardData,
-  "insight" | "teens" | "personSearch" | "personGet" | "quality" | "adminAllowList" | "adminSessions"
+  "insight" | "teens" | "personSearch" | "personGet" | "quality"
 > = {
   insight,
   teens,
   personSearch,
   personGet,
   quality,
-  adminAllowList: async () => allowListStore.list(),
-  adminSessions,
 };

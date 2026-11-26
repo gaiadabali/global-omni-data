@@ -420,25 +420,10 @@ export interface QualityRaw {
 
 /* ---------------- Admin ---------------- */
 
-export type AllowStatus = "active" | "invited" | "passkey-needed";
+/** The allow-list is the dashboard's own state, not warehouse data: see src/server/store/types.ts. */
+export type { AllowEntry, AllowStatus } from "../store/types";
 
-export interface AllowListEntry {
-  /** The viewer id this person signs in as. */
-  id: string;
-  name: string;
-  /** Their YourTal handle. */
-  handle: string;
-  role: Role;
-  /** Set for a brand lead. */
-  brand?: BrandId;
-  /** The date the paper agreement was signed, "YYYY-MM-DD". */
-  agreementSigned: string;
-  originalHeldBy: string;
-  status: AllowStatus;
-  /** ISO time, or null for never. */
-  lastSignIn: string | null;
-}
-
+/** One active session, as Admin lists it. Never the token or its hash. */
 export interface SessionRow {
   id: string;
   personId: string;
@@ -447,6 +432,7 @@ export interface SessionRow {
   near: string;
   /** ISO time */
   started: string;
+  /** ISO time */
   lastActive: string;
   passkey: boolean;
   current: boolean;
@@ -465,6 +451,4 @@ export interface DashboardData {
   /** An adult's profile, or a refusal for a teen. There is no method that returns a teen profile body. */
   personGet(id: string): Promise<PersonGetRaw>;
   quality(): Promise<QualityRaw>;
-  adminAllowList(): Promise<AllowListEntry[]>;
-  adminSessions(): Promise<SessionRow[]>;
 }

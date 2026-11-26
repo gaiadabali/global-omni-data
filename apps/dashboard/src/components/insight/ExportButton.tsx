@@ -38,7 +38,7 @@ export function ExportButton({
         onClose={() => setOpen(false)}
         onConfirm={async () => {
           const res = await exportReportAction({ kind, entity });
-          if (!res.ok) return { ok: false, error: res.error };
+          if (!res.ok) return { ok: false, error: res.error, ...(res.freshUrl ? { freshUrl: res.freshUrl } : {}) };
           router.push(res.printPath);
           return { ok: true };
         }}

@@ -3,6 +3,7 @@
 import { useId, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Modal } from "@/components/ui/Modal";
+import { FRESH_STEP_TEXT, goToFreshCheck } from "@/lib/fresh-step";
 import { openProfileAction } from "@/server/audit/actions";
 import { OPEN_REASONS, buildReason } from "@/server/audit/reasons";
 
@@ -47,6 +48,11 @@ export function OpenProfileButton({
     try {
       const res = await openProfileAction({ id, reasonId, note });
       if (!res.ok) {
+        if (res.freshUrl) {
+          setError(FRESH_STEP_TEXT);
+          goToFreshCheck(res.freshUrl);
+          return;
+        }
         setError(res.error);
         return;
       }
@@ -86,6 +92,10 @@ export function OpenProfileButton({
         <p>
           You are about to open <span className="mono">{id}</span>. This is recorded in the audit log with your name,
           the time and your reason.
+        </p>
+        <p className="small muted">
+          Opening a profile needs your passkey in the last 5 minutes. If it is older, YourTal asks for it and brings
+          you back here; then open the profile again.
         </p>
         <div className="field">
           <label htmlFor={`${uid}-reason`}>Reason</label>

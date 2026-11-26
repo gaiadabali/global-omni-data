@@ -1,13 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import "@/components/pages/pages.css";
+import { EntryActions } from "@/components/admin/EntryActions";
 import { InviteForm } from "@/components/admin/InviteForm";
 import { RevokeButton } from "@/components/admin/RevokeButton";
+import { SignOutEverywhereButton } from "@/components/admin/SignOutEverywhereButton";
 import { Badge, Card, PageHeader, Tabs, type BadgeTone } from "@/components/ui";
 import { TODAY, fmtDate, fmtDateTime, isIsoDate } from "@/lib/dates";
 import { first } from "@/lib/params";
 import { PAGES } from "@/lib/pages";
 import { requirePage } from "@/server/access";
+import { getSessionState } from "@/server/auth/current";
 import { AUDIT_ACTIONS, AUDIT_ACTION_LABELS, isAuditAction, type AuditAction } from "@/server/audit/types";
 import { getDashboardData } from "@/server/data";
 import { ORIGINAL_HOLDERS } from "@/server/data/allowlist";
@@ -28,8 +31,9 @@ type Props = {
 
 const STATUS: Record<string, { tone: BadgeTone; text: string }> = {
   active: { tone: "ok", text: "Active" },
-  invited: { tone: "info", text: "Invited, no passkey yet" },
-  "passkey-needed": { tone: "warn", text: "Passkey needed" },
+  invited: { tone: "info", text: "Invited, not signed in yet" },
+  suspended: { tone: "warn", text: "Suspended" },
+  removed: { tone: "default", text: "Removed" },
 };
 
 const ACTION_TONE: Record<AuditAction, BadgeTone> = {
@@ -39,6 +43,9 @@ const ACTION_TONE: Record<AuditAction, BadgeTone> = {
   "allowlist.change": "acc",
   "session.revoke": "default",
   "signin.refused": "crit",
+  "signin.ok": "ok",
+  "signin.fresh": "info",
+  signout: "default",
 };
 
 /** Admin: Owner only. The allow-list, the audit log, and active sessions. */
@@ -54,9 +61,10 @@ export default async function AdminPage({ searchParams }: Props) {
   const to = isIsoDate(first(sp.to) ?? "") ? first(sp.to) : undefined;
 
   const data = getDashboardData(viewer);
+  const session = await getSessionState();
   const [allow, sessions, audit] = await Promise.all([
     data.adminAllowList(),
-    data.adminSessions(),
+    data.adminSessions(session.kind === "ok" ? session.session.id : null),
     data.adminAudit({
       ...(who ? { who } : {}),
       ...(action ? { action } : {}),
@@ -81,6 +89,9 @@ export default async function AdminPage({ searchParams }: Props) {
                 <th scope="col">Original held by</th>
                 <th scope="col">Status</th>
                 <th scope="col">Last sign-in</th>
+                <th scope="col">
+                  <span className="sr-only">Change</span>
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -88,7 +99,7 @@ export default async function AdminPage({ searchParams }: Props) {
                 <tr key={p.id}>
                   <td>
                     <b>{p.name}</b>
-                    <div className="mono faint xs">{p.handle}</div>
+                    <div className="mono faint xs">{p.email}</div>
                   </td>
                   <td>{ROLE_LABELS[p.role]}</td>
                   <td>{p.brand ? BRAND_LABELS[p.brand] : <span className="muted">None</span>}</td>
@@ -98,6 +109,11 @@ export default async function AdminPage({ searchParams }: Props) {
                     <Badge tone={STATUS[p.status]?.tone ?? "default"}>{STATUS[p.status]?.text ?? p.status}</Badge>
                   </td>
                   <td>{p.lastSignIn ? fmtDateTime(p.lastSignIn) : <span className="muted">Never</span>}</td>
+                  <td>
+                    {p.id === viewer.id || p.status === "removed" ? null : (
+                      <EntryActions id={p.id} name={p.name} status={p.status} />
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -234,17 +250,24 @@ export default async function AdminPage({ searchParams }: Props) {
                 <td>{s.device}</td>
                 <td>{s.near}</td>
                 <td>{fmtDateTime(s.started)}</td>
-                <td>{s.lastActive}</td>
+                <td>{fmtDateTime(s.lastActive)}</td>
                 <td>{s.passkey ? <Badge tone="ok">Yes</Badge> : <Badge tone="warn">No</Badge>}</td>
-                <td className="num">{s.current ? null : <RevokeButton sessionId={s.id} person={s.person} />}</td>
+                <td className="num">
+                  {s.current ? null : (
+                    <div className="row justify-end">
+                      <RevokeButton sessionId={s.id} person={s.person} />
+                      {s.personId === viewer.id ? null : <SignOutEverywhereButton personId={s.personId} person={s.person} />}
+                    </div>
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
       <p className="xs muted pad">
-        Sessions end after 8 hours. A fresh passkey check is needed for exports. In dev, Revoke records the request and
-        ends nothing.
+        Sessions end after 30 minutes without activity, and after 8 hours in any case. Revoke ends one session at once;
+        Sign out everywhere ends all of that person&apos;s sessions. Suspending or removing someone ends theirs too.
       </p>
     </Card>
   );
