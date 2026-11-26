@@ -13,6 +13,20 @@
     "delayMs": 1500
   },
   {
+    "name": "perf-map-selected",
+    "path": "/map?perf=1&sel=NSW",
+    "role": "owner",
+    "themes": [
+      "dark"
+    ],
+    "widths": [
+      1440,
+      390
+    ],
+    "waitFor": "[data-map-ready=\"true\"]",
+    "delayMs": 1500
+  },
+  {
     "name": "perf-map-pan-res7",
     "path": "/map?perf=pan&z=9.6&lat=-33.87&lon=151.2",
     "role": "owner",

@@ -162,6 +162,8 @@ export function MapCanvas(props: MapCanvasProps) {
   const [perfMode] = useState(() => new URLSearchParams(window.location.search).get("perf"));
   const perf = perfMode !== null;
   const [failed, setFailed] = useState<string | null>(null);
+  // With ?perf the camera and the panel insets are printed, to check that a fit lands beside the panels.
+  const [camera, setCamera] = useState<string | null>(null);
   const [tip, setTip] = useState<{ x: number; y: number; content: TipContent } | null>(null);
 
   useImperativeHandle(
@@ -281,7 +283,18 @@ export function MapCanvas(props: MapCanvasProps) {
         if (!touched) fitBox(map, AUSTRALIA_BOUNDS, readInsets(stage), 16, MAX_ZOOM, 0);
       });
     });
-    map.on("moveend", () => latest.current.onView(currentView(map)));
+    const wantCamera = new URLSearchParams(window.location.search).has("perf");
+    map.on("moveend", () => {
+      latest.current.onView(currentView(map));
+      if (wantCamera) {
+        const i = readInsets(stage);
+        const c = map.getCenter();
+        const el = map.getContainer();
+        setCamera(
+          `canvas ${el.clientWidth}x${el.clientHeight} z${map.getZoom().toFixed(2)} centre ${c.lng.toFixed(2)},${c.lat.toFixed(2)} insets L${i.left} R${i.right} T${i.top} B${i.bottom}`,
+        );
+      }
+    });
     // The canvas settles after the first view was reported (the layout and the fonts arrive after the map loads, so the
     // first box can be a small one). A resize is not a move, so report the view again: the page asks for a bigger box.
     map.on("resize", () => {
@@ -452,6 +465,7 @@ export function MapCanvas(props: MapCanvasProps) {
       {perf && readyMs !== null ? (
         <div className="gm-perf" data-perf-ready>
           first map {readyMs} ms
+          {camera ? ` · ${camera}` : ""}
         </div>
       ) : null}
       {tip ? (
