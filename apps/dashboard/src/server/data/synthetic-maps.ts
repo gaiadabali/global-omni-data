@@ -59,8 +59,9 @@ import {
  */
 
 const MAX_CELLS = 20_000;
-/** At H3 resolution 7 a screen holds a few thousand cells; the cap keeps the response small. */
+/** A screen holds a few hundred to a few thousand H3 cells; these caps keep a whole-country request small. */
 const MAX_CELLS_RES7 = 8_000;
+const MAX_CELLS_RES6 = 5_000;
 const TREND_MONTHS = 12;
 const SERIES_MONTHS = 24;
 
@@ -200,7 +201,7 @@ export async function influenceMap(q: InfluenceQuery): Promise<InfluenceRaw> {
     const n = counts[o]!;
     if (n > 0 && inBox(centres.lat[o]!, centres.lon[o]!, q.bbox)) found.push({ o, n });
   }
-  const cap = res === 7 ? MAX_CELLS_RES7 : MAX_CELLS;
+  const cap = res === 7 ? MAX_CELLS_RES7 : MAX_CELLS_RES6;
   let truncated = false;
   if (found.length > cap) {
     found.sort((a, b) => b.n - a.n);

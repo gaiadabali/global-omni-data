@@ -289,14 +289,12 @@ export function presentArea(raw: AreaRaw, query: AreaQuery, viewer: V): Presente
       unit: query.audience === "both" ? "people and businesses" : query.audience,
       value: { value: value.exact ?? 0, display: value.display, suppressed: value.suppressed },
       per1000:
-        value.exact === null || value.suppressed || raw.area.population <= 0
-          ? null
-          : round2((raw.value.n / raw.area.population) * 1000),
+        value.exact === null || raw.area.population <= 0 ? null : round2((raw.value.n / raw.area.population) * 1000),
       nationalPer1000: raw.nationalPopulation > 0 ? round2((raw.nationalValue / raw.nationalPopulation) * 1000) : 0,
       newThisMonth: { value: fresh.exact ?? 0, display: fresh.display, suppressed: fresh.suppressed },
       growthPct: pct(raw.newThisMonth.n, raw.previous.n, !fresh.suppressed),
-      // A rank would show where a hidden count sits among its neighbours.
-      rank: { rank: value.suppressed ? null : raw.rank.rank, of: raw.rank.of, within: raw.rank.within },
+      // A rank would show where a hidden count sits among its neighbours (the Owner and Data team see the count, so the rank).
+      rank: { rank: value.exact === null ? null : raw.rank.rank, of: raw.rank.of, within: raw.rank.within },
     },
     brands: raw.brands.map((b) => ({
       brand: b.brand,

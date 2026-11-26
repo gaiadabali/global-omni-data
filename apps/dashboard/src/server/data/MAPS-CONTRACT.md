@@ -56,7 +56,7 @@ Other Territories are never returned.
     "newThisMonth": { "value": 1, "display": "<10", "suppressed": true }     // joined in `month`, presented
   }],
   "legend": [{ "band": 0, "label": "<10", "min": 0, "max": 10 }, "..."],
-  "truncated": false                     // true when the cap (20,000 cells; 8,000 at H3 res 7) dropped the smallest
+  "truncated": false                     // true when the cap (5,000 cells at H3 res 6; 8,000 at res 7) dropped the smallest
 }
 ```
 
@@ -119,7 +119,8 @@ Areas whose figure is suppressed for the viewer sort after the visible ones, by 
 }
 ```
 
-`ageMix` teen figures use the teen threshold (`<20`). `share` is the band's part of the bands the viewer can see (null for a
+The Owner and Data team see a small adult count (marked `suppressed`), so for them `per1000` and `rank` are filled in; for everyone else
+they are null while the value is suppressed. `ageMix` teen figures use the teen threshold (`<20`). `share` is the band's part of the bands the viewer can see (null for a
 suppressed band), so a hidden band cannot be worked back out from the others.
 
 ## 4. Activity map
@@ -147,7 +148,8 @@ active with the category and age filters. Areas under the threshold are left out
 ### `GET /api/map/activity-area`
 
 `?level=h3|sa2&id=...&month&category&ageBand`. One heat cell (H3 res 5 to 7) or one SA2 (activity cells assigned to the SA2 that
-holds their centre). Teen rules apply.
+holds their centre). Teen rules apply. `categoryMix` ignores the `category` filter and `ageMix` ignores the `ageBand` filter: each shows
+the spread across what the other filter leaves.
 
 ```jsonc
 {
