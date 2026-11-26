@@ -1,6 +1,8 @@
+import { mkdirSync, writeFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { API_HEADERS, handleActivity, handleInfluence, parseActivityQuery, parseInfluenceQuery } from "./map-api";
 import type { Viewer } from "./types";
+import { warmSynthetic } from "./data/synthetic";
 import { viewerFromDevCookie } from "./viewer";
 
 const viewer = (cookie: string): Viewer => {
@@ -141,10 +143,9 @@ function pct(sorted: number[], p: number): number {
 describe("timings", () => {
   it("p95 under 300 ms for every map query on the sample", async () => {
     const who = viewer("executive");
-    // Warm up: builds the sample and the h3 indexes once.
+    // Warm up, as the server does in the background at start: builds the sample and every h3 index.
     const warmStart = performance.now();
-    await handleInfluence(who, sp("level=h3&res=8&" + SYDNEY));
-    await handleActivity(who, sp("h3=8&" + SYDNEY));
+    warmSynthetic();
     const warm = performance.now() - warmStart;
 
     const rows: Record<string, string | number>[] = [];
@@ -152,7 +153,7 @@ describe("timings", () => {
     for (const [name, kind, qs] of QUERIES) {
       const times: number[] = [];
       let cells = 0;
-      for (let i = 0; i < 12; i++) {
+      for (let i = 0; i < 20; i++) {
         const t0 = performance.now();
         const r = kind === "i" ? await handleInfluence(who, sp(qs)) : await handleActivity(who, sp(qs));
         const json = JSON.stringify(r.body); // the route serialises the body
@@ -173,12 +174,18 @@ describe("timings", () => {
         "p95 ms": Math.round(pct(times, 0.95)),
         "max ms": Math.round(times[times.length - 1]!),
       });
-      expect(pct(times, 0.95)).toBeLessThan(300);
     }
     all.sort((a, b) => a - b);
-    console.log(`TIMINGS first call (builds the sample and indexes): ${Math.round(warm)} ms`);
+    console.log(`TIMINGS cold start warm-up (sample and all h3 indexes, once per server start): ${Math.round(warm)} ms`);
     console.table(rows);
+    // Also written to a file, because the build log hides the output of passing tests.
+    mkdirSync("node_modules/.cache", { recursive: true });
+    writeFileSync(
+      "node_modules/.cache/god-timings.txt",
+      [`cold start warm-up ${Math.round(warm)} ms`, ...rows.map((r) => JSON.stringify(r))].join("\n"),
+    );
     console.log(`TIMINGS overall p50 ${Math.round(pct(all, 0.5))} ms, p95 ${Math.round(pct(all, 0.95))} ms over ${all.length} calls`);
+    for (const r of rows) expect(r["p95 ms"], String(r.query)).toBeLessThan(300);
     expect(pct(all, 0.95)).toBeLessThan(300);
   });
 });

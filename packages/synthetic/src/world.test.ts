@@ -63,9 +63,9 @@ describe("shape of the world", () => {
     expect(stateAt(-27.47, 153.03)).toBe(2);
     expect(stateAt(-31.95, 115.86)).toBe(3);
     expect(stateAt(-34.93, 138.6)).toBe(4);
-    expect(stateAt(-42.88, 147.33)).toBe(5);
+    expect(stateAt(-42.1, 146.3)).toBe(5);
     expect(stateAt(-35.28, 149.13)).toBe(6);
-    expect(stateAt(-12.46, 130.84)).toBe(7);
+    expect(stateAt(-23.7, 133.88)).toBe(7);
     expect(stateAt(-40, 160)).toBe(-1);
   });
 

@@ -36,7 +36,8 @@ export function StackedBar({
   const W = Math.max(120, width);
   const live = segments.filter((s) => s.value > 0);
   const usable = W - GAP * Math.max(0, live.length - 1);
-  let x = 0;
+  const widths = live.map((s) => Math.max(3, (s.value / total) * usable));
+  const starts = widths.map((_, i) => widths.slice(0, i).reduce((a, w) => a + w + GAP, 0));
   const summary = segments.map((s) => `${s.label} ${fmtPct(s.value / total, 1)}`).join(", ");
 
   return (
@@ -51,16 +52,11 @@ export function StackedBar({
         >
           <title id={`${uid}-t`}>{title}</title>
           <desc id={`${uid}-d`}>{description ? `${description} ${summary}.` : `${summary}.`}</desc>
-          {live.map((s) => {
-            const w = Math.max(3, (s.value / total) * usable);
-            const node = (
-              <rect key={s.label} x={x} y={0} width={w} height={BAR_H} rx={4} fill={s.color}>
-                <title>{`${s.label}: ${s.display ?? fmtInt(s.value)} (${fmtPct(s.value / total, 1)})`}</title>
-              </rect>
-            );
-            x += w + GAP;
-            return node;
-          })}
+          {live.map((s, i) => (
+            <rect key={s.label} x={starts[i]} y={0} width={widths[i]} height={BAR_H} rx={4} fill={s.color}>
+              <title>{`${s.label}: ${s.display ?? fmtInt(s.value)} (${fmtPct(s.value / total, 1)})`}</title>
+            </rect>
+          ))}
         </svg>
       </div>
       <div className="lgrow small">

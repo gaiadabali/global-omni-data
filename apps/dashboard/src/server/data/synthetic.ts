@@ -504,10 +504,19 @@ async function activityMap(q: ActivityQuery): Promise<ActivityRaw> {
 
 export const syntheticData: DashboardData = { overview, brand, influenceMap, activityMap };
 
-/** Build the sample and its h3 indexes ahead of the first request. */
+/**
+ * Build the sample and every h3 index ahead of the first request (the server does this in the background at
+ * start, see src/instrumentation.ts). Cold, this takes a few seconds; afterwards every map query is a scan.
+ */
 export function warmSynthetic(): void {
   const w = getWorld();
-  w.cells.keysAt(8);
-  w.activity.keysAt(8);
+  for (const res of [3, 4, 5, 6, 7, 8]) {
+    w.cells.keysAt(res);
+    w.cells.centresAt(res);
+  }
+  for (const res of [5, 6, 7, 8]) {
+    w.activity.keysAt(res);
+    w.activity.centresAt(res);
+  }
   generateMerchants();
 }
