@@ -21,7 +21,7 @@ placeForCell(h3Index);                   // { name: "Parramatta", suburb, sa2, p
 | `src/locate.ts` | spatial index over the SA2 polygons, point to SA2, random point in an SA2, nearest suburb, places |
 | `src/topo.ts`, `src/shape.ts` | TopoJSON reader and plane geometry. No imports, erasable TypeScript only, so the build scripts can import them |
 | `src/boundaries.ts` | `boundaryGeoJSON(level)`: the display boundaries as GeoJSON |
-| `data/*.json` | generated and committed (`scripts/build-data.mjs`); about 6.6 MB |
+| `data/*.js` | generated and committed (`scripts/build-data.mjs`); about 6.7 MB. Each is `export default JSON.parse("...")` with a one-line `.d.ts`: a plain `.json` made TypeScript infer a type for every number (out of memory), and an object literal made Turbopack parse hundreds of thousands of them (out of memory). `manifest.json` stays JSON |
 | `scripts/emit-public.mjs` | writes the four boundary files as GeoJSON into the dashboard's `public/geo` at dev and build time |
 
 Ids: a state is its abbreviation (`NSW`); SA4, SA3 and SA2 use the ABS codes. `index` is the position in

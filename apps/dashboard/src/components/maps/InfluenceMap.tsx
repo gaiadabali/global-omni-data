@@ -17,7 +17,7 @@ import {
   useReducedMotion,
   useStateOutlines,
 } from "./hooks";
-import { boundaryCode, type BoundaryFeature } from "./boundaries";
+import { boundaryCode, type BoundaryCollection, type BoundaryFeature } from "./boundaries";
 import { LABEL_FONT_SPEC, influenceLayers } from "./influence-layers";
 import { planInfluence, type ShownInfluence } from "./plan";
 import { stateBounds, stateCode, stateLabels, type StateFeature } from "./states";
@@ -167,7 +167,14 @@ export default function InfluenceMap({ initial, meta, basemapUrl, lockedBrand, s
   // Real outlines for SA4, SA3 and SA2 come from the static boundary files.
   const outlineUrl =
     shownLevel === "sa4" || shownLevel === "sa3" || shownLevel === "sa2" ? (meta.geo?.levels[shownLevel] ?? null) : null;
-  const areaOutlines = useBoundaries(outlineUrl);
+  const allOutlines = useBoundaries(outlineUrl);
+  // Draw only the areas the answer on screen has a cell for: at SA2 level that is the box in view, not all 2,454 outlines
+  // (the software renderer in the screenshot tool, and a phone, pay for every vertex of every frame).
+  const areaOutlines = useMemo<BoundaryCollection | null>(() => {
+    if (!allOutlines || !shown) return null;
+    const ids = new Set(shown.cells.map((c) => c.id));
+    return { type: "FeatureCollection", features: allOutlines.features.filter((f) => ids.has(boundaryCode(f))) };
+  }, [allOutlines, shown]);
 
   const labels = useMemo(() => (outlines ? stateLabels(outlines) : []), [outlines]);
   const hasBasemap = basemapUrl !== null;
