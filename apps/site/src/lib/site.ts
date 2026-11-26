@@ -7,24 +7,15 @@ export interface NavItem {
   label: string;
 }
 
+/** The main navigation. The logo links home; "Talk to us" renders as the header's one button. */
 export const NAV: NavItem[] = [
-  { href: "/", label: "Home" },
   { href: "/brands/", label: "Our brands" },
   { href: "/for-brands/", label: "For brands" },
-  { href: "/privacy/", label: "Trust & privacy" },
+  { href: "/how-it-works/", label: "How it works" },
+  { href: "/privacy/", label: "Trust" },
   { href: "/about/", label: "About" },
-  { href: "/contact/", label: "Contact" },
+  { href: "/contact/", label: "Talk to us" },
 ];
-
-export const BRAND_LINKS = [
-  { name: "YourTal", href: "https://yourtal.gaiada.com", host: "yourtal.gaiada.com" },
-  { name: "SnapApp", href: "https://snapapp.gaiada.com", host: "snapapp.gaiada.com" },
-  {
-    name: "Free Tax Returns",
-    href: "https://freetaxreturns.com.au",
-    host: "freetaxreturns.com.au",
-  },
-] as const;
 
 export const CONTACT_EMAIL = "hello@god.gaiada.com";
 
@@ -36,6 +27,13 @@ export function normalisePath(path: string): string {
 
 export function isCurrent(navHref: string, pathname: string): boolean {
   return normalisePath(navHref) === normalisePath(pathname);
+}
+
+/** True on a page inside a nav item's section, such as /brands/yourtal/ under "Our brands". */
+export function inSection(navHref: string, pathname: string): boolean {
+  const nav = normalisePath(navHref);
+  const p = normalisePath(pathname);
+  return nav !== "/" && p !== nav && p.startsWith(`${nav}/`);
 }
 
 export function canonicalUrl(pathname: string): string {

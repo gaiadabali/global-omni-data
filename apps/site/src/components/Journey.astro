@@ -1,0 +1,117 @@
+---
+import Docket from "./Docket.astro";
+import DotField from "./DotField.astro";
+import Bar from "./Bar.astro";
+
+/**
+ * "From a docket to a decision": the three stages side by side, a docket, the counted dots and a report.
+ * Each panel rises in as it scrolls into view. The report rows are sample data and say so.
+ */
+---
+
+<div class="journey">
+  <figure class="stage" data-reveal="1">
+    <p class="meta step"><span>1</span> A receipt, read in SnapApp</p>
+    <div class="panel paperpanel">
+      <Docket compact />
+    </div>
+    <figcaption>
+      Only the shop's suburb and what was bought reach GOD. Never the card, the image or the person's
+      name.
+    </figcaption>
+  </figure>
+  <figure class="stage" data-reveal="2">
+    <p class="meta step"><span>2</span> Counted in groups, never listed</p>
+    <div class="panel">
+      <DotField />
+    </div>
+    <figcaption>
+      Each dot is a group by suburb, age band and occupation. The ring is a group under ten: it shows as
+      "&#8288;&lt;10".
+    </figcaption>
+  </figure>
+  <figure class="stage" data-reveal="3">
+    <p class="meta step"><span>3</span> A pattern a brand can use</p>
+    <div class="panel rep">
+      <p class="rep-t">Weeknight fuel buyers, Central West QLD <span class="sample">Sample data</span></p>
+      <Bar label="Also buy coffee" width={62} value="41%" hot />
+      <Bar label="Also buy food" width={44} value="29%" />
+      <Bar label="Fill up twice a week" width={30} value="18%" />
+      <Bar label="Aged 13 to 17" width={5} value="<20" />
+    </div>
+    <figcaption>
+      A brand sees shares and counts for its market. A teen figure needs 20 or more teens, or it shows as
+      "&#8288;&lt;20".
+    </figcaption>
+  </figure>
+</div>
+
+<style>
+  .journey {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+    counter-reset: none;
+  }
+  .stage {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    gap: 16px;
+  }
+  .step {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+  }
+  .step span {
+    display: inline-grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 1px solid var(--line-2);
+    color: var(--indigo-ink);
+    font-size: 0.75rem;
+  }
+  .panel {
+    display: grid;
+    align-content: center;
+    min-height: 340px;
+    padding: 28px;
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    background: var(--card);
+  }
+  .paperpanel {
+    background: var(--raised);
+  }
+  .rep {
+    align-content: center;
+    gap: 2px;
+  }
+  .rep-t {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 10px;
+    margin: 0 0 12px;
+    font-weight: 580;
+    font-size: 0.9375rem;
+    line-height: 1.4;
+  }
+  figcaption {
+    font-size: 0.9375rem;
+    line-height: 1.55;
+    color: var(--ink-2);
+  }
+  @media (max-width: 960px) {
+    .journey {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 40px;
+    }
+    .panel {
+      min-height: 0;
+    }
+  }
+</style>

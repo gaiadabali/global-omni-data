@@ -1,0 +1,75 @@
+---
+import { PROMISES } from "../lib/promises";
+
+/** The six rules GOD keeps, each marked with the ring. Used on the home page and on Trust & privacy. */
+---
+
+<ul class="promises">
+  {
+    PROMISES.map((x, i) => (
+      <li data-reveal={String((i % 3) + 1)}>
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <circle cx="12" cy="12" r="7" />
+        </svg>
+        <h3>{x.h}</h3>
+        <p>{x.p}</p>
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  .promises {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    list-style: none;
+    border-top: 1px solid var(--line);
+  }
+  li {
+    padding: 32px 32px 36px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  li:not(:nth-child(3n + 1)) {
+    padding-left: 32px;
+    border-left: 1px solid var(--line);
+  }
+  svg {
+    width: 24px;
+    height: 24px;
+    margin-bottom: 20px;
+    fill: none;
+    stroke: var(--indigo-ink);
+    stroke-width: 1.5;
+  }
+  h3 {
+    margin-bottom: 8px;
+    font-size: 1.0625rem;
+  }
+  p {
+    color: var(--ink-2);
+    font-size: 0.9875rem;
+  }
+  @media (max-width: 960px) {
+    .promises {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    li:not(:nth-child(3n + 1)) {
+      padding-left: 0;
+      border-left: 0;
+    }
+    li:nth-child(even) {
+      padding-left: 28px;
+      border-left: 1px solid var(--line);
+    }
+  }
+  @media (max-width: 600px) {
+    .promises {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    li,
+    li:nth-child(even) {
+      padding: 24px 0;
+      border-left: 0;
+    }
+  }
+</style>

@@ -2,7 +2,11 @@
 import { buildAustralia, MAP_H, MAP_W } from "../lib/australia";
 
 // Drawn once at build time. The browser gets plain SVG and no script.
+// On load the dot groups fade in from the sparsest (open country) to the densest (the cities), in six waves,
+// then each city's ring opens once. CSS only, and nothing moves under reduced motion.
 const map = buildAustralia();
+const levels = [...new Set(map.groups.map((g) => g.o))].sort((a, b) => a - b);
+const wave = (o: number) => Math.min(5, Math.floor((levels.indexOf(o) / levels.length) * 6));
 ---
 
 <svg
@@ -11,24 +15,99 @@ const map = buildAustralia();
   role="img"
   aria-label="Australia drawn as a field of dots, denser around Sydney, Melbourne, Brisbane, Perth, Adelaide and other cities"
 >
-  {map.groups.map((g) => (
-    <path class={g.cls} d={g.d} stroke-width={g.w} stroke-opacity={g.o} />
-  ))}
-  {map.cities.map((c) => (
-    <circle class="city" cx={c.x} cy={c.y} r={c.r} />
-  ))}
+  {
+    map.groups.map((g) => (
+      <path class={`${g.cls} w${wave(g.o)}`} d={g.d} stroke-width={g.w} stroke-opacity={g.o} />
+    ))
+  }
+  {map.cities.map((c) => <circle class="city" cx={c.x} cy={c.y} r={c.r} />)}
   <g class="halos">
-    {map.cities.map((c) => (
-      <circle class="halo" cx={c.x} cy={c.y} r={c.r * 2.4} />
-    ))}
+    {map.cities.map((c) => <circle class="halo" cx={c.x} cy={c.y} r={c.r * 2.6} />)}
   </g>
   <g class="labels">
-    {map.cities.map((c) =>
-      c.label ? (
-        <text class="lbl" x={c.label.x} y={c.label.y} text-anchor={c.label.anchor}>
-          {c.name}
-        </text>
-      ) : null,
-    )}
+    {
+      map.cities.map((c) =>
+        c.label ? (
+          <text class="lbl" x={c.label.x} y={c.label.y} text-anchor={c.label.anchor}>
+            {c.name}
+          </text>
+        ) : null,
+      )
+    }
   </g>
 </svg>
+
+<style>
+  .aus {
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+  .aus path {
+    fill: none;
+    stroke-linecap: round;
+  }
+  .aus .dot {
+    stroke: var(--map-dot, var(--dot));
+  }
+  .aus .dim {
+    stroke: var(--map-dim, var(--dot-dim));
+  }
+  .aus .city {
+    fill: var(--map-city, var(--ochre));
+  }
+  .aus .halo {
+    fill: none;
+    stroke: var(--map-city, var(--ochre));
+    stroke-width: 1;
+    stroke-opacity: 0.55;
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  .aus .lbl {
+    font-family: var(--f-mono);
+    font-size: 11px;
+    fill: var(--map-label, var(--ink-3));
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .aus path {
+      animation: settle 900ms var(--ease) both;
+    }
+    .aus .w1 {
+      animation-delay: 120ms;
+    }
+    .aus .w2 {
+      animation-delay: 240ms;
+    }
+    .aus .w3 {
+      animation-delay: 360ms;
+    }
+    .aus .w4 {
+      animation-delay: 480ms;
+    }
+    .aus .w5 {
+      animation-delay: 600ms;
+    }
+    .aus .city,
+    .aus .labels {
+      animation: settle 600ms var(--ease) 900ms both;
+    }
+    .aus .halo {
+      animation: open 1400ms var(--ease) 1000ms both;
+    }
+  }
+
+  @keyframes settle {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes open {
+    from {
+      opacity: 0;
+      transform: scale(0.4);
+    }
+  }
+</style>

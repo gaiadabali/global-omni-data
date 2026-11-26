@@ -1,0 +1,52 @@
+---
+import { Picture } from "astro:assets";
+import type { ImageMetadata } from "astro";
+
+/** A real app screen in a CSS-drawn phone. The screen is served as AVIF or WebP at a few widths. */
+interface Props {
+  src: ImageMetadata;
+  alt: string;
+  caption?: string;
+  size?: "md" | "sm";
+  href?: string;
+  /** Eager-load the screen when it is in the first viewport. */
+  eager?: boolean;
+}
+
+const { src, alt, caption, size = "md", href, eager = false } = Astro.props;
+const w = size === "sm" ? 232 : 280;
+const body = { w, widths: [w, w * 2, w * 3].filter((x) => x <= src.width) };
+---
+
+<figure class="device">
+  {
+    href ? (
+      <a class="framelink" href={href}>
+        <div class:list={["phone", { sm: size === "sm" }]}>
+          <Picture
+            src={src}
+            alt={alt}
+            widths={body.widths}
+            sizes={`${body.w}px`}
+            formats={["avif", "webp"]}
+            loading={eager ? "eager" : "lazy"}
+            decoding="async"
+          />
+        </div>
+      </a>
+    ) : (
+      <div class:list={["phone", { sm: size === "sm" }]}>
+        <Picture
+          src={src}
+          alt={alt}
+          widths={body.widths}
+          sizes={`${body.w}px`}
+          formats={["avif", "webp"]}
+          loading={eager ? "eager" : "lazy"}
+          decoding="async"
+        />
+      </div>
+    )
+  }
+  {caption && <figcaption class="cap">{caption}</figcaption>}
+</figure>

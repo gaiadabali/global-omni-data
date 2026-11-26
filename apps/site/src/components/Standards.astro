@@ -1,0 +1,105 @@
+---
+/**
+ * Four real, checkable facts about GOD's standard. Numbers count up once when they scroll into view
+ * (src/scripts/site.ts); without JS or with reduced motion they simply show their final value.
+ */
+const items = [
+  { fig: "3", count: 3, pre: "", unit: "apps", text: "under one group privacy notice" },
+  { fig: "<10", count: 0, pre: "", unit: "", text: "is how any group under ten people appears to a brand" },
+  { fig: "20", count: 20, pre: "", unit: "teens", text: "is the smallest teen group ever counted" },
+  { fig: "Suburb", count: 0, pre: "", unit: "", text: "is as close as a map gets. Never a street" },
+];
+---
+
+<section class="standards" aria-label="The GOD standard in four facts">
+  <div class="wrap">
+    <ul>
+      {
+        items.map((it, i) => (
+          <li data-reveal={String(i + 1)}>
+            <p class="fig">
+              {it.count ? (
+                <span class="num" data-count={it.count} data-pre={it.pre}>
+                  {it.fig}
+                </span>
+              ) : (
+                <span>{it.fig}</span>
+              )}
+              {it.unit && <span class="unit">{it.unit}</span>}
+            </p>
+            <p class="txt">{it.text}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  .standards {
+    border-bottom: 1px solid var(--line);
+    background: var(--card);
+  }
+  ul {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    list-style: none;
+  }
+  li {
+    padding: 40px 32px 40px 0;
+  }
+  li + li {
+    padding-left: 32px;
+    border-left: 1px solid var(--line);
+  }
+  .fig {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin: 0 0 8px;
+    font-family: var(--f-display);
+    font-size: clamp(2.25rem, 1.8rem + 1.4vw, 3rem);
+    line-height: 1;
+    font-weight: 400;
+    color: var(--indigo-ink);
+  }
+  .fig .num {
+    font-family: var(--f-display);
+    font-variant-numeric: tabular-nums lining-nums;
+    display: inline-block;
+    min-width: 1.1ch;
+  }
+  .unit {
+    font-family: var(--f-text);
+    font-size: 1rem;
+    font-weight: 560;
+    color: var(--ink);
+  }
+  .txt {
+    max-width: 15rem;
+    color: var(--ink-2);
+    font-size: 0.9375rem;
+    line-height: 1.5;
+  }
+  @media (max-width: 960px) {
+    ul {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    li:nth-child(3) {
+      padding-left: 0;
+      border-left: 0;
+    }
+    li:nth-child(n + 3) {
+      border-top: 1px solid var(--line);
+    }
+  }
+  @media (max-width: 480px) {
+    li,
+    li + li {
+      padding: 28px 16px 28px 0;
+    }
+    li:nth-child(even) {
+      padding-left: 16px;
+    }
+  }
+</style>

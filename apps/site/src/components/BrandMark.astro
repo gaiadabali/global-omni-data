@@ -1,0 +1,23 @@
+---
+import { Image } from "astro:assets";
+import yourtal from "../assets/brands/yourtal-mark.svg";
+import snapapp from "../assets/brands/snapapp-mark.png";
+import ftr from "../assets/brands/ftr-mark.svg";
+import type { BrandKey } from "../lib/brands";
+
+/** A brand's own mark, as a file (never redrawn), with or without its name beside it. */
+interface Props {
+  brand: BrandKey;
+  name?: string;
+  size?: "md" | "lg";
+}
+
+const { brand, name, size = "md" } = Astro.props;
+const src = { yourtal, snapapp, ftr }[brand];
+const px = size === "lg" ? 48 : 36;
+---
+
+<span class:list={["mark", { lg: size === "lg" }]}>
+  <Image src={src} alt="" width={px} height={px} densities={[1, 2]} loading="lazy" />
+  {name && <span>{name}</span>}
+</span>

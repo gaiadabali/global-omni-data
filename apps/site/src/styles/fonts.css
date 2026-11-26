@@ -1,13 +1,14 @@
-/* Self-hosted variable fonts from @fontsource-variable. Only the latin and latin-ext files are used: the
-   site is English, so the cyrillic, greek and vietnamese files in the packages are never built or sent.
-   Each file is split by unicode-range, font-display is swap, and one variable file covers every weight. */
+/* Self-hosted fonts from @fontsource. Only the latin and latin-ext files are used: the site is English, so the
+   cyrillic, greek and vietnamese files are never built or sent. font-display is swap everywhere.
+   Newsreader (display) and Inter (text) are variable, one file per subset covers every weight.
+   IBM Plex Mono (figures, dockets, data labels) is static: 400 and 500 only. */
 
 @font-face {
-  font-family: "Lexend Variable";
+  font-family: "Newsreader Variable";
   font-style: normal;
   font-display: swap;
-  font-weight: 100 900;
-  src: url("@fontsource-variable/lexend/files/lexend-latin-ext-wght-normal.woff2")
+  font-weight: 200 800;
+  src: url("@fontsource-variable/newsreader/files/newsreader-latin-ext-wght-normal.woff2")
     format("woff2-variations");
   unicode-range:
     U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
@@ -16,11 +17,11 @@
 }
 
 @font-face {
-  font-family: "Lexend Variable";
+  font-family: "Newsreader Variable";
   font-style: normal;
   font-display: swap;
-  font-weight: 100 900;
-  src: url("@fontsource-variable/lexend/files/lexend-latin-wght-normal.woff2")
+  font-weight: 200 800;
+  src: url("@fontsource-variable/newsreader/files/newsreader-latin-wght-normal.woff2")
     format("woff2-variations");
   unicode-range:
     U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
@@ -47,6 +48,28 @@
   font-weight: 100 900;
   src: url("@fontsource-variable/inter/files/inter-latin-wght-normal.woff2")
     format("woff2-variations");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url("@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-400-normal.woff2") format("woff2");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 500;
+  src: url("@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-500-normal.woff2") format("woff2");
   unicode-range:
     U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
     U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;

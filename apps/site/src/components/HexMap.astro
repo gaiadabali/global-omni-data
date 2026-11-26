@@ -1,0 +1,150 @@
+---
+/**
+ * A sample catchment map: suburb-sized hexagons shaded by how many of a brand's customers live there.
+ * Sample data, generated at build time from a fixed seed. Hollow cells are areas with fewer than ten
+ * customers, which a brand always sees as "<10". No street map underneath: GOD's maps stop at suburb level.
+ */
+const COLS = 13;
+const ROWS = 9;
+const R = 16;
+const W = Math.sqrt(3) * R;
+const H = 1.5 * R;
+const rnd = (i: number) => {
+  const s = Math.sin(i * 12.9898 + 78.233) * 43758.5453;
+  return s - Math.floor(s);
+};
+const hex = (cx: number, cy: number) =>
+  Array.from({ length: 6 }, (_, k) => {
+    const a = (Math.PI / 180) * (60 * k - 30);
+    return `${(cx + (R - 1.2) * Math.cos(a)).toFixed(1)},${(cy + (R - 1.2) * Math.sin(a)).toFixed(1)}`;
+  }).join(" ");
+// Two centres: the café's two shops.
+const shops = [
+  { x: 4.2, y: 3.6 },
+  { x: 8.6, y: 5.2 },
+];
+const cells = [] as { pts: string; band: number; cx: number; cy: number }[];
+for (let y = 0; y < ROWS; y++) {
+  for (let x = 0; x < COLS; x++) {
+    const cx = W / 2 + x * W + (y % 2 ? W / 2 : 0);
+    const cy = R + y * H;
+    const near = Math.min(...shops.map((s) => Math.hypot(x - s.x, (y - s.y) * 1.1)));
+    const v = Math.max(0, 1 - near / 5.2) + (rnd(x * 31 + y * 7) - 0.5) * 0.28;
+    // Bands: 0 = <10 (ring), 1 = 10-24, 2 = 25-99, 3 = 100-499, 4 = 500+
+    const band = v < 0.12 ? 0 : v < 0.35 ? 1 : v < 0.58 ? 2 : v < 0.8 ? 3 : 4;
+    cells.push({ pts: hex(cx, cy), band, cx, cy });
+  }
+}
+const vbW = Math.ceil(W * COLS + W / 2);
+const vbH = Math.ceil(R * 2 + H * (ROWS - 1));
+const pins = shops.map((s) => ({
+  cx: W / 2 + Math.round(s.x) * W + (Math.round(s.y) % 2 ? W / 2 : 0),
+  cy: R + Math.round(s.y) * H,
+}));
+---
+
+<figure class="hexmap">
+  <svg viewBox={`0 0 ${vbW} ${vbH}`} role="img" aria-label="Sample map of suburb-sized areas around two cafés, shaded by how many customers live in each. Areas with fewer than ten customers are hollow.">
+    {cells.map((c) => <polygon class={`b${c.band}`} points={c.pts} />)}
+    {pins.map((p) => (
+      <g class="pin">
+        <circle cx={p.cx} cy={p.cy} r="6" />
+        <circle class="pin-c" cx={p.cx} cy={p.cy} r="2.4" />
+      </g>
+    ))}
+  </svg>
+  <figcaption>
+    <ul class="legend" aria-label="Customers per area">
+      <li><i class="b0"></i>&lt;10</li>
+      <li><i class="b1"></i>10–24</li>
+      <li><i class="b2"></i>25–99</li>
+      <li><i class="b3"></i>100–499</li>
+      <li><i class="b4"></i>500+</li>
+      <li><i class="pinkey"></i>Shop</li>
+    </ul>
+  </figcaption>
+</figure>
+
+<style>
+  .hexmap svg {
+    width: 100%;
+    height: auto;
+  }
+  polygon {
+    stroke: var(--card);
+    stroke-width: 0;
+  }
+  .b0 {
+    fill: none;
+    stroke: var(--line-2);
+    stroke-width: 1;
+  }
+  .b1 {
+    fill: var(--indigo-ink);
+    fill-opacity: 0.14;
+  }
+  .b2 {
+    fill: var(--indigo-ink);
+    fill-opacity: 0.32;
+  }
+  .b3 {
+    fill: var(--indigo-ink);
+    fill-opacity: 0.58;
+  }
+  .b4 {
+    fill: var(--indigo-ink);
+    fill-opacity: 0.88;
+  }
+  .pin circle {
+    fill: var(--card);
+    stroke: var(--ochre);
+    stroke-width: 2;
+  }
+  .pin .pin-c {
+    fill: var(--ochre);
+    stroke: none;
+  }
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    margin-top: 16px;
+    list-style: none;
+    font-family: var(--f-mono);
+    font-size: 0.75rem;
+    color: var(--ink-3);
+  }
+  .legend li {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .legend i {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    background: var(--indigo-ink);
+  }
+  .legend i.b0 {
+    background: none;
+    border: 1px solid var(--line-2);
+  }
+  .legend i.b1 {
+    opacity: 0.14;
+  }
+  .legend i.b2 {
+    opacity: 0.32;
+  }
+  .legend i.b3 {
+    opacity: 0.58;
+  }
+  .legend i.b4 {
+    opacity: 0.88;
+  }
+  .legend i.pinkey {
+    border-radius: 50%;
+    background: var(--card);
+    border: 2px solid var(--ochre);
+  }
+</style>

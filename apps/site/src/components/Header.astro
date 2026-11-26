@@ -1,6 +1,6 @@
 ---
 import Logo from "./Logo.astro";
-import { isCurrent, NAV } from "../lib/site";
+import { inSection, isCurrent, NAV } from "../lib/site";
 
 const pathname = Astro.url.pathname;
 ---
@@ -8,7 +8,7 @@ const pathname = Astro.url.pathname;
 <header class="hdr">
   <div class="wrap">
     <a class="brandlink" href="/" aria-label="GOD, Global Omni Data, home">
-      <Logo height={38} />
+      <Logo height={40} />
     </a>
     <button
       class="iconbtn menubtn"
@@ -17,7 +17,10 @@ const pathname = Astro.url.pathname;
       aria-expanded="false"
       aria-controls="nav"
     >
-      Menu
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M4 7h16M4 12h16M4 17h16"></path>
+      </svg>
+      <span id="menulabel">Menu</span>
     </button>
     <nav class="nav" id="nav" aria-label="Main">
       {NAV.map((item) => (
@@ -25,6 +28,7 @@ const pathname = Astro.url.pathname;
           href={item.href}
           class:list={{ navcta: item.href === "/contact/" }}
           aria-current={isCurrent(item.href, pathname) ? "page" : undefined}
+          data-section={inSection(item.href, pathname) ? "true" : undefined}
         >
           {item.label}
         </a>
@@ -35,7 +39,9 @@ const pathname = Astro.url.pathname;
         </svg>
         <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
           <circle cx="12" cy="12" r="4"></circle>
-          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path>
+          <path
+            d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"
+          ></path>
         </svg>
       </button>
     </nav>
