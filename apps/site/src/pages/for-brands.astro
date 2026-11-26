@@ -1,56 +1,100 @@
 ---
+import { Picture } from "astro:assets";
 import Base from "../layouts/Base.astro";
-import PageHead from "../components/PageHead.astro";
-import Bar from "../components/Bar.astro";
+import PageHero from "../components/PageHero.astro";
+import SampleReport from "../components/SampleReport.astro";
+import DotField from "../components/DotField.astro";
+import Cta from "../components/Cta.astro";
+import Icon from "../components/Icon.astro";
+import suburb from "../assets/photos/suburb-sydney-aerial.jpg";
+import cafe from "../assets/photos/cafe-espresso-melbourne.jpg";
+import fuel from "../assets/photos/fuel-longreach-dusk.jpg";
+import produce from "../assets/photos/produce-queen-victoria-market.jpg";
 
-const gets = [
+// The insight areas, from PLAN.md §5 and §6.1 ("Brand insight"). What each is built from is stated plainly.
+const areas = [
   {
-    b: "Catchments",
-    s: "The postcodes and suburbs your customers come from, ranked by share.",
+    h: "Catchments",
+    p: "Where your customers live, and the everyday areas where they actually spend, suburb by suburb. Built from the postcodes people give and the shop addresses printed on their receipts.",
   },
   {
-    b: "Audience age",
-    s: "Age bands from 13 up, so you can see who is growing and who has gone quiet.",
+    h: "Audience",
+    p: "Age band, occupation and income bracket. The demographics brands ask for first, from YourTal sign-ups and the occupations people choose in Free Tax Returns.",
   },
   {
-    b: "Occupation and income mix",
-    s: "Who your customers are by job and income bracket, from tax-return data.",
+    h: "Segments and affinity",
+    p: "Groups such as daily coffee buyers or twice-a-week commuters, each scored by how much more likely they are to buy from you than the area's average.",
   },
   {
-    b: "Segments with affinity",
-    s: 'Groups such as "weekday commuters" scored by how much more likely they are to buy from you than the average.',
+    h: "Also shops at",
+    p: "The other merchants and categories your customers spend with, how loyal they are, and who they switch to.",
   },
   {
-    b: "Visit frequency",
-    s: "How often customers return, and how that differs between locations.",
+    h: "Visits and spend",
+    p: "How often customers come back, how that differs between your locations, and what they spend, in bands rather than exact amounts.",
   },
-  { b: "Also shops at", s: "The other merchants and categories your customers spend with." },
   {
-    b: "Teen market reports",
-    s: "For youth and kids' brands: the same catchments, interests, spending and loyalty views, built from teens' real activity. Guardians accept for them, and every figure covers 20 or more teens.",
+    h: "Teen market reports",
+    p: "For kids' and youth brands: the same catchment, interest and spending views, built from real activity. Every figure covers 20 or more teens, and no teen profile exists.",
   },
 ];
 
-// Sample data only. Harbour & Bean is fictional and the report says so on the page.
-const where = [
-  { label: "2000", width: 82, value: "18%", hot: true },
-  { label: "2026", width: 56, value: "12%" },
-  { label: "2041", width: 41, value: "9%" },
-  { label: "2060", width: 29, value: "6%" },
-  { label: "2289", width: 6, value: "<10" },
+const industries = [
+  {
+    key: "fuel",
+    name: "Fuel and convenience",
+    img: fuel,
+    alt: "A country service station in Longreach, Queensland, at dusk",
+    q: "Who fills up with us twice a week, and what else do they buy at the counter?",
+    views: [
+      "Activity areas along commuting routes",
+      "Visit frequency by site",
+      "Food and coffee bought on the same docket",
+    ],
+  },
+  {
+    key: "grocery",
+    name: "Grocery and fresh food",
+    img: produce,
+    alt: "Fresh produce in crates at Queen Victoria Market, Melbourne",
+    q: "Which suburbs shop with us, and where does the rest of the weekly shop go?",
+    views: [
+      "Home catchments by suburb",
+      "Share of the basket by category",
+      "Switching between grocers",
+    ],
+  },
+  {
+    key: "cafes",
+    name: "Cafés and hospitality",
+    img: cafe,
+    alt: "An espresso pouring at a Melbourne café",
+    q: "How far do our regulars travel, and what else do they do nearby?",
+    views: [
+      "Catchments around each shop",
+      "Weekly, fortnightly and monthly regulars",
+      "Bakeries, gyms and bookshops they also visit",
+    ],
+  },
 ];
-const age = [
-  { label: "13 to 17", width: 8, value: "3%" },
-  { label: "18 to 24", width: 44, value: "19%" },
-  { label: "25 to 34", width: 78, value: "34%", hot: true },
-  { label: "35 to 49", width: 52, value: "23%" },
-  { label: "50+", width: 49, value: "21%" },
-];
-const also = [
-  { label: "Bakeries", width: 71, value: "2.1x", hot: true },
-  { label: "Gyms", width: 58, value: "1.7x" },
-  { label: "Bookshops", width: 46, value: "1.4x" },
-  { label: "Florists", width: 33, value: "1.1x" },
+
+const engage = [
+  {
+    h: "Tell us your question",
+    p: "Who you sell to, where, and what you want to know. A sentence is enough to start.",
+  },
+  {
+    h: "We scope it",
+    p: "Within two business days we reply with what a report would cover, what it would cost and how long it would take.",
+  },
+  {
+    h: "You get the report",
+    p: "Counts and shares for your market, by area, age band, occupation and segment. Every group under 10 shows as “⁠<10”.",
+  },
+  {
+    h: "Ask the next question",
+    p: "The first answer usually raises the next one: a new suburb, a competitor, a season.",
+  },
 ];
 
 const rules = [
@@ -59,103 +103,260 @@ const rules = [
     s: "Reports show counts and shares for groups of people. A report never describes one person.",
   },
   {
-    b: '"⁠<10" for small groups',
-    s: 'A group with fewer than 10 people is shown as "⁠<10". Sensitive categories use a higher threshold.',
+    b: "“⁠<10” for small groups",
+    s: "Any group under 10 people shows as “⁠<10”. Teen and sensitive categories use 20.",
   },
   {
     b: "No person-level data",
-    s: "No names, emails, phone numbers or device IDs leave GOD.",
+    s: "No names, emails, phone numbers, device IDs or addresses leave GOD.",
   },
-  { b: "No lists", s: "GOD does not sell, rent or hand over audience lists." },
+  {
+    b: "No lists",
+    s: "GOD does not sell, rent or hand over audience lists, and does not target ads at people.",
+  },
 ];
 ---
 
 <Base
   title="For brands: see your market, never the people in it | GOD (Global Omni Data)"
-  description="GOD reports what Australians do in the real world: where they live, where they shop and what else they buy. Every figure is an aggregate."
+  description="GOD reports what Australians do in the real world: where they live and shop, who they are and what else they buy. Catchments, audiences, segments and teen reports, all in aggregate."
+  ogImage="/og/for-brands.png"
 >
-  <PageHead
-    title="See your market, never the people in it"
-    lede="GOD reports what Australians do in the real world: where they live, where they shop and what else they buy. Every figure is an aggregate."
-  />
-
-  <section class="block">
-    <div class="wrap">
-      <div class="sechead">
-        <h2>What a brand gets</h2>
+  <PageHero
+    title="See your market. Never the people in it."
+    lede="GOD reports what Australians do in the real world: where they live, where they shop, what else they buy and who they are. Every figure is an aggregate, and every small group stays hidden."
+    kicker="For brands"
+    crumbs={[{ href: "/", label: "Home" }, { label: "For brands" }]}
+  >
+    <a class="btn btn-primary" href="/contact/">
+      Ask a question
+      <Icon name="arrow" />
+    </a>
+    <a class="btn btn-line" href="#sample">
+      See a sample report
+    </a>
+    <figure slot="visual" class="hero-photo">
+      <div class="photo">
+        <Picture
+          src={suburb}
+          alt="A Sydney suburb seen from directly above: rooftops, solar panels and curving streets"
+          widths={[480, 720, 960, 1280]}
+          sizes="(max-width: 960px) 100vw, 44vw"
+          formats={["avif", "webp"]}
+          loading="eager"
+        />
       </div>
-      <ul class="gets">
-        {gets.map((g) => (
-          <li>
-            <b>{g.b}</b>
-            <span>{g.s}</span>
+      <figcaption class="meta">Suburb level is as close as GOD's maps get.</figcaption>
+    </figure>
+  </PageHero>
+
+  <section class="sec" id="what">
+    <div class="wrap">
+      <div class="sec-head split">
+        <div>
+          <p class="kicker">What you can ask for</p>
+          <h2>Six views of a real market</h2>
+        </div>
+        <p class="lede">
+          Each one is built from what people did, not what they remembered in a survey: the receipts
+          they snapped, the videos they chose to watch and the work they claim at tax time.
+        </p>
+      </div>
+      <ul class="feats">
+        {areas.map((a, i) => (
+          <li data-reveal={String((i % 3) + 1)}>
+            <h3>{a.h}</h3>
+            <p>{a.p}</p>
           </li>
         ))}
       </ul>
     </div>
   </section>
 
-  <section class="block">
+  <section class="sec tint" id="sample">
     <div class="wrap">
-      <div class="sechead">
-        <h2>What a catchment report looks like</h2>
+      <div class="sec-head split">
+        <div>
+          <p class="kicker">Sample report</p>
+          <h2>What a catchment report looks like</h2>
+        </div>
         <p class="lede">
-          Harbour &amp; Bean is a fictional café group. The figures are made up to show the layout.
+          Harbour &amp; Bean is a fictional café group with two shops in inner Sydney. The figures
+          are made up to show the layout. A real report has the same shape, for your brand.
         </p>
       </div>
-      <article class="rep" aria-label="Sample report for Harbour and Bean">
-        <div class="rep-h">
-          <h3>Harbour &amp; Bean</h3>
-          <p>
-            Catchment report, last 90 days <span class="sample">Sample data</span>
+      <div data-reveal>
+        <SampleReport full />
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="industries">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="kicker">By industry</p>
+        <h2>The questions each industry brings us</h2>
+      </div>
+      <div class="inds">
+        {industries.map((x, i) => (
+          <article class="ind" data-reveal={String(i + 1)}>
+            <div class="photo">
+              <Picture
+                src={x.img}
+                alt={x.alt}
+                widths={[400, 640, 960]}
+                sizes="(max-width: 960px) 100vw, 33vw"
+                formats={["avif", "webp"]}
+              />
+            </div>
+            <h3>{x.name}</h3>
+            <p class="q">{x.q}</p>
+            <ul class="ticks">
+              {x.views.map((v) => (
+                <li>{v}</li>
+              ))}
+            </ul>
+          </article>
+        ))}
+      </div>
+
+      <article class="youth" data-reveal>
+        <div>
+          <h3>Kids' and youth brands</h3>
+          <p class="q">
+            How big is the teen market in our suburbs, and what do teens there spend on?
           </p>
+          <p>
+            Teen reports answer with groups, never individuals. Every figure covers 20 or more teens
+            aged 13 to 17. Alcohol, vape, gambling and sensitive categories never appear, no profile
+            of a single teen exists, and nobody uses GOD data to choose the ads a teen sees.
+          </p>
+          <a class="go" href="/privacy/#teens">
+            Read the teen standard
+            <Icon name="arrow" />
+          </a>
         </div>
-        <div class="repgrid">
-          <div>
-            <h4>Where customers live</h4>
-            {where.map((r) => (
-              <Bar {...r} />
-            ))}
-          </div>
-          <div>
-            <h4>Age mix</h4>
-            {age.map((r) => (
-              <Bar {...r} />
-            ))}
-          </div>
-          <div>
-            <h4>Also shops at</h4>
-            {also.map((r) => (
-              <Bar {...r} />
-            ))}
-            <p class="small repnote">Affinity against the Australian average.</p>
-          </div>
+        <div class="youth-viz">
+          <DotField
+            cols={10}
+            rows={6}
+            label="A grid of dots, each a group of at least twenty teens, with one hollow ring for a group too small to show"
+          />
+          <p class="meta">Each dot is a group of 20 or more. The ring shows as "&#8288;&lt;20".</p>
         </div>
-        <p class="repfoot">
-          Groups under 10 people show as "&#8288;&lt;10". No person-level data is in this report.
-        </p>
       </article>
     </div>
   </section>
 
-  <section class="block">
+  <section class="sec" id="engage">
+    <div class="wrap split">
+      <div>
+        <p class="kicker">How to engage</p>
+        <h2>Start with one question</h2>
+        <p class="lede">
+          There is no platform to learn and no data to load. You ask, we scope, and you get an
+          answer you can act on.
+        </p>
+      </div>
+      <ol class="steps">
+        {engage.map((s) => (
+          <li>
+            <h3>{s.h}</h3>
+            <p>{s.p}</p>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <section class="sec" id="rules">
     <div class="wrap">
-      <div class="sechead">
+      <div class="sec-head">
+        <p class="kicker">The terms</p>
         <h2>What every brand agrees to</h2>
       </div>
-      <ul class="rules">
+      <ul class="ledger">
         {rules.map((r) => (
           <li>
-            <b>{r.b}</b>
+            <span>{r.b}</span>
             <span>{r.s}</span>
           </li>
         ))}
       </ul>
-      <div class="row rules-cta">
-        <a class="btn btn-primary" href="/contact/">
-          Ask for a sample for your category
-        </a>
-      </div>
     </div>
   </section>
+
+  <Cta
+    title="Ask for a sample in your category"
+    lede="Tell us who you sell to and what you want to know. We reply within two business days with what a report would cover, what it would cost and how long it would take."
+    secondary={{ href: "/how-it-works/", label: "How the data is made" }}
+  />
 </Base>
+
+<style>
+  .hero-photo .photo {
+    aspect-ratio: 4 / 3;
+  }
+  .hero-photo .meta {
+    margin-top: 12px;
+  }
+
+  .inds {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 32px;
+  }
+  .ind .photo {
+    aspect-ratio: 4 / 3;
+    margin-bottom: 24px;
+  }
+  .ind h3 {
+    margin-bottom: 8px;
+  }
+  .q {
+    font-family: var(--f-display);
+    font-size: 1.25rem;
+    line-height: 1.35;
+    color: var(--ink);
+    margin-bottom: 16px;
+  }
+  .ind .ticks {
+    font-size: 0.9375rem;
+  }
+
+  .youth {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: 48px;
+    align-items: center;
+    margin-top: 56px;
+    padding: 40px;
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    background: var(--card);
+  }
+  .youth h3 {
+    margin-bottom: 8px;
+  }
+  .youth p:not(.q):not(.meta) {
+    color: var(--ink-2);
+    margin-bottom: 20px;
+  }
+  .youth-viz .meta {
+    margin-top: 12px;
+  }
+
+  @media (max-width: 960px) {
+    .inds {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 48px;
+    }
+    .ind .photo {
+      aspect-ratio: 16 / 9;
+    }
+    .youth {
+      grid-template-columns: minmax(0, 1fr);
+      padding: 28px 24px;
+    }
+  }
+</style>

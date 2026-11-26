@@ -1,0 +1,122 @@
+---
+import Base from "../layouts/Base.astro";
+import PageHero from "../components/PageHero.astro";
+import Icon from "../components/Icon.astro";
+import { CONTACT_EMAIL } from "../lib/site";
+
+const covers = [
+  { h: "What GOD holds", p: "The fields GOD copies from each app, and the ones it never copies." },
+  { h: "Why it holds them", p: "The purpose: counting groups so brands can understand a market." },
+  { h: "Who sees it", p: "What brands receive, what staff can open, and when a look is logged." },
+  {
+    h: "How long it keeps it",
+    p: "How long data stays, and what happens when you delete your account.",
+  },
+  {
+    h: "How to download or delete",
+    p: "Where to find export and delete in YourTal, SnapApp and Free Tax Returns.",
+  },
+  { h: "How to complain", p: "Who to contact, and what happens next." },
+];
+---
+
+<Base
+  title="Group Privacy Notice: being finalised | GOD (Global Omni Data)"
+  description="The full GOD Group Privacy Notice is being finalised with legal review and will be published here. Meanwhile, read how GOD handles data or contact us."
+  ogImage="/og/privacy.png"
+>
+  <PageHero
+    kicker="Group Privacy Notice"
+    title="The full notice is on its way"
+    lede="The GOD Group Privacy Notice is being finalised with legal review. It will be published on this page once it is ready."
+    crumbs={[
+      { href: "/", label: "Home" },
+      { href: "/privacy/", label: "Trust and privacy" },
+      { label: "Group Privacy Notice" },
+    ]}
+  >
+    <a class="btn btn-primary" href="/privacy/">
+      How GOD handles data
+      <Icon name="arrow" />
+    </a>
+    <a class="btn btn-line" href={`mailto:${CONTACT_EMAIL}`}>
+      Email {CONTACT_EMAIL}
+    </a>
+  </PageHero>
+
+  <section class="sec" id="covers">
+    <div class="wrap split">
+      <div>
+        <p class="kicker">What it will cover</p>
+        <h2>Six questions, answered in plain language</h2>
+        <p class="lede">
+          One notice applies to YourTal, SnapApp and Free Tax Returns. It will describe real
+          processing, not boilerplate.
+        </p>
+      </div>
+      <ol class="steps">
+        {covers.map((c, i) => (
+          <li data-reveal={String((i % 6) + 1)}>
+            <h3>{c.h}</h3>
+            <p>{c.p}</p>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <section class="sec tint" id="meanwhile">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="kicker">In the meantime</p>
+        <h2>What you can read today</h2>
+      </div>
+      <div class="pair">
+        <div class="card">
+          <h3>How GOD handles data</h3>
+          <p>
+            The rules GOD keeps now: brands get aggregates only, small groups stay hidden, teens are
+            counted only in groups of 20 or more, and staff access is recorded.
+          </p>
+          <a class="go" href="/privacy/">
+            Trust and privacy
+            <Icon name="arrow" />
+          </a>
+        </div>
+        <div class="card">
+          <h3>Ask us directly</h3>
+          <p>
+            Have a question about your data or about the notice? Email us. We read every message and
+            reply within two business days.
+          </p>
+          <a class="go" href={`mailto:${CONTACT_EMAIL}`}>
+            {CONTACT_EMAIL}
+            <Icon name="arrow" />
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .pair {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+  }
+  .pair .card {
+    display: grid;
+    gap: 16px;
+    justify-items: start;
+    align-content: start;
+  }
+  .pair .card p {
+    color: var(--ink-2);
+  }
+  @media (max-width: 720px) {
+    .pair {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

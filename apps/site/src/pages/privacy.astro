@@ -1,71 +1,324 @@
 ---
+import { Picture } from "astro:assets";
 import Base from "../layouts/Base.astro";
-import PageHead from "../components/PageHead.astro";
+import PageHero from "../components/PageHero.astro";
+import Promises from "../components/Promises.astro";
+import Cta from "../components/Cta.astro";
+import Icon from "../components/Icon.astro";
+import aerial from "../assets/photos/suburb-sydney-aerial.jpg";
 
-const promises = [
+const consent = [
   {
-    h: "One notice, accepted at sign-up",
-    p: "Every GOD brand shows the same group privacy notice when you register. Nothing flows to GOD until you accept it. Existing users accept it the next time they sign in.",
+    h: "One notice for the whole group",
+    p: "Every GOD brand shows the same Group Privacy Notice, with a required tick box at registration in YourTal, SnapApp and Free Tax Returns.",
   },
   {
-    h: "Guardians accept for teens",
-    p: "A teen takes part only after a guardian accepts for them. Teen activity is turned into results for groups of 20 or more. GOD keeps no profile of an individual teen, never uses alcohol, vape, gambling or health purchases for teens, and nobody uses GOD data to pick the ads a teen sees.",
+    h: "Existing users accept at their next sign-in",
+    p: "People who signed up before the notice existed see it the next time they sign in.",
   },
   {
-    h: "Brands see aggregates only",
-    p: 'A brand receives totals and shares for groups. Any group under 10 shows as "⁠<10". Brands do not get names, contact details or lists.',
+    h: "Nothing flows before a yes",
+    p: "A person’s data reaches GOD only after they accept. Guardians accept for teens.",
   },
   {
-    h: "A shop's location comes from the receipt",
-    p: "When SnapApp reads a receipt, the shop's address comes from the receipt itself. GOD does not use a person's phone location to learn where they shop.",
+    h: "Joined on a verified email, exactly",
+    p: "“Sign in with YourTal” works in all three apps. Separate accounts are matched only on a verified email that matches exactly. There is no fuzzy or name matching. A merge can be undone, and every merge is logged with its reason.",
+  },
+];
+
+const teens = [
+  "Guardians accept the notice for a teen.",
+  "Teens are counted only in groups of 20 or more, by age band 13 to 17, area, declared interests and spending by category.",
+  "GOD keeps no profile or activity area for any single teen, and a teen profile can never be opened, even by staff.",
+  "Alcohol, vape, gambling and sensitive categories never appear in teen figures.",
+  "Nobody uses GOD data to choose the ads a teen sees.",
+  "Teens get declared interests only, never inferred ones.",
+];
+
+const roles = ["Owner", "Executive", "Data team", "Brand lead"];
+
+const staff = [
+  {
+    h: "Invitation only",
+    p: "Only allow-listed GOD staff can sign in, and only by invitation. They sign in with a passkey, through YourTal.",
   },
   {
-    h: "Delete in any app and you are out of GOD",
-    p: "Delete your account in YourTal, SnapApp or Free Tax Returns and GOD removes you at the next sync.",
+    h: "Pseudonymous by default",
+    p: "A record is an id, with no name, email or phone. The data team opens an individual profile only to prove the processing is correct.",
   },
   {
-    h: "Staff access is invitation-only and logged",
-    p: "Only invited GOD staff can see individual records, and only to check that the processing is correct. They sign in with a passkey, and every look is logged.",
+    h: "Every look is logged",
+    p: "Opening a profile asks for a reason, and every opening is recorded.",
   },
   {
-    h: "What never leaves Free Tax Returns",
-    p: "Tax file numbers, bank details, identity documents and the lines of a return stay in Free Tax Returns. GOD receives occupation, income bracket and return status.",
+    h: "Exact small counts stay inside",
+    p: "Exact small counts are visible only inside the GOD dashboard, to the Owner and the Data team. Everything that leaves GOD, such as reports and PDFs, prints “⁠<10”.",
+  },
+  {
+    h: "Checked on the server",
+    p: "Every role check runs on the server, not in the browser.",
+  },
+];
+
+const choices = [
+  {
+    h: "Download your data",
+    p: "YourTal, SnapApp and Free Tax Returns each have an export. Use it in the app you signed up with.",
+  },
+  {
+    h: "Delete your account",
+    p: "Delete in any of the three apps and GOD removes you at the next sync.",
+  },
+  {
+    h: "Read the notice",
+    p: "The Group Privacy Notice is the document you accept at sign-up.",
+    href: "/privacy-notice/",
+    link: "About the Group Privacy Notice",
   },
 ];
 ---
 
 <Base
   title="Trust & privacy: how GOD handles data | GOD (Global Omni Data)"
-  description="People choose to take part. Brands get totals. Staff access is narrow and recorded. How GOD handles data, in plain words."
+  description="People choose to take part. Brands get totals. Staff access is narrow and recorded. How GOD keeps its privacy rules, including the standard for teens."
+  ogImage="/og/privacy.png"
 >
-  <PageHead
-    title="How GOD handles data"
-    lede="People choose to take part. Brands get totals. Staff access is narrow and recorded."
-  />
+  <PageHero
+    kicker="Trust and privacy"
+    title="Trust is a rule, not a promise"
+    lede="People choose to take part. Brands get totals. Staff access is narrow and recorded. The rules are written into the software, not left to good intentions."
+    crumbs={[{ href: "/", label: "Home" }, { label: "Trust and privacy" }]}
+  >
+    <a class="btn btn-primary" href="#teens">
+      The teen standard
+      <Icon name="arrow" />
+    </a>
+    <a class="btn btn-line" href="/how-it-works/">
+      How data moves
+    </a>
+  </PageHero>
 
-  <section class="block">
+  <section class="sec" id="principles">
     <div class="wrap">
-      <div class="promises">
-        {promises.map((x) => (
-          <div class="promise">
-            <h2>{x.h}</h2>
-            <p>{x.p}</p>
-          </div>
-        ))}
-      </div>
-    </div>
-  </section>
-
-  <section class="block" id="notice">
-    <div class="wrap">
-      <div class="notice">
-        <h2>GOD Group Privacy Notice</h2>
-        <p class="small">
-          The notice covers YourTal, SnapApp and Free Tax Returns. It says what GOD holds, why, who
-          sees it and how to delete it.
+      <div class="sec-head split">
+        <div>
+          <p class="kicker">Our principles</p>
+          <h2>Six rules we keep</h2>
+        </div>
+        <p class="lede">
+          A hollow ring marks every place a threshold applies. These are the rules brands, staff and
+          the software all work within.
         </p>
-        <p class="ph">Full notice published at launch.</p>
+      </div>
+      <Promises />
+    </div>
+  </section>
+
+  <section class="sec tint" id="consent">
+    <div class="wrap split">
+      <div>
+        <p class="kicker">Consent</p>
+        <h2>A yes comes first</h2>
+        <p class="lede">
+          GOD does not collect data and ask afterwards. A person’s data flows to GOD only after they
+          accept one notice, written for all three apps.
+        </p>
+      </div>
+      <ul class="ledger">
+        {consent.map((c) => (
+          <li data-reveal>
+            <span>{c.h}</span>
+            <span>{c.p}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <section class="sec" id="maps">
+    <div class="wrap split flip">
+      <figure class="aerial" data-reveal>
+        <div class="photo">
+          <Picture
+            src={aerial}
+            alt="The rooftops and streets of a Sydney suburb seen from directly above"
+            widths={[480, 720, 960, 1200]}
+            sizes="(max-width: 960px) 100vw, 50vw"
+            formats={["avif", "webp"]}
+          />
+        </div>
+        <figcaption class="meta">
+          A suburb from above. This is as close as a GOD map gets.
+        </figcaption>
+      </figure>
+      <div class="stack">
+        <p class="kicker">Maps</p>
+        <h2>Maps stop at the suburb</h2>
+        <p class="lede">
+          Maps go from Australia to state to region to suburb-sized areas, about 2 km across, and
+          stop there. There is no street level.
+        </p>
+        <ul class="ticks rings">
+          <li>Merchants may appear as dots because they are businesses, not people.</li>
+          <li>
+            A shop’s location comes from the address printed on its receipt, never from a person’s
+            phone. SnapApp strips GPS from photos.
+          </li>
+          <li>
+            Merchant categories like pharmacy and medical are flagged sensitive and use the higher
+            threshold.
+          </li>
+        </ul>
       </div>
     </div>
   </section>
+
+  <section class="sec night teen" id="teens">
+    <div class="wrap">
+      <div class="sec-head split">
+        <div>
+          <p class="kicker">The teen standard</p>
+          <h2>Teens count only in groups of 20 or more</h2>
+        </div>
+        <p class="lede">
+          Young people deserve a stricter rule than everyone else. This is the standard GOD applies
+          to anyone aged 13 to 17.
+        </p>
+      </div>
+      <div class="teen-grid">
+        <ul class="ticks rings">
+          {teens.map((t) => (
+            <li data-reveal>{t}</li>
+          ))}
+        </ul>
+        <div class="yt">
+          <h3>What YourTal adds</h3>
+          <ul class="ticks">
+            <li>Ages 13 to 17 need guardian approval by email.</li>
+            <li>Quiet hours run from 9pm to 7am.</li>
+            <li>No interest profiling.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="security">
+    <div class="wrap">
+      <div class="sec-head split">
+        <div>
+          <p class="kicker">Security</p>
+          <h2>Narrow access, and a record of every look</h2>
+        </div>
+        <div class="stack">
+          <p class="lede">
+            Staff access is deliberately small. It exists so the team can check the processing is
+            correct, not to browse people.
+          </p>
+          <ul class="chips" aria-label="Staff roles">
+            {roles.map((r) => (
+              <li class="chip">{r}</li>
+            ))}
+          </ul>
+        </div>
+      </div>
+      <ul class="feats">
+        {staff.map((s) => (
+          <li data-reveal>
+            <h3>{s.h}</h3>
+            <p>{s.p}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <section class="sec tint" id="choices">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="kicker">Your choices</p>
+        <h2>You can leave, and you can take your data</h2>
+      </div>
+      <ul class="feats">
+        {choices.map((c) => (
+          <li data-reveal>
+            <h3>{c.h}</h3>
+            <p>{c.p}</p>
+            {c.href && (
+              <p class="more">
+                <a class="go" href={c.href}>
+                  {c.link}
+                  <Icon name="arrow" />
+                </a>
+              </p>
+            )}
+          </li>
+        ))}
+      </ul>
+      <p class="site-note small">
+        This website holds none of this. god.gaiada.com is static, has no access to data, uses no
+        analytics, tag managers or third-party scripts, and serves its own fonts.
+      </p>
+    </div>
+  </section>
+
+  <Cta
+    title="Ask us about how we handle data"
+    lede="If a question about privacy is stopping you, ask it. We read every message and reply within two business days."
+    primary={{ href: "/contact/", label: "Talk to us" }}
+    secondary={{ href: "/privacy-notice/", label: "Group Privacy Notice" }}
+  />
 </Base>
+
+<style>
+  .aerial .photo {
+    aspect-ratio: 4 / 3;
+  }
+  .aerial .meta {
+    margin-top: 12px;
+  }
+  .stack .lede {
+    margin-bottom: 8px;
+  }
+
+  .teen {
+    padding-bottom: calc(var(--sec) * 0.9);
+  }
+  .teen-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 4fr);
+    gap: 48px 80px;
+    align-items: start;
+  }
+  .teen-grid > .ticks {
+    gap: 20px;
+    font-size: 1.0625rem;
+  }
+  .teen .ticks.rings li::before {
+    background: transparent;
+    border: 1.5px solid var(--night-ink-3);
+  }
+  .yt {
+    padding: 28px;
+    border: 1px solid var(--night-line);
+    border-radius: var(--r-lg);
+  }
+  .yt h3 {
+    margin-bottom: 16px;
+  }
+  @media (max-width: 960px) {
+    .teen-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  .more {
+    margin-top: 12px;
+  }
+  .site-note {
+    max-width: 44rem;
+    margin-top: 56px;
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
+  }
+</style>

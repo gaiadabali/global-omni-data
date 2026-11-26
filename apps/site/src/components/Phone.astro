@@ -19,22 +19,8 @@ const body = { w, widths: [w, w * 2, w * 3].filter((x) => x <= src.width) };
 ---
 
 <figure class="device">
-  {
-    href ? (
-      <a class="framelink" href={href}>
-        <div class:list={["phone", { sm: size === "sm" }]}>
-          <Picture
-            src={src}
-            alt={alt}
-            widths={body.widths}
-            sizes={`${body.w}px`}
-            formats={["avif", "webp"]}
-            loading={eager ? "eager" : "lazy"}
-            decoding="async"
-          />
-        </div>
-      </a>
-    ) : (
+  {href ? (
+    <a class="framelink" href={href}>
       <div class:list={["phone", { sm: size === "sm" }]}>
         <Picture
           src={src}
@@ -46,7 +32,19 @@ const body = { w, widths: [w, w * 2, w * 3].filter((x) => x <= src.width) };
           decoding="async"
         />
       </div>
-    )
-  }
+    </a>
+  ) : (
+    <div class:list={["phone", { sm: size === "sm" }]}>
+      <Picture
+        src={src}
+        alt={alt}
+        widths={body.widths}
+        sizes={`${body.w}px`}
+        formats={["avif", "webp"]}
+        loading={eager ? "eager" : "lazy"}
+        decoding="async"
+      />
+    </div>
+  )}
   {caption && <figcaption class="cap">{caption}</figcaption>}
 </figure>

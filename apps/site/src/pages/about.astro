@@ -1,7 +1,39 @@
 ---
 import Base from "../layouts/Base.astro";
-import PageHead from "../components/PageHead.astro";
-import { BRAND_LINKS } from "../lib/site";
+import PageHero from "../components/PageHero.astro";
+import GroupDiagram from "../components/GroupDiagram.astro";
+import BrandMark from "../components/BrandMark.astro";
+import Cta from "../components/Cta.astro";
+import Icon from "../components/Icon.astro";
+import { BRANDS } from "../lib/brands";
+
+const does = [
+  "Holds the shared profile that joins a person across the three apps",
+  "Keeps the privacy rules in one place",
+  "Turns the combined data into aggregate insight for brands",
+];
+
+const doesNot = [
+  "Run campaigns, lodge returns or read receipts. The brands do that",
+  "Show a brand a person, a name, an email, a phone number or a list",
+  "Sell, rent or hand over audience lists",
+  "Feed ad targeting back into the apps. GOD feeds insight to brands, not the other way round",
+];
+
+const why = [
+  {
+    h: "One sign-in",
+    p: "“Sign in with YourTal” works in all three apps, so a person has one way in.",
+  },
+  {
+    h: "One standard",
+    p: "One Group Privacy Notice, one threshold for every count and one rule for teens, whichever app the data came from.",
+  },
+  {
+    h: "One place for the rules",
+    p: "Each app stays simple for the people who use it. The hard rules live in GOD, once, instead of three times.",
+  },
+];
 
 const habits = [
   {
@@ -18,7 +50,7 @@ const habits = [
   },
   {
     b: "Check before we claim",
-    s: "Figures are rounded, dated and updated each quarter.",
+    s: "We state what we have checked, and say so when we have not.",
   },
   { b: "Keep it local", s: "We build for Australian people, places and rules." },
 ];
@@ -27,50 +59,171 @@ const habits = [
 <Base
   title="About: the holding company behind three apps | GOD (Global Omni Data)"
   description="Global Omni Data holds and joins up what YourTal, SnapApp and Free Tax Returns learn, so each can stay simple for the people who use it."
+  ogImage="/og/about.png"
 >
-  <PageHead
-    title="The holding company behind three apps"
-    lede="Global Omni Data holds and joins up what YourTal, SnapApp and Free Tax Returns learn, so each can stay simple for the people who use it."
-  />
+  <PageHero
+    kicker="About GOD"
+    title="The company behind three useful apps"
+    lede="Global Omni Data holds and joins up what YourTal, SnapApp and Free Tax Returns learn, so each app can stay simple for the people who use it."
+    crumbs={[{ href: "/", label: "Home" }, { label: "About" }]}
+  >
+    <a class="btn btn-primary" href="/brands/">
+      Meet the brands
+      <Icon name="arrow" />
+    </a>
+    <a class="btn btn-line" href="/how-it-works/">
+      How it works
+    </a>
+    <GroupDiagram slot="visual" />
+  </PageHero>
 
-  <section class="block">
+  <section class="sec" id="role">
     <div class="wrap">
-      <div class="sechead">
+      <div class="sec-head">
+        <p class="kicker">What GOD does</p>
         <h2>Apps for people, insight for brands</h2>
-        <p>
-          GOD does not run campaigns, lodge returns or read receipts. The brands do that. GOD holds
-          the shared profile, keeps the privacy rules in one place and turns the combined data into
-          aggregate insight.
-        </p>
-        <p>
-          We focus on Australia: Australian postcodes, Australian occupations, Australian tax. That
-          is where the apps are used and where the data means something.
-        </p>
       </div>
-      <div class="family">
-        {BRAND_LINKS.map((b) => (
-          <a href={b.href} target="_blank" rel="noopener">
-            {b.name}
-            <span class="visually-hidden"> (opens in a new tab)</span>
-          </a>
-        ))}
+      <div class="cols">
+        <div class="card" data-reveal="1">
+          <h3>GOD does</h3>
+          <ul class="ticks">
+            {does.map((x) => (
+              <li>{x}</li>
+            ))}
+          </ul>
+        </div>
+        <div class="card" data-reveal="2">
+          <h3>GOD does not</h3>
+          <ul class="ticks rings">
+            {doesNot.map((x) => (
+              <li>{x}</li>
+            ))}
+          </ul>
+        </div>
       </div>
     </div>
   </section>
 
-  <section class="block">
-    <div class="wrap">
-      <div class="sechead">
-        <h2>How we work</h2>
+  <section class="sec tint" id="why">
+    <div class="wrap split">
+      <div>
+        <p class="kicker">Why a holding company</p>
+        <h2>One standard across three apps</h2>
+        <p class="lede">
+          Three separate apps could each write their own privacy rules and each do it a little
+          differently. A holding company means the rules are written once and every app follows
+          them.
+        </p>
+      </div>
+      <ul class="ledger">
+        {why.map((w) => (
+          <li data-reveal>
+            <span>{w.h}</span>
+            <span>{w.p}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+    <div class="wrap family">
+      <ul class="brands" aria-label="The GOD brands">
+        {BRANDS.map((b) => (
+          <li>
+            <a href={b.page}>
+              <BrandMark brand={b.key} name={b.name} />
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <section class="sec" id="habits">
+    <div class="wrap split">
+      <div>
+        <p class="kicker">How we work</p>
+        <h2>Five habits</h2>
+        <p class="lede">
+          The ways of working we hold ourselves to, and the ones a brand or a user can check us
+          against.
+        </p>
       </div>
       <ol class="steps">
-        {habits.map((h) => (
-          <li>
-            <b>{h.b}</b>
-            <span>{h.s}</span>
+        {habits.map((h, i) => (
+          <li data-reveal={String((i % 6) + 1)}>
+            <h3>{h.b}</h3>
+            <p>{h.s}</p>
           </li>
         ))}
       </ol>
     </div>
   </section>
+
+  <section class="sec tint" id="australia">
+    <div class="wrap split flip">
+      <div class="stack">
+        <p class="kicker">Made in Australia, for Australia</p>
+        <h2>We focus on Australia</h2>
+        <p class="lede">
+          That is where the apps are used and where the data means something: Australian postcodes,
+          Australian occupations and Australian tax.
+        </p>
+      </div>
+      <ul class="chips big">
+        <li class="chip">Australian postcodes</li>
+        <li class="chip">Australian occupations</li>
+        <li class="chip">Australian tax</li>
+        <li class="chip">Suburb-sized areas, never streets</li>
+      </ul>
+    </div>
+  </section>
+
+  <Cta
+    title="Want to know more about GOD?"
+    lede="Ask us anything about the group, the brands or how a report works. We reply within two business days."
+    secondary={{ href: "/privacy/", label: "Trust and privacy" }}
+  />
 </Base>
+
+<style>
+  .cols {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+  }
+  .cols h3 {
+    margin-bottom: 20px;
+    font-family: var(--f-display);
+    font-weight: 420;
+    font-size: 1.625rem;
+  }
+  @media (max-width: 720px) {
+    .cols {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  .family {
+    margin-top: 64px;
+  }
+  .brands {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px 40px;
+    list-style: none;
+    padding-top: 28px;
+    border-top: 1px solid var(--line);
+  }
+  .brands a {
+    text-decoration: none;
+  }
+
+  .big {
+    gap: 12px;
+  }
+  .big .chip {
+    min-height: 48px;
+    padding: 10px 18px;
+    font-size: 1rem;
+    color: var(--ink);
+  }
+</style>

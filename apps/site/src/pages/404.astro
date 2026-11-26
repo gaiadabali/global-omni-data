@@ -1,27 +1,109 @@
 ---
 import Base from "../layouts/Base.astro";
+import Icon from "../components/Icon.astro";
+
+const links = [
+  { href: "/", label: "Home" },
+  { href: "/brands/", label: "Our brands" },
+  { href: "/for-brands/", label: "For brands" },
+  { href: "/how-it-works/", label: "How it works" },
+  { href: "/privacy/", label: "Trust and privacy" },
+  { href: "/about/", label: "About" },
+  { href: "/contact/", label: "Contact" },
+];
 ---
 
 <Base
   title="Page not found | GOD (Global Omni Data)"
-  description="That page does not exist. Use the menu to find what you were after."
+  description="That page is not on the map. Use the links to find what you were after."
   noindex
 >
-  <section class="block pagehead lost">
-    <div class="wrap">
-      <h1>We can't find that page</h1>
-      <p class="lede">
-        The link may be old, or the address may have a typo. Try the home page, or tell us what you
-        were after.
-      </p>
-      <div class="row">
-        <a class="btn btn-primary" href="/">
-          Go to the home page
-        </a>
-        <a class="btn btn-line" href="/contact/">
-          Contact us
-        </a>
+  <section class="sec lost">
+    <div class="wrap split">
+      <div>
+        <p class="kicker">Error 404</p>
+        <h1>This page isn’t on the map</h1>
+        <p class="lede">
+          The link may be old, or the address may have a typo. Try one of these, or tell us what you
+          were after.
+        </p>
+        <div class="row">
+          <a class="btn btn-primary" href="/">
+            Go to the home page
+            <Icon name="arrow" />
+          </a>
+          <a class="btn btn-line" href="/contact/">
+            Contact us
+          </a>
+        </div>
+      </div>
+      <div class="side">
+        <svg
+          class="motif"
+          viewBox="0 0 120 120"
+          role="img"
+          aria-label="A single dot inside widening rings, like a place on a map"
+        >
+          <circle class="dotc" cx="60" cy="60" r="6"></circle>
+          <circle class="ringc" cx="60" cy="60" r="22"></circle>
+          <circle class="ringc faint" cx="60" cy="60" r="40"></circle>
+          <circle class="ringc faint" cx="60" cy="60" r="56"></circle>
+        </svg>
+        <nav aria-label="Main pages">
+          <ul class="ledger">
+            {links.map((l) => (
+              <li>
+                <a class="go" href={l.href}>
+                  {l.label}
+                  <Icon name="arrow" />
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
       </div>
     </div>
   </section>
 </Base>
+
+<style>
+  .lost {
+    padding-top: 96px;
+  }
+  .lost h1 {
+    max-width: 14ch;
+  }
+  .lost .lede {
+    margin: 24px 0 0;
+  }
+  .lost .row {
+    margin-top: 36px;
+  }
+  .side {
+    display: grid;
+    gap: 32px;
+  }
+  .motif {
+    width: min(100%, 220px);
+  }
+  .dotc {
+    fill: var(--indigo-ink);
+  }
+  .ringc {
+    fill: none;
+    stroke: var(--ring);
+    stroke-width: 1.2;
+  }
+  .faint {
+    stroke: var(--line-2);
+  }
+  .side .ledger > li {
+    display: block;
+    padding: 14px 0;
+  }
+  @media (max-width: 960px) {
+    .lost {
+      padding-top: 56px;
+    }
+  }
+</style>

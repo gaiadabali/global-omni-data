@@ -11,37 +11,45 @@ import Bar from "./Bar.astro";
 
 <div class="journey">
   <figure class="stage" data-reveal="1">
-    <p class="meta step"><span>1</span> A receipt, read in SnapApp</p>
+    <p class="meta step">
+      <span>1</span> A receipt, read in SnapApp
+    </p>
     <div class="panel paperpanel">
       <Docket compact />
     </div>
     <figcaption>
-      Only the shop's suburb and what was bought reach GOD. Never the card, the image or the person's
-      name.
+      Only the shop's suburb and what was bought reach GOD. Never the card, the image or the
+      person's name.
     </figcaption>
   </figure>
   <figure class="stage" data-reveal="2">
-    <p class="meta step"><span>2</span> Counted in groups, never listed</p>
+    <p class="meta step">
+      <span>2</span> Counted in groups, never listed
+    </p>
     <div class="panel">
       <DotField />
     </div>
     <figcaption>
-      Each dot is a group by suburb, age band and occupation. The ring is a group under ten: it shows as
-      "&#8288;&lt;10".
+      Each dot is a group by suburb, age band and occupation. The ring is a group under ten: it
+      shows as "&#8288;&lt;10".
     </figcaption>
   </figure>
   <figure class="stage" data-reveal="3">
-    <p class="meta step"><span>3</span> A pattern a brand can use</p>
+    <p class="meta step">
+      <span>3</span> A pattern a brand can use
+    </p>
     <div class="panel rep">
-      <p class="rep-t">Weeknight fuel buyers, Central West QLD <span class="sample">Sample data</span></p>
+      <p class="rep-t">
+        Weeknight fuel buyers, Central West QLD <span class="sample">Sample data</span>
+      </p>
       <Bar label="Also buy coffee" width={62} value="41%" hot />
       <Bar label="Also buy food" width={44} value="29%" />
       <Bar label="Fill up twice a week" width={30} value="18%" />
       <Bar label="Aged 13 to 17" width={5} value="<20" />
     </div>
     <figcaption>
-      A brand sees shares and counts for its market. A teen figure needs 20 or more teens, or it shows as
-      "&#8288;&lt;20".
+      A brand sees shares and counts for its market. A teen figure needs 20 or more teens, or it
+      shows as "&#8288;&lt;20".
     </figcaption>
   </figure>
 </div>

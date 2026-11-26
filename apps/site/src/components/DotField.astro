@@ -8,7 +8,11 @@ interface Props {
   rows?: number;
   label?: string;
 }
-const { cols = 12, rows = 8, label = "A grid of dots, each a counted group, with one hollow ring for a group under ten" } = Astro.props;
+const {
+  cols = 12,
+  rows = 8,
+  label = "A grid of dots, each a counted group, with one hollow ring for a group under ten",
+} = Astro.props;
 const rnd = (i: number) => {
   const s = Math.sin(i * 91.7 + 13.1) * 43758.5453;
   return s - Math.floor(s);
@@ -25,15 +29,13 @@ const ringAt = Math.floor(cols * 1.5 + 2);
 ---
 
 <svg class="dotfield" viewBox={`0 0 ${cols * 16} ${rows * 16}`} role="img" aria-label={label}>
-  {
-    cells.map((c, i) =>
-      i === ringAt ? (
-        <circle class="ring" cx={c.cx} cy={c.cy} r="4" />
-      ) : (
-        <circle class:list={[c.hot ? "hot" : "dot"]} cx={c.cx} cy={c.cy} r={c.r.toFixed(2)} />
-      ),
-    )
-  }
+  {cells.map((c, i) =>
+    i === ringAt ? (
+      <circle class="ring" cx={c.cx} cy={c.cy} r="4" />
+    ) : (
+      <circle class:list={[c.hot ? "hot" : "dot"]} cx={c.cx} cy={c.cy} r={c.r.toFixed(2)} />
+    ),
+  )}
 </svg>
 
 <style>

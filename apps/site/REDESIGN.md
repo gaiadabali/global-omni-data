@@ -23,29 +23,29 @@ marked `[UNVERIFIED]`.
 
 ### Type
 
-| Role | Face | Why |
-|---|---|---|
+| Role                               | Face                                | Why                                                                                                                                                                                                  |
+| ---------------------------------- | ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Display (h1, h2, large statements) | **Newsreader** variable, 400 to 500 | A text serif with optical sizes. It gives the holding company an editorial, accountable voice (annual-report, not start-up) and contrasts cleanly with the geometric logo. Used large and sparingly. |
-| Interface and body | **Inter** variable (kept) | Neutral, very legible at small sizes, already self-hosted. |
-| Figures, dockets, data labels | **IBM Plex Mono** 400 and 500 | The receipt and ledger voice. Tabular, printed character. Used for numbers, sample data and meta only. |
+| Interface and body                 | **Inter** variable (kept)           | Neutral, very legible at small sizes, already self-hosted.                                                                                                                                           |
+| Figures, dockets, data labels      | **IBM Plex Mono** 400 and 500       | The receipt and ledger voice. Tabular, printed character. Used for numbers, sample data and meta only.                                                                                               |
 
 Lexend is dropped. It is a fine readability face but it made every heading look like an app onboarding screen.
 All three faces are self-hosted from `@fontsource` (latin and latin-ext subsets only), so the CSP stays `'self'`.
 
 ### Colour tokens
 
-| Token | Light | Dark | Use |
-|---|---|---|---|
-| `--paper` page | `#F5F6FA` | `#0A0C17` | Page background, a cool paper with a trace of indigo |
-| `--card` | `#FFFFFF` | `#11142A` | Cards, frames |
-| `--raised` | `#ECEEF6` | `#191D38` | Inputs, hover rows, chips |
-| `--ink` text 1 | `#0F1230` | `#EEF0F8` | Headings and body |
-| `--ink-2` text 2 | `#454B6B` | `#AEB3CF` | Ledes, secondary |
-| `--ink-3` text 3 | `#5E6485` | `#8C92B3` | Captions, meta (AA on paper) |
-| `--line` | ink at 10% | ink at 12% | Hairlines |
-| `--indigo` | `#0C158E` | `#A9B0FF` (as text and accent) | The brand. Primary buttons, links, the one figure that matters |
-| `--night` | `#070A33` | `#060820` | The deep indigo bands (hero, closing call to action) |
-| `--ochre` | `#B8792A` (fills only) | `#E0A14A` | Data highlight inside moments only: a city on the map, the highlighted bar |
+| Token            | Light                  | Dark                           | Use                                                                        |
+| ---------------- | ---------------------- | ------------------------------ | -------------------------------------------------------------------------- |
+| `--paper` page   | `#F5F6FA`              | `#0A0C17`                      | Page background, a cool paper with a trace of indigo                       |
+| `--card`         | `#FFFFFF`              | `#11142A`                      | Cards, frames                                                              |
+| `--raised`       | `#ECEEF6`              | `#191D38`                      | Inputs, hover rows, chips                                                  |
+| `--ink` text 1   | `#0F1230`              | `#EEF0F8`                      | Headings and body                                                          |
+| `--ink-2` text 2 | `#454B6B`              | `#AEB3CF`                      | Ledes, secondary                                                           |
+| `--ink-3` text 3 | `#5E6485`              | `#8C92B3`                      | Captions, meta (AA on paper)                                               |
+| `--line`         | ink at 10%             | ink at 12%                     | Hairlines                                                                  |
+| `--indigo`       | `#0C158E`              | `#A9B0FF` (as text and accent) | The brand. Primary buttons, links, the one figure that matters             |
+| `--night`        | `#070A33`              | `#060820`                      | The deep indigo bands (hero, closing call to action)                       |
+| `--ochre`        | `#B8792A` (fills only) | `#E0A14A`                      | Data highlight inside moments only: a city on the map, the highlighted bar |
 
 The three brand colours (YourTal gold `#FFC53D`, SnapApp blue `#1878D8`, FTR navy `#0F172A` and emerald `#10B981`)
 appear only in each brand's own mark and as a thin rule on its brand page. GOD's chrome stays indigo.
@@ -58,20 +58,20 @@ heroes, no bento grids, no equal three-card rows unless the three things truly a
 
 ## 2. Sitemap
 
-| Path | Page | In the main nav |
-|---|---|---|
-| `/` | Home | logo |
-| `/brands/` | Our brands (overview of the three) | "Our brands" |
-| `/brands/yourtal/` | YourTal | via Our brands |
-| `/brands/snapapp/` | SnapApp | via Our brands |
-| `/brands/free-tax-returns/` | Free Tax Returns | via Our brands |
-| `/for-brands/` | Insight for brands | "For brands" |
-| `/how-it-works/` | How it works: the data journey and the safeguards | "How it works" |
-| `/privacy/` | Trust & privacy: principles, the teen standard, security | "Trust" |
-| `/privacy-notice/` | Group Privacy Notice (placeholder until legal supplies the text) | footer |
-| `/about/` | About GOD | "About" |
-| `/contact/` | Contact | button "Talk to us" |
-| `/404.html` | Not found | none |
+| Path                        | Page                                                             | In the main nav     |
+| --------------------------- | ---------------------------------------------------------------- | ------------------- |
+| `/`                         | Home                                                             | logo                |
+| `/brands/`                  | Our brands (overview of the three)                               | "Our brands"        |
+| `/brands/yourtal/`          | YourTal                                                          | via Our brands      |
+| `/brands/snapapp/`          | SnapApp                                                          | via Our brands      |
+| `/brands/free-tax-returns/` | Free Tax Returns                                                 | via Our brands      |
+| `/for-brands/`              | Insight for brands                                               | "For brands"        |
+| `/how-it-works/`            | How it works: the data journey and the safeguards                | "How it works"      |
+| `/privacy/`                 | Trust & privacy: principles, the teen standard, security         | "Trust"             |
+| `/privacy-notice/`          | Group Privacy Notice (placeholder until legal supplies the text) | footer              |
+| `/about/`                   | About GOD                                                        | "About"             |
+| `/contact/`                 | Contact                                                          | button "Talk to us" |
+| `/404.html`                 | Not found                                                        | none                |
 
 The old footer linked `/privacy/#notice`, so the notice gets its own placeholder page. `/brands/` keeps its URL.
 
@@ -287,36 +287,36 @@ buttons.
 Repos: YT = `god/yourtal`, SA = `god/snap-apps`, FTR = `god/free-tax-returns/free-tax-return-preview`,
 PLAN = `god/god-holding/PLAN.md`, CL = this repo's `CLAUDE.md`. Read 2026-11-27.
 
-| Claim on the site | Source |
-|---|---|
-| GOD holds YourTal, SnapApp, FTR; one profile; brands get aggregates only | PLAN §1; CL intro |
-| One group privacy notice, required at registration; existing users accept at next sign-in | PLAN §3 |
-| Groups under 10 show as "<10"; sensitive categories use a higher threshold | PLAN §3, §6.2; CL rule 5 |
-| Teens counted only in groups of 20+; no teen profile; teen profiles not openable; no alcohol, vape, gambling, sensitive categories; no ad targeting | CL rule 5; PLAN §3, §5; founder brief 2026-11-27 |
-| TFN, bank details, identity documents and return lines never leave FTR; occupation, income bracket, return status flow | PLAN §3 |
-| Staff access invitation-only, passkey, logged; pseudonymous by default | PLAN §6.3; founder brief; existing site copy |
-| Maps stop at suburb level | PLAN §4.4, §6.2 |
-| Deletion removes the person from GOD within one sync | PLAN §3 |
-| GOD copies rows, not files (no receipt images); secrets dropped at the source | PLAN §4.1, §4.3 |
-| Sign in with YourTal across the apps; verified-email exact matching, no fuzzy matching | PLAN §2, §4.2 |
-| Public site has no data access | PLAN §4 diagram |
-| YourTal: watch, answer, earn points, vouchers; "Watch, learn, earn — and spend it where you live." | YT `apps/web/features/landing/landing-hero.tsx`; `apps/web/messages/en-AU/public.json` |
-| YourTal: never pay for a view that was not watched | YT `apps/web/features/landing/landing-for-business.tsx` |
-| YourTal: points don't expire; missing a day never costs points; gift; charity auction; no public profiles | YT `messages/en-AU/public.json` (pages.points, pages.help), `wallet.json`, `auction.json` |
-| YourTal: campaign review, targeting by interests and districts, grouped reports, team roles | YT `messages/en-AU/studio.json` |
-| YourTal teens: 13+, guardian approval by email, half daily limit, quiet hours 9pm to 7am, no streaks, no area, no interest profiling, no group under 20 | YT `messages/en-AU/public.json` (pages.terms, pages.privacy) |
-| YourTal status: building toward a staging review; demo data | YT `README.md`, `TASKS.md` L5-7 |
-| SnapApp: "The receipt app that reads every line."; GST split; tax-invoice check; five-year copy | SA `apps/web/src/app/(marketing)/_home/hero.tsx`, `page.tsx:16` |
-| SnapApp checks: tax invoice, ABN checksum, GST one eleventh, lines add up, buyer at $1,000+ | SA `(marketing)/how-it-works/journey.tsx` |
-| SnapApp: budgets, goals, subscriptions, household sharing, CSV, offline | SA `(marketing)/_home/bento.tsx` |
-| SnapApp pricing: 10 free scans, 10 c a scan, packs $5/$10/$25, credits never expire | SA `(marketing)/pricing/credit-packs.ts` |
-| SnapApp to FTR: work lines, via YourTal sign-in, no merchant names or images | SA `apps/mobile/release-notes.json` (2026-11-26), `SendToFtrCard.tsx`, `docs/DEDUCTIONS.md` |
-| SnapApp: photo GPS stripped, never indexed | SA `(marketing)/legal/privacy/page.tsx` |
-| SnapApp status: Android beta, iPhone in development | SA `(marketing)/download/page.tsx`, `_home/faq.tsx` |
-| FTR: free worksheet, copy totals into the ATO return, no sign-up, no fees, never sends to the ATO | FTR `src/app/page.tsx`, `README.md`, `docs/manual/10-faq-and-privacy.md` |
-| FTR three steps | FTR `src/app/page.tsx:259-306` |
-| FTR features: occupation worksheets, cheat sheet by ATO label, PDF, guides, past years, OTP sign-in | FTR `docs/manual/05-cheat-sheet-and-pdf.md`, `src/lib/llms.ts`, guide routes |
-| FTR: not affiliated with the ATO or myGov; general information only | FTR `src/messages/en-AU.json` footer |
+| Claim on the site                                                                                                                                       | Source                                                                                      |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| GOD holds YourTal, SnapApp, FTR; one profile; brands get aggregates only                                                                                | PLAN §1; CL intro                                                                           |
+| One group privacy notice, required at registration; existing users accept at next sign-in                                                               | PLAN §3                                                                                     |
+| Groups under 10 show as "<10"; sensitive categories use a higher threshold                                                                              | PLAN §3, §6.2; CL rule 5                                                                    |
+| Teens counted only in groups of 20+; no teen profile; teen profiles not openable; no alcohol, vape, gambling, sensitive categories; no ad targeting     | CL rule 5; PLAN §3, §5; founder brief 2026-11-27                                            |
+| TFN, bank details, identity documents and return lines never leave FTR; occupation, income bracket, return status flow                                  | PLAN §3                                                                                     |
+| Staff access invitation-only, passkey, logged; pseudonymous by default                                                                                  | PLAN §6.3; founder brief; existing site copy                                                |
+| Maps stop at suburb level                                                                                                                               | PLAN §4.4, §6.2                                                                             |
+| Deletion removes the person from GOD within one sync                                                                                                    | PLAN §3                                                                                     |
+| GOD copies rows, not files (no receipt images); secrets dropped at the source                                                                           | PLAN §4.1, §4.3                                                                             |
+| Sign in with YourTal across the apps; verified-email exact matching, no fuzzy matching                                                                  | PLAN §2, §4.2                                                                               |
+| Public site has no data access                                                                                                                          | PLAN §4 diagram                                                                             |
+| YourTal: watch, answer, earn points, vouchers; "Watch, learn, earn — and spend it where you live."                                                      | YT `apps/web/features/landing/landing-hero.tsx`; `apps/web/messages/en-AU/public.json`      |
+| YourTal: never pay for a view that was not watched                                                                                                      | YT `apps/web/features/landing/landing-for-business.tsx`                                     |
+| YourTal: points don't expire; missing a day never costs points; gift; charity auction; no public profiles                                               | YT `messages/en-AU/public.json` (pages.points, pages.help), `wallet.json`, `auction.json`   |
+| YourTal: campaign review, targeting by interests and districts, grouped reports, team roles                                                             | YT `messages/en-AU/studio.json`                                                             |
+| YourTal teens: 13+, guardian approval by email, half daily limit, quiet hours 9pm to 7am, no streaks, no area, no interest profiling, no group under 20 | YT `messages/en-AU/public.json` (pages.terms, pages.privacy)                                |
+| YourTal status: building toward a staging review; demo data                                                                                             | YT `README.md`, `TASKS.md` L5-7                                                             |
+| SnapApp: "The receipt app that reads every line."; GST split; tax-invoice check; five-year copy                                                         | SA `apps/web/src/app/(marketing)/_home/hero.tsx`, `page.tsx:16`                             |
+| SnapApp checks: tax invoice, ABN checksum, GST one eleventh, lines add up, buyer at $1,000+                                                             | SA `(marketing)/how-it-works/journey.tsx`                                                   |
+| SnapApp: budgets, goals, subscriptions, household sharing, CSV, offline                                                                                 | SA `(marketing)/_home/bento.tsx`                                                            |
+| SnapApp pricing: 10 free scans, 10 c a scan, packs $5/$10/$25, credits never expire                                                                     | SA `(marketing)/pricing/credit-packs.ts`                                                    |
+| SnapApp to FTR: work lines, via YourTal sign-in, no merchant names or images                                                                            | SA `apps/mobile/release-notes.json` (2026-11-26), `SendToFtrCard.tsx`, `docs/DEDUCTIONS.md` |
+| SnapApp: photo GPS stripped, never indexed                                                                                                              | SA `(marketing)/legal/privacy/page.tsx`                                                     |
+| SnapApp status: Android beta, iPhone in development                                                                                                     | SA `(marketing)/download/page.tsx`, `_home/faq.tsx`                                         |
+| FTR: free worksheet, copy totals into the ATO return, no sign-up, no fees, never sends to the ATO                                                       | FTR `src/app/page.tsx`, `README.md`, `docs/manual/10-faq-and-privacy.md`                    |
+| FTR three steps                                                                                                                                         | FTR `src/app/page.tsx:259-306`                                                              |
+| FTR features: occupation worksheets, cheat sheet by ATO label, PDF, guides, past years, OTP sign-in                                                     | FTR `docs/manual/05-cheat-sheet-and-pdf.md`, `src/lib/llms.ts`, guide routes                |
+| FTR: not affiliated with the ATO or myGov; general information only                                                                                     | FTR `src/messages/en-AU.json` footer                                                        |
 
 ### Deliberately left out
 

@@ -28,7 +28,7 @@ Content-Security-Policy:
   drift apart. Every other script is an external module under `/_astro/`, covered by `'self'`.
 - `style-src 'self'`: the build never inlines CSS (`build.inlineStylesheets: "never"`) and the pages use no
   `style=""` attributes, so no `'unsafe-inline'` and no style hashes are needed.
-- `img-src 'self'` and `font-src 'self'`: images and the two self-hosted fonts are files; the build never
+- `img-src 'self'` and `font-src 'self'`: images (photos, product screens, brand marks) and the three self-hosted fonts (Newsreader, Inter, IBM Plex Mono) are files; the build never
   turns them into `data:` URIs (`vite.build.assetsInlineLimit: 0`).
 - `connect-src`: replace `<contact endpoint origin>` with the origin (scheme and host, no path) of
   `PUBLIC_CONTACT_ENDPOINT` once it is decided, for example `https://forms.example.com`. Until the

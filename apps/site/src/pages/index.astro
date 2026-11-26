@@ -11,7 +11,7 @@ import SampleReport from "../components/SampleReport.astro";
 import Promises from "../components/Promises.astro";
 import Cta from "../components/Cta.astro";
 import Icon from "../components/Icon.astro";
-import { BRANDS } from "../lib/brands";
+import { brand } from "../lib/brands";
 import ytHome from "../assets/screens/yourtal-home.webp";
 import saHome from "../assets/screens/snapapp-home-desktop.webp";
 import ftrWorksheet from "../assets/screens/ftr-worksheet.webp";
@@ -19,10 +19,15 @@ import cafe from "../assets/photos/cafe-espresso-melbourne.jpg";
 import fuel from "../assets/photos/fuel-longreach-dusk.jpg";
 import produce from "../assets/photos/produce-queen-victoria-market.jpg";
 
-const [yourtal, snapapp, ftr] = BRANDS;
+const yourtal = brand("yourtal");
+const snapapp = brand("snapapp");
+const ftr = brand("ftr");
 
 const questions = [
-  { q: "Where do my customers actually come from?", a: "Catchments: home and everyday areas, suburb by suburb" },
+  {
+    q: "Where do my customers actually come from?",
+    a: "Catchments: home and everyday areas, suburb by suburb",
+  },
   { q: "Who are they?", a: "Age band, occupation and income bracket" },
   { q: "Who is most likely to buy next?", a: "Segments scored by affinity against the area" },
   { q: "Where else do they spend?", a: "Also-shops-at, loyalty and switching" },
@@ -46,8 +51,13 @@ const questions = [
           brand can understand its market without ever seeing a person in it.
         </p>
         <div class="row">
-          <a class="btn btn-primary" href="/for-brands/">See what brands get<Icon name="arrow" /></a>
-          <a class="btn btn-line" href="/how-it-works/">How it works</a>
+          <a class="btn btn-primary" href="/for-brands/">
+            See what brands get
+            <Icon name="arrow" />
+          </a>
+          <a class="btn btn-line" href="/how-it-works/">
+            How it works
+          </a>
         </div>
       </div>
       <figure class="hero-map">
@@ -69,9 +79,9 @@ const questions = [
           <h2>Three everyday apps. One careful company.</h2>
         </div>
         <p class="lede">
-          Each GOD brand does one useful job for the people who use it. GOD sits behind all three. It
-          keeps one privacy standard across them and turns what they learn, together, into insight no
-          single app could give.
+          Each GOD brand does one useful job for the people who use it. GOD sits behind all three.
+          It keeps one privacy standard across them and turns what they learn, together, into
+          insight no single app could give.
         </p>
       </div>
 
@@ -80,13 +90,18 @@ const questions = [
           <div class="brand-text">
             <BrandMark brand="yourtal" name={yourtal.name} size="lg" />
             <p class="said">{yourtal.tagline}</p>
-            <p>
-              {yourtal.summary} Businesses pay only for videos that were actually watched.
-            </p>
-            <ul class="chips">{yourtal.facts.map((f) => <li class="chip">{f}</li>)}</ul>
+            <p>{yourtal.summary} Businesses pay only for videos that were actually watched.</p>
+            <ul class="chips">
+              {yourtal.facts.map((f) => (
+                <li class="chip">{f}</li>
+              ))}
+            </ul>
             <div class="brand-foot">
               <span class={`status ${yourtal.status.kind}`}>{yourtal.status.label}</span>
-              <a class="go" href={yourtal.page}>About YourTal<Icon name="arrow" /></a>
+              <a class="go" href={yourtal.page}>
+                About YourTal
+                <Icon name="arrow" />
+              </a>
             </div>
           </div>
           <div class="brand-visual">
@@ -103,10 +118,17 @@ const questions = [
             <BrandMark brand="snapapp" name={snapapp.name} size="lg" />
             <p class="said">{snapapp.tagline}</p>
             <p>{snapapp.summary} Then it shows where the money went.</p>
-            <ul class="chips">{snapapp.facts.map((f) => <li class="chip">{f}</li>)}</ul>
+            <ul class="chips">
+              {snapapp.facts.map((f) => (
+                <li class="chip">{f}</li>
+              ))}
+            </ul>
             <div class="brand-foot">
               <span class={`status ${snapapp.status.kind}`}>{snapapp.status.label}</span>
-              <a class="go" href={snapapp.page}>About SnapApp<Icon name="arrow" /></a>
+              <a class="go" href={snapapp.page}>
+                About SnapApp
+                <Icon name="arrow" />
+              </a>
             </div>
           </div>
           <div class="brand-visual">
@@ -123,10 +145,17 @@ const questions = [
             <BrandMark brand="ftr" name={ftr.name} size="lg" />
             <p class="said">{ftr.tagline}</p>
             <p>{ftr.summary}</p>
-            <ul class="chips">{ftr.facts.map((f) => <li class="chip">{f}</li>)}</ul>
+            <ul class="chips">
+              {ftr.facts.map((f) => (
+                <li class="chip">{f}</li>
+              ))}
+            </ul>
             <div class="brand-foot">
               <span class={`status ${ftr.status.kind}`}>{ftr.status.label}</span>
-              <a class="go" href={ftr.page}>About Free Tax Returns<Icon name="arrow" /></a>
+              <a class="go" href={ftr.page}>
+                About Free Tax Returns
+                <Icon name="arrow" />
+              </a>
             </div>
           </div>
           <div class="brand-visual">
@@ -150,10 +179,13 @@ const questions = [
         </div>
         <div class="stack">
           <p class="lede">
-            Every GOD app shows the same group privacy notice at sign-up. Nothing reaches GOD until a
-            person accepts it. After that, what they do is counted, never listed.
+            Every GOD app shows the same group privacy notice at sign-up. Nothing reaches GOD until
+            a person accepts it. After that, what they do is counted, never listed.
           </p>
-          <a class="go" href="/how-it-works/">Follow the whole journey<Icon name="arrow" /></a>
+          <a class="go" href="/how-it-works/">
+            Follow the whole journey
+            <Icon name="arrow" />
+          </a>
         </div>
       </div>
       <Journey />
@@ -166,22 +198,23 @@ const questions = [
         <p class="kicker">For brands</p>
         <h2>Questions you can finally answer</h2>
         <p class="lede">
-          Surveys ask people what they remember. GOD counts what they did: the receipts, the videos they
-          chose to watch and the work they claim at tax time.
+          Surveys ask people what they remember. GOD counts what they did: the receipts, the videos
+          they chose to watch and the work they claim at tax time.
         </p>
         <dl class="questions">
-          {
-            questions.map((x, i) => (
-              <div data-reveal={String((i % 6) + 1)}>
-                <dt>{x.q}</dt>
-                <dd>{x.a}</dd>
-              </div>
-            ))
-          }
+          {questions.map((x, i) => (
+            <div data-reveal={String((i % 6) + 1)}>
+              <dt>{x.q}</dt>
+              <dd>{x.a}</dd>
+            </div>
+          ))}
         </dl>
-        <a class="go" href="/for-brands/">Everything brands can ask for<Icon name="arrow" /></a>
+        <a class="go" href="/for-brands/">
+          Everything brands can ask for
+          <Icon name="arrow" />
+        </a>
       </div>
-      <div data-reveal>
+      <div class="qa-report" data-reveal>
         <SampleReport />
       </div>
     </div>
@@ -192,7 +225,7 @@ const questions = [
       <div class="sec-head split">
         <div>
           <p class="kicker">Built on everyday life</p>
-          <h2>Every docket tells a small story. Thousands tell you a market.</h2>
+          <h2>Every docket tells a small story. Together they describe a market.</h2>
         </div>
         <p class="lede">
           The flat white on the way to work, the fill-up on the drive home, the Saturday market run.
@@ -210,7 +243,9 @@ const questions = [
               formats={["avif", "webp"]}
             />
           </div>
-          <figcaption><b>Cafés.</b> How far do your regulars travel, and when do they come in?</figcaption>
+          <figcaption>
+            <b>Cafés.</b> How far do your regulars travel, and when do they come in?
+          </figcaption>
         </figure>
         <figure class="ph-b" data-reveal="2">
           <div class="photo">
@@ -222,7 +257,9 @@ const questions = [
               formats={["avif", "webp"]}
             />
           </div>
-          <figcaption><b>Fuel.</b> Who fills up twice a week, and what else do they buy at the counter?</figcaption>
+          <figcaption>
+            <b>Fuel.</b> Who fills up twice a week, and what else do they buy at the counter?
+          </figcaption>
         </figure>
         <figure class="ph-c" data-reveal="3">
           <div class="photo">
@@ -234,7 +271,9 @@ const questions = [
               formats={["avif", "webp"]}
             />
           </div>
-          <figcaption><b>Grocery.</b> Which suburbs shop with you, and what is in the rest of the basket?</figcaption>
+          <figcaption>
+            <b>Grocery.</b> Which suburbs shop with you, and what is in the rest of the basket?
+          </figcaption>
         </figure>
       </div>
     </div>
@@ -249,10 +288,13 @@ const questions = [
         </div>
         <div class="stack">
           <p class="lede">
-            Every count that can reach a brand passes through one threshold. The rules are written into
-            the software, not left to good intentions.
+            Every count that can reach a brand passes through one threshold. The rules are written
+            into the software, not left to good intentions.
           </p>
-          <a class="go" href="/privacy/">Read our privacy standard<Icon name="arrow" /></a>
+          <a class="go" href="/privacy/">
+            Read our privacy standard
+            <Icon name="arrow" />
+          </a>
         </div>
       </div>
       <Promises />
@@ -357,6 +399,12 @@ const questions = [
   }
   .qa .lede {
     margin: 20px 0 32px;
+  }
+  @media (min-width: 961px) {
+    .qa-report {
+      position: sticky;
+      top: 104px;
+    }
   }
   .questions {
     margin: 0 0 28px;

@@ -23,8 +23,15 @@ const {
       <p class="lede">{lede}</p>
     </div>
     <div class="row" data-reveal="2">
-      <a class="btn btn-primary" href={primary.href}>{primary.label}<Icon name="arrow" /></a>
-      {secondary && <a class="btn btn-line" href={secondary.href}>{secondary.label}</a>}
+      <a class="btn btn-primary" href={primary.href}>
+        {primary.label}
+        <Icon name="arrow" />
+      </a>
+      {secondary && (
+        <a class="btn btn-line" href={secondary.href}>
+          {secondary.label}
+        </a>
+      )}
     </div>
   </div>
 </section>

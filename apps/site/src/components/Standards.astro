@@ -5,7 +5,13 @@
  */
 const items = [
   { fig: "3", count: 3, pre: "", unit: "apps", text: "under one group privacy notice" },
-  { fig: "<10", count: 0, pre: "", unit: "", text: "is how any group under ten people appears to a brand" },
+  {
+    fig: "<10",
+    count: 0,
+    pre: "",
+    unit: "",
+    text: "is how any group under ten people appears to a brand",
+  },
   { fig: "20", count: 20, pre: "", unit: "teens", text: "is the smallest teen group ever counted" },
   { fig: "Suburb", count: 0, pre: "", unit: "", text: "is as close as a map gets. Never a street" },
 ];
@@ -14,23 +20,21 @@ const items = [
 <section class="standards" aria-label="The GOD standard in four facts">
   <div class="wrap">
     <ul>
-      {
-        items.map((it, i) => (
-          <li data-reveal={String(i + 1)}>
-            <p class="fig">
-              {it.count ? (
-                <span class="num" data-count={it.count} data-pre={it.pre}>
-                  {it.fig}
-                </span>
-              ) : (
-                <span>{it.fig}</span>
-              )}
-              {it.unit && <span class="unit">{it.unit}</span>}
-            </p>
-            <p class="txt">{it.text}</p>
-          </li>
-        ))
-      }
+      {items.map((it, i) => (
+        <li data-reveal={String(i + 1)}>
+          <p class="fig">
+            {it.count ? (
+              <span class="num" data-count={it.count} data-pre={it.pre}>
+                {it.fig}
+              </span>
+            ) : (
+              <span>{it.fig}</span>
+            )}
+            {it.unit && <span class="unit">{it.unit}</span>}
+          </p>
+          <p class="txt">{it.text}</p>
+        </li>
+      ))}
     </ul>
   </div>
 </section>

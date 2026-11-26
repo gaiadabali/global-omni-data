@@ -57,67 +57,65 @@ const visits = [
     <span class="sample">Sample data · fictional brand</span>
   </header>
 
-  {
-    full && (
-      <div class="rep-map">
-        <div>
-          <h4>Where customers live</h4>
-          <p class="small">
-            Suburb-sized areas around the two shops. The map stops here: there is no street level.
-          </p>
-        </div>
-        <HexMap />
+  {full && (
+    <div class="rep-map">
+      <div>
+        <h4>Where customers live</h4>
+        <p class="small">
+          Suburb-sized areas around the two shops. The map stops here: there is no street level.
+        </p>
       </div>
-    )
-  }
+      <HexMap />
+    </div>
+  )}
 
   <div class="rep-grid">
     <section>
       <h4>Top suburbs</h4>
-      {where.map((r) => <Bar {...r} />)}
+      {where.map((r) => (
+        <Bar {...r} />
+      ))}
     </section>
     <section>
       <h4>Age mix</h4>
-      {age.map((r) => <Bar {...r} />)}
+      {age.map((r) => (
+        <Bar {...r} />
+      ))}
     </section>
     <section>
       <h4>Also shops at</h4>
-      {also.map((r) => <Bar {...r} />)}
+      {also.map((r) => (
+        <Bar {...r} />
+      ))}
       <p class="note">Affinity: how much more likely than the area's average.</p>
     </section>
-    {
-      full && (
-        <section>
-          <h4>Occupation</h4>
-          {jobs.map((r) => (
-            <Bar {...r} />
-          ))}
-          <p class="note">From the occupations people choose in Free Tax Returns.</p>
-        </section>
-      )
-    }
-    {
-      full && (
-        <section>
-          <h4>How often they come back</h4>
-          {visits.map((r) => (
-            <Bar {...r} />
-          ))}
-        </section>
-      )
-    }
-    {
-      full && (
-        <section class="keys">
-          <h4>How to read it</h4>
-          <ul class="ticks">
-            <li>Every figure covers a group, never a person.</li>
-            <li>A hollow ring means fewer than 10 people. It shows as "&#8288;&lt;10".</li>
-            <li>Teen figures need 20 or more teens, or show as "&#8288;&lt;20".</li>
-          </ul>
-        </section>
-      )
-    }
+    {full && (
+      <section>
+        <h4>Occupation</h4>
+        {jobs.map((r) => (
+          <Bar {...r} />
+        ))}
+        <p class="note">From the occupations people choose in Free Tax Returns.</p>
+      </section>
+    )}
+    {full && (
+      <section>
+        <h4>How often they come back</h4>
+        {visits.map((r) => (
+          <Bar {...r} />
+        ))}
+      </section>
+    )}
+    {full && (
+      <section class="keys">
+        <h4>How to read it</h4>
+        <ul class="ticks">
+          <li>Every figure covers a group, never a person.</li>
+          <li>A hollow ring means fewer than 10 people. It shows as "&#8288;&lt;10".</li>
+          <li>Teen figures need 20 or more teens, or show as "&#8288;&lt;20".</li>
+        </ul>
+      </section>
+    )}
   </div>
 
   <footer class="rep-f meta">

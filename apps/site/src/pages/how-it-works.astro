@@ -1,0 +1,395 @@
+---
+import { Picture } from "astro:assets";
+import Base from "../layouts/Base.astro";
+import PageHero from "../components/PageHero.astro";
+import DotField from "../components/DotField.astro";
+import Cta from "../components/Cta.astro";
+import Icon from "../components/Icon.astro";
+import receipt from "../assets/photos/receipt-terminal.jpg";
+
+const stages = [
+  {
+    h: "A person uses an app",
+    p: "Someone watches a video in YourTal, scans a receipt in SnapApp or works through a deduction worksheet in Free Tax Returns. Each app does its own job. GOD does not run campaigns, lodge returns or read receipts. The brands do.",
+    stop: "Nothing has reached GOD yet.",
+  },
+  {
+    h: "They accept the group notice",
+    p: "All three apps show the same GOD Group Privacy Notice, with a required tick box at registration. People who already have an account accept it the next time they sign in. A guardian accepts for a teen.",
+    stop: "A person’s data flows to GOD only after they accept.",
+  },
+  {
+    h: "Their activity joins into one profile",
+    p: "“Sign in with YourTal” works in all three apps. People who registered separately are matched on a verified email, and only an exact match counts. There is no fuzzy matching and no matching on names. Every merge is logged with its reason, and a merge can be undone.",
+    stop: "Using one more GOD app completes the profile. It never counts a person twice.",
+  },
+  {
+    h: "We count, through one threshold",
+    p: "Every count that can reach a brand passes through the same threshold function. Groups are cut by suburb, age band, occupation and income bracket. Maps run from Australia to state to region to suburb-sized areas, and stop there.",
+    stop: "A group under 10 shows as “&#8288;&lt;10”. Teen and sensitive figures need 20.",
+  },
+  {
+    h: "A brand gets a report",
+    p: "Totals and shares for groups: where customers live and shop, who they are and what else they buy. Reports and PDFs print “⁠<10” for any small group, whoever asks.",
+    stop: "No names, emails, phone numbers, device IDs or lists.",
+  },
+];
+
+const copied = [
+  "Only the fields GOD needs, chosen per app",
+  "Only for people who accepted the notice",
+  "Rows of data, never files",
+];
+
+const never = [
+  "Passwords and secrets",
+  "Tax file numbers",
+  "Bank details",
+  "Identity documents",
+  "The lines of a tax return",
+  "Receipt images",
+];
+
+const deleting = [
+  {
+    h: "Delete in any app",
+    p: "YourTal, SnapApp and Free Tax Returns all already have export and delete. Use the one you have.",
+  },
+  {
+    h: "GOD follows at the next sync",
+    p: "The deletion flows through. GOD removes the person from the shared profile at the next sync.",
+  },
+  {
+    h: "The counts carry on without you",
+    p: "Because a brand only ever sees groups, nothing a brand holds points back to you.",
+  },
+];
+---
+
+<Base
+  title="How it works: from a receipt to a report | GOD (Global Omni Data)"
+  description="How data moves through GOD in five stages, from someone using an app to a brand reading a report, and what stops at each step."
+  ogImage="/og/how-it-works.png"
+>
+  <PageHero
+    kicker="How it works"
+    title="How a receipt becomes a report"
+    lede="What happens to data on its way through GOD, step by step, and what stops at each step."
+    crumbs={[{ href: "/", label: "Home" }, { label: "How it works" }]}
+  >
+    <a class="btn btn-primary" href="#journey">
+      Follow the journey
+      <Icon name="arrow" />
+    </a>
+    <a class="btn btn-line" href="/privacy/">
+      Trust and privacy
+    </a>
+    <figure slot="visual" class="hero-photo">
+      <div class="photo">
+        <Picture
+          src={receipt}
+          alt="A hand holding a card payment terminal as it prints a receipt"
+          widths={[480, 720, 960, 1200]}
+          sizes="(max-width: 960px) 100vw, 42vw"
+          formats={["avif", "webp"]}
+        />
+      </div>
+      <figcaption class="meta">
+        Every GOD figure starts with something ordinary, like this receipt.
+      </figcaption>
+    </figure>
+  </PageHero>
+
+  <section class="sec tint" id="journey">
+    <div class="wrap">
+      <div class="sec-head split">
+        <div>
+          <p class="kicker">The journey</p>
+          <h2>Five stages, and a rule at each one</h2>
+        </div>
+        <p class="lede">
+          Data moves in one direction and gets narrower at every step. By the time a brand reads a
+          report, it holds a pattern and not a person.
+        </p>
+      </div>
+      <ol class="stages">
+        {stages.map((s) => (
+          <li data-reveal>
+            <span class="node" aria-hidden="true" />
+            <div class="body">
+              <div>
+                <h3>{s.h}</h3>
+                <p>{s.p}</p>
+              </div>
+              <p class="stop">
+                <Icon name="ring" />
+                <span set:html={s.stop} />
+              </p>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <section class="sec night counting" id="counting">
+    <div class="wrap split">
+      <div>
+        <p class="kicker">Counting</p>
+        <h2>Counted in groups, never listed</h2>
+        <p class="lede">
+          Each dot is a group of people counted together. The ring is a group too small to show, so
+          it appears as “&#8288;&lt;10”.
+        </p>
+        <ul class="ticks">
+          <li>Under 10 people shows as “&#8288;&lt;10”.</li>
+          <li>
+            Teen and sensitive-category figures need 20, otherwise they show as “&#8288;&lt;20”.
+          </li>
+          <li>
+            Pharmacy and medical merchant categories are flagged sensitive and appear only in
+            aggregates, at the higher threshold.
+          </li>
+          <li>Maps stop at suburb-sized areas, about 2 km across. There is no street level.</li>
+          <li>Merchants may appear as dots because they are businesses, not people.</li>
+        </ul>
+      </div>
+      <div class="panel" data-reveal>
+        <DotField />
+        <p class="meta">Sample pattern. Not real data.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="source">
+    <div class="wrap">
+      <div class="sec-head split">
+        <div>
+          <p class="kicker">At the source</p>
+          <h2>What stops at the source</h2>
+        </div>
+        <p class="lede">
+          GOD does not take a copy of an app and sort it out later. Each app hands over only the
+          fields GOD needs, and the sensitive ones are never handed over at all.
+        </p>
+      </div>
+      <div class="two-col">
+        <div class="card" data-reveal="1">
+          <h3>What GOD copies</h3>
+          <ul class="ticks">
+            {copied.map((x) => (
+              <li>{x}</li>
+            ))}
+          </ul>
+          <p class="small free">
+            From Free Tax Returns, that means occupation, income bracket and return status. The tax
+            file number stays in Free Tax Returns, because the law allows it to be used for tax
+            only.
+          </p>
+        </div>
+        <div class="card" data-reveal="2">
+          <h3>What is never copied</h3>
+          <ul class="ticks rings">
+            {never.map((x) => (
+              <li>{x}</li>
+            ))}
+          </ul>
+          <p class="small free">
+            SnapApp reads the receipt and keeps the image. GOD gets the shop’s suburb and what was
+            bought, not the picture.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec tint" id="deleting">
+    <div class="wrap split">
+      <div>
+        <p class="kicker">Deletion</p>
+        <h2>Deleting flows through</h2>
+        <p class="lede">
+          Delete your account in any of the three apps and GOD removes you at the next sync. You do
+          not have to ask GOD separately.
+        </p>
+      </div>
+      <ol class="steps">
+        {deleting.map((d, i) => (
+          <li data-reveal={String(i + 1)}>
+            <h3>{d.h}</h3>
+            <p>{d.p}</p>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <section class="sec" id="public-site">
+    <div class="wrap split flip">
+      <div class="stack">
+        <p class="kicker">This website</p>
+        <h2>The public site holds nothing</h2>
+        <p class="lede">
+          god.gaiada.com is a static site with no access to data. It cannot read a profile, because
+          nothing on it is connected to one.
+        </p>
+      </div>
+      <ul class="ticks rings facts">
+        <li>No analytics and no tag managers</li>
+        <li>No third-party scripts</li>
+        <li>Fonts served from this site</li>
+        <li>No access to any GOD data</li>
+      </ul>
+    </div>
+  </section>
+
+  <Cta
+    title="Ask how it would work for your question"
+    lede="Tell us who you sell to and what you want to know. We reply within two business days with what a report would cover, what it would cost and how long it would take."
+    secondary={{ href: "/privacy/", label: "Read the privacy standard" }}
+  />
+</Base>
+
+<style>
+  .hero-photo .photo {
+    aspect-ratio: 4 / 3;
+  }
+  .hero-photo .meta {
+    margin-top: 12px;
+  }
+
+  .stages {
+    list-style: none;
+    display: grid;
+  }
+  .stages > li {
+    position: relative;
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr);
+    gap: 0 28px;
+    padding-bottom: 56px;
+    counter-increment: stage;
+  }
+  .stages > li:last-child {
+    padding-bottom: 0;
+  }
+  .stages > li::after {
+    content: "";
+    position: absolute;
+    left: 19.5px;
+    top: 48px;
+    bottom: 8px;
+    width: 1px;
+    background: var(--line-2);
+  }
+  .stages > li:last-child::after {
+    display: none;
+  }
+  .node {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--line-2);
+    border-radius: 50%;
+    background: var(--paper);
+    font-family: var(--f-mono);
+    font-size: 0.875rem;
+    color: var(--indigo-ink);
+  }
+  .node::before {
+    content: counter(stage);
+  }
+  .body {
+    display: grid;
+    grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
+    gap: 20px 48px;
+    align-items: start;
+  }
+  .body h3 {
+    margin-bottom: 10px;
+    font-family: var(--f-display);
+    font-weight: 420;
+    font-size: clamp(1.5rem, 1.25rem + 0.9vw, 2rem);
+    line-height: 1.15;
+  }
+  .body p {
+    color: var(--ink-2);
+  }
+  .body .stop {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    margin: 0;
+    padding: 16px 18px;
+    border: 1px dashed var(--line-2);
+    border-radius: var(--r-md);
+    background: var(--paper);
+    font-size: 0.9375rem;
+    color: var(--ink);
+  }
+  .stop :global(.ic) {
+    margin-top: 4px;
+    color: var(--ring);
+  }
+  @media (max-width: 960px) {
+    .body {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .stages > li {
+      gap: 0 16px;
+      padding-bottom: 40px;
+    }
+  }
+
+  .counting .lede {
+    margin: 20px 0 28px;
+  }
+  .panel {
+    padding: 32px;
+    border: 1px solid var(--night-line);
+    border-radius: var(--r-lg);
+    background: var(--card);
+  }
+  .panel .meta {
+    margin-top: 16px;
+    color: var(--ink-3);
+  }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+  }
+  .two-col h3 {
+    margin-bottom: 20px;
+  }
+  .free {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+  }
+  @media (max-width: 720px) {
+    .two-col {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  #deleting .steps {
+    border-bottom: 1px solid var(--line);
+  }
+
+  .facts {
+    padding: 8px 0;
+    gap: 0;
+    border-top: 1px solid var(--line);
+  }
+  .facts li {
+    padding: 18px 0 18px 28px;
+    border-bottom: 1px solid var(--line);
+    color: var(--ink);
+  }
+  .facts li::before {
+    top: 1.55em;
+  }
+</style>

@@ -18,7 +18,10 @@ const { src, alt, url, caption, eager = false } = Astro.props;
 <figure class="device">
   <div class="browser">
     <div class="bar" aria-hidden="true">
-      <span class="url"><Icon name="lock" />{url}</span>
+      <span class="url">
+        <Icon name="lock" />
+        {url}
+      </span>
     </div>
     <Picture
       src={src}

@@ -1,0 +1,304 @@
+---
+import { Picture } from "astro:assets";
+import Base from "../../layouts/Base.astro";
+import BrandHero from "../../components/BrandHero.astro";
+import AddsStays from "../../components/AddsStays.astro";
+import Phone from "../../components/Phone.astro";
+import Browser from "../../components/Browser.astro";
+import Cta from "../../components/Cta.astro";
+import Icon from "../../components/Icon.astro";
+import ftrCarDesktop from "../../assets/screens/ftr-car-desktop.webp";
+import ftrLodge from "../../assets/screens/ftr-lodge-desktop.webp";
+import ftrCar from "../../assets/screens/ftr-car.webp";
+import ftrWorksheet from "../../assets/screens/ftr-worksheet.webp";
+import desk from "../../assets/photos/desk-calculator.jpg";
+
+const steps = [
+  {
+    h: "Complete the questionnaire",
+    p: "A few simple questions about you, your work and your year.",
+  },
+  {
+    h: "Pick your occupation and itemise",
+    p: "Choose your job and fill in the expenses. Detailed lists turn them into the exact amounts your return needs.",
+  },
+  {
+    h: "Copy the totals and lodge",
+    p: "Copy the totals into your own return on myGov and lodge it yourself.",
+  },
+];
+
+const gets = [
+  {
+    h: "Occupation worksheets",
+    p: "Worksheets built around the work you actually do, with rates for FY2025–26.",
+  },
+  { h: "A live cheat sheet", p: "Totals for each ATO deduction label, D1 to D14, ready to copy." },
+  {
+    h: "A warning when a total looks high",
+    p: "If a total is more than an occupation can usually claim, you are told.",
+  },
+  { h: "PDF export", p: "Take your worksheet away as a PDF." },
+  {
+    h: "Sign-in without a password",
+    p: "Use a one-time code by phone or email. Your work syncs across your devices.",
+  },
+  {
+    h: "Plain-language guides",
+    p: "Claim your car, claim your home, overtime meals, deductions and ATO rules, and tips for a bigger refund.",
+  },
+  { h: "A video library", p: "Videos you can watch alongside the guides." },
+  {
+    h: "A one-on-one chat",
+    p: "Book a chat by appointment if you want to talk something through.",
+  },
+];
+
+const lodge = [
+  { k: "Get a myGov account", v: "A few minutes, and you probably have one already." },
+  { k: "Link it to the ATO", v: "A one-time identity check connects myGov to your tax account." },
+  { k: "Enter your totals", v: "Open the return and type in the totals from your worksheet." },
+];
+---
+
+<Base
+  title="Free Tax Returns: a free worksheet for every deduction | GOD (Global Omni Data)"
+  description="Free Tax Returns is a free deduction worksheet for Australian workers. Find the deductions for your occupation and copy the totals into your own return on myGov. It never lodges or sends anything to the ATO."
+  ogImage="/og/free-tax-returns.png"
+>
+  <BrandHero
+    brand="ftr"
+    title="A free worksheet for every deduction you're owed"
+    lede="Free Tax Returns helps Australian workers find every legal deduction for their occupation, then copy the exact totals into their own return on myGov. No fees, no sign-up to start, and nothing is ever sent to the ATO."
+  >
+    <Browser
+      slot="visual"
+      src={ftrCarDesktop}
+      alt="The Free Tax Returns car guide, headed “Make your car claimable”, explaining the two rules that make a work car claimable"
+      url="freetaxreturns.com.au"
+      eager
+    />
+  </BrandHero>
+
+  <section class="sec" id="how">
+    <div class="wrap split">
+      <div>
+        <p class="kicker" data-reveal>
+          How it works
+        </p>
+        <h2 data-reveal>Three steps to a finished worksheet</h2>
+        <ol class="steps" data-reveal="2">
+          {steps.map((s) => (
+            <li>
+              <h3>{s.h}</h3>
+              <p>{s.p}</p>
+            </li>
+          ))}
+        </ol>
+      </div>
+      <div class="vis" data-reveal="2">
+        <Phone
+          src={ftrWorksheet}
+          alt="Free Tax Returns, step 1 of 3: “Let's build your profile”, an empty form for name, email and date of birth"
+          caption="freetaxreturns.com.au/worksheet"
+        />
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="gets">
+    <div class="wrap">
+      <div class="sec-head split">
+        <div data-reveal>
+          <p class="kicker">What you get</p>
+          <h2>The worksheet, and the guides around it</h2>
+        </div>
+        <p class="lede" data-reveal="2">
+          It is free to start and you do not need an account. Sign in only when you want your work
+          saved and synced.
+        </p>
+      </div>
+      <div class="split flip gets">
+        <div class="vis" data-reveal>
+          <Phone
+            src={ftrCar}
+            alt="The Free Tax Returns car guide on a phone: “Make your car claimable”, with the first of two rules for claiming a work vehicle"
+            caption="freetaxreturns.com.au · claim your car"
+          />
+        </div>
+        <ul class="feats two" data-reveal="2">
+          {gets.map((g) => (
+            <li>
+              <h3>{g.h}</h3>
+              <p>{g.p}</p>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec tint" id="lodge">
+    <div class="wrap split flip">
+      <div data-reveal>
+        <Browser
+          src={ftrLodge}
+          alt="The Free Tax Returns free lodgement page, “Lodge free on myGov and the ATO”, with two steps: get a myGov account and link myGov to the ATO"
+          url="freetaxreturns.com.au"
+          caption="Free lodgement walkthrough"
+        />
+      </div>
+      <div>
+        <p class="kicker" data-reveal>
+          Lodging
+        </p>
+        <h2 data-reveal>You lodge it yourself, for free</h2>
+        <p class="lede" data-reveal>
+          Free Tax Returns gives you the totals. You enter them in your own myGov account, so the
+          return is yours from start to finish.
+        </p>
+        <ul class="ledger tight" data-reveal="2">
+          {lodge.map((x) => (
+            <li>
+              <span>{x.k}</span>
+              <span>{x.v}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="past">
+    <div class="wrap split">
+      <figure data-reveal>
+        <div class="photo shot">
+          <Picture
+            src={desk}
+            alt="A calculator and a laptop on a desk"
+            widths={[480, 720, 960, 1200]}
+            sizes="(max-width: 960px) 100vw, 45vw"
+            formats={["avif", "webp"]}
+          />
+        </div>
+      </figure>
+      <div>
+        <p class="kicker" data-reveal>
+          Past years and paperwork
+        </p>
+        <h2 data-reveal>Missed something? Go back and fix it</h2>
+        <ul class="ticks" data-reveal="2">
+          <li>Run the worksheets for earlier years, then lodge an amendment in myGov.</li>
+          <li>
+            An amendment must be lodged within two years of the notice of assessment, or four years
+            for sole traders.
+          </li>
+          <li>A free bookkeeping guide shows you how to photograph receipts into one inbox.</li>
+          <li>Already using SnapApp? Import a deduction file from it, then review each line.</li>
+        </ul>
+        <p class="stack" data-reveal="3">
+          <a class="go" href="/brands/snapapp/">
+            About SnapApp
+            <Icon name="arrow" />
+          </a>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec night" id="charge">
+    <div class="wrap split">
+      <div data-reveal>
+        <p class="kicker">You stay in charge</p>
+        <h2>An independent worksheet, not a government website</h2>
+        <p class="lede">
+          Free Tax Returns is not affiliated with the ATO or myGov. It gives general information,
+          not personal tax or financial advice.
+        </p>
+      </div>
+      <ul class="ticks" data-reveal="2">
+        <li>You lodge your own return on myGov</li>
+        <li>Free Tax Returns never lodges for you</li>
+        <li>Nothing is sent to the ATO from the worksheet</li>
+        <li>No fees, and no sign-up to start</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="sec" id="gives">
+    <div class="wrap">
+      <div class="sec-head" data-reveal>
+        <p class="kicker">Inside the group</p>
+        <h2>What Free Tax Returns gives GOD, and what it keeps</h2>
+        <p class="lede">
+          People accept the group privacy notice first. Brands only ever see counts, and never
+          anything from a return.
+        </p>
+      </div>
+      <AddsStays
+        name="Free Tax Returns"
+        adds={["Occupation", "Income bracket", "Return status"]}
+        stays={["Tax file numbers", "Bank details", "Identity documents", "The lines of a return"]}
+        staysNote="A ring marks what never leaves."
+      />
+      <p class="small note" data-reveal>
+        Free Tax Returns is live at freetaxreturns.com.au.
+        <a class="go" href="/privacy/">
+          Our privacy standard
+          <Icon name="arrow" />
+        </a>
+      </p>
+    </div>
+  </section>
+
+  <Cta
+    title="Ask us about your market"
+    lede="Free Tax Returns shows GOD only a person's occupation, income bracket and return status, counted in groups. If you want to know what that means for your market, ask."
+    primary={{ href: "/contact/", label: "Talk to GOD" }}
+    secondary={{ href: "/for-brands/", label: "What brands get" }}
+  />
+</Base>
+
+<style>
+  .vis {
+    display: grid;
+    justify-items: center;
+    padding: 40px 24px;
+    border-radius: 28px;
+    background: var(--raised);
+    min-width: 0;
+  }
+  .gets {
+    align-items: start;
+  }
+  .shot {
+    aspect-ratio: 4 / 5;
+  }
+  .tight {
+    margin-top: 24px;
+  }
+  .tight > li {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+    padding: 16px 0;
+  }
+  .tight > li > :first-child {
+    font-weight: 580;
+  }
+  .note {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 24px;
+    margin-top: 40px;
+    max-width: 46rem;
+  }
+  @media (max-width: 960px) {
+    .vis {
+      padding: 32px 16px;
+    }
+    .shot {
+      aspect-ratio: 4 / 3;
+    }
+  }
+</style>

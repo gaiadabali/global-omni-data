@@ -316,7 +316,7 @@ h4 {
   padding: var(--sec) 0;
 }
 
-.sec + .sec:not(.night):not(.tint) {
+.sec:not(.tint):not(.night) + .sec:not(.night):not(.tint) {
   padding-top: 0;
 }
 
@@ -707,7 +707,7 @@ h4 {
 /* ---------- Page hero (inner pages) ---------- */
 
 .phero {
-  padding: 96px 0 var(--sec);
+  padding: 96px 0 64px;
 }
 
 .phero .wrap {
@@ -947,6 +947,16 @@ h4 {
   background: var(--night-ink);
 }
 
+.night .ticks.rings li::before {
+  background: transparent;
+  border-color: var(--night-ink-2);
+}
+
+h1 + .lede,
+h2 + .lede {
+  margin-top: 20px;
+}
+
 /* Quiet chips for facts and status. */
 .chips {
   display: flex;
@@ -1062,7 +1072,7 @@ h4 {
   position: relative;
   width: min(100%, 300px);
   margin: 0 auto;
-  padding: 10px;
+  padding: 34px 10px 12px;
   border-radius: 46px;
   background: #15172a;
   box-shadow:
@@ -1074,19 +1084,19 @@ h4 {
 .phone::before {
   content: "";
   position: absolute;
-  top: 18px;
+  top: 14px;
   left: 50%;
   z-index: 2;
-  width: 76px;
-  height: 22px;
-  border-radius: 12px;
-  background: #0a0b14;
+  width: 56px;
+  height: 7px;
+  border-radius: 4px;
+  background: #2a2d45;
   transform: translateX(-50%);
 }
 
 .phone img {
   width: 100%;
-  border-radius: 36px;
+  border-radius: 22px;
   aspect-ratio: 390 / 812;
   object-fit: cover;
   object-position: top;
@@ -1096,17 +1106,17 @@ h4 {
 .phone.sm {
   width: min(100%, 248px);
   border-radius: 40px;
-  padding: 8px;
+  padding: 28px 8px 10px;
 }
 
 .phone.sm img {
-  border-radius: 32px;
+  border-radius: 18px;
 }
 
 .phone.sm::before {
-  top: 15px;
-  width: 64px;
-  height: 18px;
+  top: 11px;
+  width: 48px;
+  height: 6px;
 }
 
 .browser {

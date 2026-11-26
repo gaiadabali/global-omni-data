@@ -1,0 +1,287 @@
+---
+import Base from "../../layouts/Base.astro";
+import PageHero from "../../components/PageHero.astro";
+import GroupDiagram from "../../components/GroupDiagram.astro";
+import BrandMark from "../../components/BrandMark.astro";
+import Phone from "../../components/Phone.astro";
+import Browser from "../../components/Browser.astro";
+import Cta from "../../components/Cta.astro";
+import Icon from "../../components/Icon.astro";
+import { BRANDS, brand } from "../../lib/brands";
+import ytHome from "../../assets/screens/yourtal-home.webp";
+import saHome from "../../assets/screens/snapapp-home-desktop.webp";
+import ftrWorksheet from "../../assets/screens/ftr-worksheet.webp";
+
+const yourtal = brand("yourtal");
+const snapapp = brand("snapapp");
+const ftr = brand("ftr");
+
+const connect = [
+  {
+    k: "One sign-in",
+    v: "“Sign in with YourTal” works across the three apps, so nobody keeps three sets of details.",
+  },
+  {
+    k: "One notice",
+    v: "Each app shows the same group privacy notice at sign-up. Existing users see it at their next sign-in. Nothing flows to GOD until it is accepted.",
+  },
+  {
+    k: "One profile",
+    v: "GOD holds one profile per person. Using another app completes it and never counts the person twice.",
+  },
+  {
+    k: "One way out",
+    v: "Delete your account in any app and GOD removes you at the next sync.",
+  },
+];
+
+const stays = [
+  "Tax file numbers, bank details, identity documents and the lines of a return never leave Free Tax Returns",
+  "Receipt images are never copied to GOD",
+  "Passwords are never copied to GOD",
+];
+---
+
+<Base
+  title="Our brands: YourTal, SnapApp and Free Tax Returns | GOD (Global Omni Data)"
+  description="GOD is the group behind three apps: YourTal for rewards from local businesses, SnapApp for receipts that file themselves, and Free Tax Returns for a deduction worksheet. One sign-in, one privacy notice, one standard."
+  ogImage="/og/brands.png"
+>
+  <PageHero
+    title="Three apps people choose for their own reasons"
+    lede="Each one solves a real problem: rewards from local businesses, receipts that file themselves, a tax return with no deduction left behind. GOD connects them with one sign-in, one privacy notice and one standard."
+    kicker="Our brands"
+    crumbs={[{ href: "/", label: "Home" }, { label: "Our brands" }]}
+  >
+    <GroupDiagram slot="visual" />
+  </PageHero>
+
+  <section class="sec" id="brands">
+    <div class="wrap">
+      <h2 class="visually-hidden">The three brands</h2>
+      <div class="panels">
+        <article class="panel split" data-reveal>
+          <div class="panel-text">
+            <BrandMark brand="yourtal" name={yourtal.name} size="lg" />
+            <p class="said">{yourtal.tagline}</p>
+            <p>{yourtal.summary}</p>
+            <p class="small">
+              <b>For:</b> {yourtal.serves}
+            </p>
+            <ul class="chips">
+              {yourtal.facts.map((f) => (
+                <li class="chip">{f}</li>
+              ))}
+            </ul>
+            <span class={`status ${yourtal.status.kind}`}>{yourtal.status.label}</span>
+            <div class="row">
+              <a class="go" href={yourtal.page}>
+                About YourTal
+                <Icon name="arrow" />
+              </a>
+              <a class="go" href={yourtal.href} target="_blank" rel="noopener">
+                {yourtal.host}
+                <span class="visually-hidden"> (opens in a new tab)</span>
+                <Icon name="external" />
+              </a>
+            </div>
+          </div>
+          <div class="panel-visual">
+            <Phone
+              src={ytHome}
+              alt="The YourTal home screen: “Watch, learn, earn — and spend it where you live”, over a video from a local café"
+              caption="yourtal.gaiada.com · staging, demo data"
+            />
+          </div>
+        </article>
+
+        <article class="panel split flip" data-reveal>
+          <div class="panel-text">
+            <BrandMark brand="snapapp" name={snapapp.name} size="lg" />
+            <p class="said">{snapapp.tagline}</p>
+            <p>{snapapp.summary}</p>
+            <p class="small">
+              <b>For:</b> {snapapp.serves}
+            </p>
+            <ul class="chips">
+              {snapapp.facts.map((f) => (
+                <li class="chip">{f}</li>
+              ))}
+            </ul>
+            <span class={`status ${snapapp.status.kind}`}>{snapapp.status.label}</span>
+            <div class="row">
+              <a class="go" href={snapapp.page}>
+                About SnapApp
+                <Icon name="arrow" />
+              </a>
+              <a class="go" href={snapapp.href} target="_blank" rel="noopener">
+                {snapapp.host}
+                <span class="visually-hidden"> (opens in a new tab)</span>
+                <Icon name="external" />
+              </a>
+            </div>
+          </div>
+          <div class="panel-visual">
+            <Browser
+              src={saHome}
+              alt="The SnapApp home page: “The receipt app that reads every line”, beside a phone showing a receipt split into GST-free and taxable lines"
+              url="snapapp.gaiada.com"
+            />
+          </div>
+        </article>
+
+        <article class="panel split" data-reveal>
+          <div class="panel-text">
+            <BrandMark brand="ftr" name={ftr.name} size="lg" />
+            <p class="said">{ftr.tagline}</p>
+            <p>{ftr.summary}</p>
+            <p class="small">
+              <b>For:</b> {ftr.serves}
+            </p>
+            <ul class="chips">
+              {ftr.facts.map((f) => (
+                <li class="chip">{f}</li>
+              ))}
+            </ul>
+            <span class={`status ${ftr.status.kind}`}>{ftr.status.label}</span>
+            <div class="row">
+              <a class="go" href={ftr.page}>
+                About Free Tax Returns
+                <Icon name="arrow" />
+              </a>
+              <a class="go" href={ftr.href} target="_blank" rel="noopener">
+                {ftr.host}
+                <span class="visually-hidden"> (opens in a new tab)</span>
+                <Icon name="external" />
+              </a>
+            </div>
+          </div>
+          <div class="panel-visual">
+            <Phone
+              src={ftrWorksheet}
+              alt="Free Tax Returns, step 1 of 3: “Let's build your profile”, an empty form for name, email and date of birth"
+              caption="freetaxreturns.com.au/worksheet"
+            />
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec tint" id="connect">
+    <div class="wrap">
+      <div class="sec-head split">
+        <div data-reveal>
+          <p class="kicker">How the three connect</p>
+          <h2>One sign-in, one notice, one profile</h2>
+        </div>
+        <p class="lede" data-reveal="2">
+          The apps stay separate for the people who use them. What joins them is a shared way to
+          sign in and a shared standard for what GOD may count.
+        </p>
+      </div>
+      <ul class="ledger" data-reveal>
+        {connect.map((c) => (
+          <li>
+            <span>{c.k}</span>
+            <span>{c.v}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <section class="sec" id="adds">
+    <div class="wrap">
+      <div class="sec-head" data-reveal>
+        <p class="kicker">What each adds</p>
+        <h2>Three views of the same market</h2>
+        <p class="lede">
+          Each app contributes a different part of the picture. GOD joins them and counts the result
+          in groups, never as a list of people.
+        </p>
+      </div>
+      <ul class="feats" data-reveal="1">
+        {BRANDS.map((b) => (
+          <li>
+            <h3>{b.name}</h3>
+            <p>{b.adds}</p>
+            <p class="small">
+              <a class="go" href={b.page}>
+                About {b.name}
+                <Icon name="arrow" />
+              </a>
+            </p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <section class="sec tint" id="stays">
+    <div class="wrap split">
+      <div data-reveal>
+        <p class="kicker">What stays inside each app</p>
+        <h2>Some things never reach GOD</h2>
+        <p class="lede">
+          GOD copies only the fields it needs, at the source. A filled dot is something that is
+          counted. A ring is something that stays put.
+        </p>
+      </div>
+      <ul class="ticks rings" data-reveal="2">
+        {stays.map((s) => (
+          <li>{s}</li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <Cta
+    title="Ask a question about your market"
+    lede="Tell us who you sell to and what you want to know. We reply within two business days with what a report would cover, what it would cost and how long it would take."
+  />
+</Base>
+
+<style>
+  .panels {
+    display: grid;
+    gap: 96px;
+  }
+  .panel {
+    gap: 72px;
+    align-items: center;
+  }
+  .panel-text {
+    display: grid;
+    gap: 18px;
+    justify-items: start;
+    min-width: 0;
+  }
+  .panel-text > p:not(.said):not(.small) {
+    color: var(--ink-2);
+    max-width: 34rem;
+  }
+  .panel-text .row {
+    gap: 12px 28px;
+    margin-top: 4px;
+  }
+  .panel-visual {
+    display: grid;
+    justify-items: center;
+    padding: 48px 32px;
+    border-radius: 28px;
+    background: var(--raised);
+    min-width: 0;
+  }
+  @media (max-width: 960px) {
+    .panels {
+      gap: 72px;
+    }
+    .panel {
+      gap: 32px;
+    }
+    .panel-visual {
+      padding: 32px 16px;
+    }
+  }
+</style>

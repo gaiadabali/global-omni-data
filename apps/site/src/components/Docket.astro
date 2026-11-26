@@ -10,20 +10,44 @@ interface Props {
 const { compact = false } = Astro.props;
 ---
 
-<div class:list={["docket", { compact }]} role="img" aria-label="A sample fuel docket from a fictional roadhouse in Longreach, Queensland, totalling $87.68">
+<div
+  class:list={["docket", { compact }]}
+  role="img"
+  aria-label="A sample fuel docket from a fictional roadhouse in Longreach, Queensland, totalling $87.68"
+>
   <div class="paper" aria-hidden="true">
     <p class="shop">Mitchell Rd Roadhouse</p>
-    <p class="addr"><mark>Longreach QLD 4730</mark></p>
+    <p class="addr">
+      <mark>Longreach QLD 4730</mark>
+    </p>
     <p class="c">TAX INVOICE</p>
     <p class="c dim">Thu 27/11/2026 17:42</p>
     <hr />
-    <p class="ln"><span>Unleaded 91</span><span>75.98</span></p>
-    <p class="ln dim"><span>&nbsp; 38.20 L @ 1.989</span><span></span></p>
-    <p class="ln"><span>Flat white</span><span>5.20</span></p>
-    <p class="ln"><span>Sausage roll</span><span>6.50</span></p>
+    <p class="ln">
+      <span>Unleaded 91</span>
+      <span>75.98</span>
+    </p>
+    <p class="ln dim">
+      <span>&nbsp; 38.20 L @ 1.989</span>
+      <span></span>
+    </p>
+    <p class="ln">
+      <span>Flat white</span>
+      <span>5.20</span>
+    </p>
+    <p class="ln">
+      <span>Sausage roll</span>
+      <span>6.50</span>
+    </p>
     <hr />
-    <p class="ln tot"><span>TOTAL</span><span>$87.68</span></p>
-    <p class="ln dim"><span>GST included</span><span>7.97</span></p>
+    <p class="ln tot">
+      <span>TOTAL</span>
+      <span>$87.68</span>
+    </p>
+    <p class="ln dim">
+      <span>GST included</span>
+      <span>7.97</span>
+    </p>
     {!compact && <p class="c dim thx">Thanks, drive safe</p>}
   </div>
 </div>
@@ -41,7 +65,8 @@ const { compact = false } = Astro.props;
     font-family: var(--f-mono);
     font-size: 0.75rem;
     line-height: 1.6;
-    -webkit-mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / 14px 100%;
+    -webkit-mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% /
+      14px 100%;
     mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / 14px 100%;
   }
   .compact .paper {

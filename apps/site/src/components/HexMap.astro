@@ -44,8 +44,14 @@ const pins = shops.map((s) => ({
 ---
 
 <figure class="hexmap">
-  <svg viewBox={`0 0 ${vbW} ${vbH}`} role="img" aria-label="Sample map of suburb-sized areas around two cafés, shaded by how many customers live in each. Areas with fewer than ten customers are hollow.">
-    {cells.map((c) => <polygon class={`b${c.band}`} points={c.pts} />)}
+  <svg
+    viewBox={`0 0 ${vbW} ${vbH}`}
+    role="img"
+    aria-label="Sample map of suburb-sized areas around two cafés, shaded by how many customers live in each. Areas with fewer than ten customers are hollow."
+  >
+    {cells.map((c) => (
+      <polygon class={`b${c.band}`} points={c.pts} />
+    ))}
     {pins.map((p) => (
       <g class="pin">
         <circle cx={p.cx} cy={p.cy} r="6" />
@@ -55,12 +61,24 @@ const pins = shops.map((s) => ({
   </svg>
   <figcaption>
     <ul class="legend" aria-label="Customers per area">
-      <li><i class="b0"></i>&lt;10</li>
-      <li><i class="b1"></i>10–24</li>
-      <li><i class="b2"></i>25–99</li>
-      <li><i class="b3"></i>100–499</li>
-      <li><i class="b4"></i>500+</li>
-      <li><i class="pinkey"></i>Shop</li>
+      <li>
+        <i class="b0"></i>&lt;10
+      </li>
+      <li>
+        <i class="b1"></i>10–24
+      </li>
+      <li>
+        <i class="b2"></i>25–99
+      </li>
+      <li>
+        <i class="b3"></i>100–499
+      </li>
+      <li>
+        <i class="b4"></i>500+
+      </li>
+      <li>
+        <i class="pinkey"></i>Shop
+      </li>
     </ul>
   </figcaption>
 </figure>

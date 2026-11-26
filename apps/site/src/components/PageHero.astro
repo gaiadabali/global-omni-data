@@ -24,22 +24,34 @@ const hasVisual = Astro.slots.has("visual");
 <section class:list={["phero", { night, solo: !hasVisual }]}>
   <div class="wrap">
     <div>
-      {
-        crumbs && (
-          <nav aria-label="Breadcrumb">
-            <ol class="crumbs">
-              {crumbs.map((c) => (
-                <li>{c.href ? <a href={c.href}>{c.label}</a> : <span aria-current="page">{c.label}</span>}</li>
-              ))}
-            </ol>
-          </nav>
-        )
-      }
+      {crumbs && (
+        <nav aria-label="Breadcrumb">
+          <ol class="crumbs">
+            {crumbs.map((c) => (
+              <li>
+                {c.href ? (
+                  <a href={c.href}>{c.label}</a>
+                ) : (
+                  <span aria-current="page">{c.label}</span>
+                )}
+              </li>
+            ))}
+          </ol>
+        </nav>
+      )}
       {kicker && <p class="kicker">{kicker}</p>}
       <h1>{title}</h1>
       <p class="lede">{lede}</p>
-      {Astro.slots.has("default") && <div class="row"><slot /></div>}
+      {Astro.slots.has("default") && (
+        <div class="row">
+          <slot />
+        </div>
+      )}
     </div>
-    {hasVisual && <div class="phero-visual"><slot name="visual" /></div>}
+    {hasVisual && (
+      <div class="phero-visual">
+        <slot name="visual" />
+      </div>
+    )}
   </div>
 </section>
