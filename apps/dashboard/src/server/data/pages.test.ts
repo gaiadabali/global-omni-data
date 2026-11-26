@@ -177,7 +177,7 @@ describe("overview: what changed", () => {
   it("prints its numbers through the threshold", async () => {
     const exec = await getDashboardData(viewer("executive")).overview({ period: "month" });
     const owner = await getDashboardData(viewer("owner")).overview({ period: "month" });
-    const merge = (o: typeof exec) => o.changes.find((c) => c.pageId === "quality")!;
+    const merge = (o: typeof exec) => o.changes.find((c) => c.title.startsWith("Identity merge"))!;
     // 3 merges undone is under 10: hidden from an executive, exact (and marked) for the Owner.
     expect(merge(exec).detail).toBe("<10 merges undone by the data team");
     expect(merge(owner).detail).toBe("3 (small number) merges undone by the data team");
