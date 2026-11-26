@@ -15,7 +15,7 @@ const smallCells: InfluenceQuery = {
   audience: "both",
   measure: "count",
   month: "2024-12",
-  level: { h3: 5 },
+  level: { h3: 6 },
 };
 
 describe("presentation layer", () => {
@@ -66,7 +66,7 @@ describe("presentation layer", () => {
     }
   });
 
-  it("states: eight cells, with names", async () => {
+  it("states: eight cells, with real names, a parent, a centroid, a trend and a new-this-month figure", async () => {
     const r = await getDashboardData(viewer("executive")).influenceMap({
       brand: "all",
       audience: "both",
@@ -74,8 +74,18 @@ describe("presentation layer", () => {
       month: "2026-11",
       level: "state",
     });
-    expect(r.cells.map((c) => c.id)).toEqual(["NSW", "VIC", "QLD", "WA", "SA", "TAS", "ACT", "NT"]);
-    expect(r.cells[0]?.label).toBe("New South Wales");
+    expect(r.cells.map((c) => c.id).sort()).toEqual(["ACT", "NSW", "NT", "QLD", "SA", "TAS", "VIC", "WA"]);
+    const nsw = r.cells.find((c) => c.id === "NSW")!;
+    expect(nsw.name).toBe("New South Wales");
+    expect(nsw.label).toBe("New South Wales");
+    expect(nsw.parent).toBe("Australia");
+    expect(nsw.centroid[0]).toBeGreaterThan(140);
+    expect(nsw.centroid[1]).toBeLessThan(-28);
+    expect(nsw.population).toBeGreaterThan(8_000_000);
+    expect(nsw.trend).toHaveLength(12);
+    expect(r.trendMonths).toHaveLength(12);
+    expect(r.trendMonths[11]).toBe("2026-11");
+    expect(Object.keys(nsw.newThisMonth).sort()).toEqual(["display", "suppressed", "value"]);
     expect(r.legend[0]?.label).toBe("<10");
     expect(r.legend.length).toBeGreaterThan(3);
   });
@@ -101,8 +111,8 @@ describe("presentation layer", () => {
 
   it("never carries person-level fields in a map response", async () => {
     const d = getDashboardData(viewer("executive"));
-    const inf = await d.influenceMap({ ...smallCells, level: { h3: 8 }, bbox: [151.0, -34.0, 151.3, -33.7] });
-    const act = await d.activityMap({ month: "2026-11", h3: 8, bbox: [151.0, -34.0, 151.3, -33.7] });
+    const inf = await d.influenceMap({ ...smallCells, level: { h3: 7 }, bbox: [151.0, -34.0, 151.3, -33.7] });
+    const act = await d.activityMap({ month: "2026-11", h3: 7, bbox: [151.0, -34.0, 151.3, -33.7] });
     const keys = new Set<string>();
     const collect = (o: unknown) => {
       if (Array.isArray(o)) o.forEach(collect);
@@ -119,7 +129,16 @@ describe("presentation layer", () => {
       expect(keys.has(forbidden)).toBe(false);
     }
     expect(act.heat.length).toBeGreaterThan(0);
-    expect(Object.keys(act.heat[0]!).sort()).toEqual(["band", "display", "id", "suppressed", "value"]);
+    expect(Object.keys(act.heat[0]!).sort()).toEqual([
+      "band",
+      "centroid",
+      "display",
+      "id",
+      "name",
+      "parent",
+      "suppressed",
+      "value",
+    ]);
     expect(Object.keys(act.merchants[0]!).sort()).toEqual([
       "category",
       "display",

@@ -7,11 +7,11 @@ import {
   activityResolution,
   bboxContains,
   bboxParam,
-  influenceResolution,
+  influenceLevel,
   snapBBox,
   usesBBox,
   type BBox,
-  type H3Resolution,
+  type InfluenceLevel,
 } from "./zoom";
 
 export interface ViewBox {
@@ -35,20 +35,25 @@ export interface ShownInfluence {
   audience: string;
   measure: string;
   month: string;
-  level: "state" | { h3: number };
+  level: "state" | "sa4" | "sa3" | "sa2" | { h3: number };
   bbox?: BBox;
 }
 
-export function influenceUrl(c: InfluenceControls, res: H3Resolution | null, bbox?: BBox): string {
+/** The request for a level: an area level (SA2 needs a box) or an H3 resolution (always a box). */
+export function influenceUrl(c: InfluenceControls, level: InfluenceLevel, bbox?: BBox): string {
   const p = new URLSearchParams({ brand: c.brand, audience: c.audience, measure: c.measure, month: c.month });
-  if (res === null) {
-    p.set("level", "state");
-  } else {
+  if (typeof level === "number") {
     p.set("level", "h3");
-    p.set("res", String(res));
-    if (bbox) p.set("bbox", bboxParam(bbox));
+    p.set("res", String(level));
+  } else {
+    p.set("level", level);
   }
+  if (bbox && usesBBox(level)) p.set("bbox", bboxParam(bbox));
   return `/api/map/influence?${p.toString()}`;
+}
+
+function sameLevel(shown: ShownInfluence["level"], want: InfluenceLevel): boolean {
+  return typeof shown === "object" ? shown.h3 === want : shown === want;
 }
 
 function sameInfluenceControls(a: ShownInfluence, c: InfluenceControls): boolean {
@@ -60,19 +65,18 @@ export function planInfluence(
   view: ViewBox,
   shown: { url: string; query: ShownInfluence } | null,
 ): string {
-  const res = influenceResolution(view.z);
-  if (!usesBBox(res)) return influenceUrl(c, res);
+  const level = influenceLevel(view.z);
+  if (!usesBBox(level)) return influenceUrl(c, level);
   if (
     shown &&
     sameInfluenceControls(shown.query, c) &&
-    typeof shown.query.level === "object" &&
-    shown.query.level.h3 === res &&
+    sameLevel(shown.query.level, level) &&
     shown.query.bbox &&
     bboxContains(shown.query.bbox, view.bbox)
   ) {
     return shown.url;
   }
-  return influenceUrl(c, res, snapBBox(view.bbox, view.z));
+  return influenceUrl(c, level, snapBBox(view.bbox, view.z));
 }
 
 /* ---------------- activity ---------------- */
@@ -111,7 +115,7 @@ export function planActivity(
   shown: { url: string; query: ShownActivity } | null,
 ): string {
   const res = activityResolution(view.z);
-  if (!usesBBox(res)) return activityUrl(c, res);
+  if (res < 6) return activityUrl(c, res);
   if (
     shown &&
     sameActivityControls(shown.query, c) &&

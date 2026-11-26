@@ -4,18 +4,30 @@ import type { BrandId, Viewer } from "../types";
 import { allowListStore } from "./allowlist";
 import {
   presentActivity,
+  presentActivityArea,
+  presentArea,
+  presentHotspots,
   presentInfluence,
   presentOverview,
+  presentSummary,
   presentTree,
   type PresentedActivity,
+  type PresentedActivityArea,
+  type PresentedArea,
+  type PresentedHotspots,
   type PresentedInfluence,
   type PresentedOverview,
+  type PresentedSummary,
 } from "./present";
 import { syntheticData } from "./synthetic";
 import type {
+  ActivityAreaQuery,
   ActivityQuery,
   AllowListEntry,
+  AreaQuery,
   AudienceQuery,
+  HotspotQuery,
+  SummaryQuery,
   BrandRawMap,
   DashboardData,
   InfluenceQuery,
@@ -30,7 +42,18 @@ import type {
 } from "./types";
 
 export * from "./types";
-export type { InfluenceCell, ActivityMerchant, ActivityHeatCell, PresentedInfluence, PresentedActivity, PresentedOverview } from "./present";
+export type {
+  InfluenceCell,
+  ActivityMerchant,
+  ActivityHeatCell,
+  PresentedInfluence,
+  PresentedActivity,
+  PresentedOverview,
+  PresentedSummary,
+  PresentedArea,
+  PresentedHotspots,
+  PresentedActivityArea,
+} from "./present";
 export type { LegendBreak } from "./legend";
 
 /**
@@ -95,7 +118,13 @@ export interface ViewerData {
   overview(q: { period: Period }): Promise<PresentedOverview>;
   brand<B extends BrandId>(brand: B, q: { period: Period }): Promise<Present<BrandRawMap[B]>>;
   influenceMap(q: InfluenceQuery): Promise<PresentedInfluence>;
+  mapSummary(q: SummaryQuery): Promise<PresentedSummary>;
+  /** null when the area id is unknown. */
+  mapArea(q: AreaQuery): Promise<PresentedArea | null>;
   activityMap(q: ActivityQuery): Promise<PresentedActivity>;
+  activityHotspots(q: HotspotQuery): Promise<PresentedHotspots>;
+  /** null when the area id is unknown. */
+  activityArea(q: ActivityAreaQuery): Promise<PresentedActivityArea | null>;
   /** `forExport` presents every count as a brand would see it, for every role. */
   insight(q: AudienceQuery): Promise<Present<InsightRaw>>;
   teens(q: { entity?: string; forExport?: boolean }): Promise<Present<TeensRaw>>;
@@ -144,11 +173,38 @@ export function getDashboardData(
       if (!canQueryBrand(viewer, q.brand)) throw new DataAccessError(`This role cannot see ${q.brand}`);
       return presentInfluence(await source.influenceMap(q), q, viewer);
     },
+    async mapSummary(q) {
+      if (!canQueryBrand(viewer, q.brand)) throw new DataAccessError(`This role cannot see ${q.brand}`);
+      return presentSummary(await source.mapSummary(q), q, viewer);
+    },
+    async mapArea(q) {
+      if (!canQueryBrand(viewer, q.brand)) throw new DataAccessError(`This role cannot see ${q.brand}`);
+      // A brand lead sees their own brand's totals and never the all-of-GOD total, whatever the caller asked for.
+      const scoped: AreaQuery =
+        viewer.role === "brand_lead"
+          ? { ...q, visibleBrands: q.visibleBrands.filter((b) => b === viewer.brand), showGod: false }
+          : q;
+      const raw = await source.mapArea(scoped);
+      return raw ? presentArea(raw, scoped, viewer) : null;
+    },
     async activityMap(q) {
       if (viewer.role === "brand_lead" && q.audienceBrand !== viewer.brand) {
         throw new DataAccessError("A brand lead's activity map is limited to their own brand");
       }
       return presentActivity(await source.activityMap(q), q, viewer);
+    },
+    async activityHotspots(q) {
+      if (viewer.role === "brand_lead" && q.audienceBrand !== viewer.brand) {
+        throw new DataAccessError("A brand lead's activity map is limited to their own brand");
+      }
+      return presentHotspots(await source.activityHotspots(q), q, viewer);
+    },
+    async activityArea(q) {
+      if (viewer.role === "brand_lead" && q.audienceBrand !== viewer.brand) {
+        throw new DataAccessError("A brand lead's activity map is limited to their own brand");
+      }
+      const raw = await source.activityArea(q);
+      return raw ? presentActivityArea(raw, q, viewer) : null;
     },
 
     async insight(q) {

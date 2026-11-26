@@ -25,7 +25,14 @@ const nextConfig: NextConfig = {
   // forbidden() gives a real 403 for a page the viewer's role may not open.
   experimental: { authInterrupts: true },
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    return [
+      { source: "/:path*", headers: securityHeaders },
+      {
+        // The boundary files carry the data version in their URL (?v=...), so they can be cached for good.
+        source: "/geo/:level(state|sa4|sa3|sa2).json",
+        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
+      },
+    ];
   },
 };
 

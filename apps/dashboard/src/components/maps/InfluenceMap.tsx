@@ -1,6 +1,5 @@
 "use client";
 
-import { cellToLatLng } from "h3-js";
 import type { PickingInfo } from "@deck.gl/core";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Callout, Num, Segmented, Select } from "@/components/ui";
@@ -14,13 +13,15 @@ import {
   useMapLoader,
   useMapQuery,
   useMapTokens,
+  useBoundaries,
   useReducedMotion,
   useStateOutlines,
 } from "./hooks";
+import { boundaryCode, type BoundaryFeature } from "./boundaries";
 import { LABEL_FONT_SPEC, influenceLayers } from "./influence-layers";
 import { planInfluence, type ShownInfluence } from "./plan";
 import { stateBounds, stateCode, stateLabels, type StateFeature } from "./states";
-import { coordName, topBy } from "./top";
+import { topBy } from "./top";
 import {
   serialiseInfluenceState,
   type Audience,
@@ -29,7 +30,7 @@ import {
   type MapMetaLike,
   type Measure,
 } from "./url-state";
-import { LEVEL_BREAKS, inBBox, levelLabel, type H3Resolution } from "./zoom";
+import { MAX_ZOOM, finerLevel, inBBox, levelLabel, levelStartZoom, type InfluenceLevel } from "./zoom";
 
 export interface InfluenceMapProps {
   initial: InfluenceState;
@@ -68,14 +69,24 @@ interface Ui {
   sel: string | null;
 }
 
-function resOf(q: PresentedInfluence["query"] | undefined): H3Resolution | null {
-  return q && typeof q.level === "object" ? (q.level.h3 as H3Resolution) : null;
+/** The level the answer on screen is for: an area level, or an H3 resolution. null before the first answer. */
+function levelOf(q: PresentedInfluence["query"] | undefined): InfluenceLevel | null {
+  if (!q) return null;
+  return typeof q.level === "object" ? (q.level.h3 as 6 | 7) : q.level;
 }
 
-/** The area a click or hover landed on: a state code or an h3 index. */
+const LEVEL_KICKER: Record<string, string> = {
+  state: "State or territory",
+  sa4: "SA4 region",
+  sa3: "SA3 area",
+  sa2: "SA2 area",
+};
+
+/** The area a click or hover landed on: a state code, an ABS area code or an h3 index. */
 function idOf(info: PickingInfo): string | null {
   if (!info.object) return null;
   if (info.layer?.id === "states") return stateCode(info.object as StateFeature);
+  if (info.layer?.id === "areas") return boundaryCode(info.object as BoundaryFeature);
   if (info.layer?.id === "hex") return (info.object as InfluenceCell).id;
   return null;
 }
@@ -157,6 +168,7 @@ export default function InfluenceMap({ initial, meta, basemapUrl, lockedBrand, s
       tokens
         ? influenceLayers({
             states: outlines,
+            areas: areaOutlines,
             labels,
             data: shown,
             tokens,
@@ -166,31 +178,25 @@ export default function InfluenceMap({ initial, meta, basemapUrl, lockedBrand, s
             fontReady,
           })
         : [],
-    [tokens, outlines, labels, shown, ui.brand, ui.sel, hasBasemap, fontReady],
+    [tokens, outlines, areaOutlines, labels, shown, ui.brand, ui.sel, hasBasemap, fontReady],
   );
 
-  const shownRes = resOf(shown?.query);
-  const stateLevel = shown === null || shown.query.level === "state";
+  const shownLevel = levelOf(shown?.query);
+  const stateLevel = shownLevel === null || shownLevel === "state";
   const cellsById = useMemo(() => new Map((shown?.cells ?? []).map((c) => [c.id, c])), [shown]);
+  // Every cell carries its centre ([lon, lat]): an area's label point, or the centre of an h3 cell.
   const positions = useMemo(() => {
     const m = new Map<string, [number, number]>();
-    if (shown && shown.query.level !== "state") {
-      for (const c of shown.cells) {
-        const [lat, lon] = cellToLatLng(c.id);
-        m.set(c.id, [lon, lat]);
-      }
-    }
+    for (const c of shown?.cells ?? []) m.set(c.id, c.centroid);
     return m;
   }, [shown]);
 
-  const nameOf = useCallback(
-    (c: InfluenceCell): string => {
-      if (c.label) return c.label;
-      const p = positions.get(c.id);
-      return p ? coordName(p[1], p[0]) : c.id;
-    },
-    [positions],
-  );
+  // Real outlines for SA4, SA3 and SA2 come from the static boundary files.
+  const outlineUrl =
+    shownLevel === "sa4" || shownLevel === "sa3" || shownLevel === "sa2" ? (meta.geo?.levels[shownLevel] ?? null) : null;
+  const areaOutlines = useBoundaries(outlineUrl);
+
+  const nameOf = useCallback((c: InfluenceCell): string => c.name, []);
 
   const top = useMemo(() => {
     if (!shown) return [];
@@ -239,6 +245,7 @@ export default function InfluenceMap({ initial, meta, basemapUrl, lockedBrand, s
       const rows: [string, string][] = [
         measureRate ? ["Per 1,000 residents", cell.display] : [WHO_SHORT[shownAudience], cell.display],
       ];
+      rows.push(["Where", cell.parent]);
       if (cell.population) rows.push(["Residents", fmtInt(cell.population)]);
       return { title: nameOf(cell), rows };
     },
@@ -253,9 +260,9 @@ export default function InfluenceMap({ initial, meta, basemapUrl, lockedBrand, s
       return;
     }
     const p = positions.get(ui.sel);
-    if (!p) return;
-    const next = Math.min(4, (shownRes ?? 4) - 4 + 1);
-    handleRef.current?.flyTo(p[0], p[1], LEVEL_BREAKS[next]! + 0.3);
+    if (!p || shownLevel === null) return;
+    // Into the next finer level, but never past the suburb-size cap.
+    handleRef.current?.flyTo(p[0], p[1], Math.min(MAX_ZOOM, levelStartZoom(finerLevel(shownLevel)) + 0.3));
   };
 
   const prefetch = useCallback(
@@ -327,7 +334,7 @@ export default function InfluenceMap({ initial, meta, basemapUrl, lockedBrand, s
               layers={layers}
               tokens={tokens}
               dataReady={shown !== null && outlines !== null}
-              levelText={levelLabel(shownRes)}
+              levelText={levelLabel(shownLevel)}
               busy={loading}
               reducedMotion={reduced}
               onView={onView}
@@ -360,9 +367,12 @@ export default function InfluenceMap({ initial, meta, basemapUrl, lockedBrand, s
             <div className="gm-sel" aria-live="polite">
               <div>
                 <div className="gm-kicker">
-                  {stateLevel ? "State or territory" : `Area, ${levelLabel(shownRes).replace("Areas ", "")}`}
+                  {typeof shownLevel === "string"
+                    ? (LEVEL_KICKER[shownLevel] ?? "Area")
+                    : `Area, ${levelLabel(shownLevel).replace("Areas ", "")}`}
                 </div>
                 <h3>{nameOf(selCell)}</h3>
+                <div className="small muted">{selCell.parent}</div>
               </div>
               <div>
                 <div className="gm-big">
@@ -375,6 +385,7 @@ export default function InfluenceMap({ initial, meta, basemapUrl, lockedBrand, s
                   {selCell.population ? (
                     <span className="pill plain">{fmtInt(selCell.population)} residents</span>
                   ) : null}
+                  <span className="pill plain">New this month {selCell.newThisMonth.display}</span>
                   {!measureRate && selCell.population ? <PerThousand cell={selCell} /> : null}
                 </div>
               </div>

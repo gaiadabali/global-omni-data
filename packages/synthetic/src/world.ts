@@ -1,4 +1,4 @@
-import { cellToBoundary, cellToLatLng, cellToParent, getHexagonAreaAvg, latLngToCell, UNITS } from "h3-js";
+import { cellToBoundary, cellToLatLng, cellToParent, getHexagonAreaAvg, getResolution, latLngToCell, UNITS } from "h3-js";
 import { areas, randomPointInSa2, sa2IndexAt } from "@god/geo";
 import { getPlacement } from "./placement";
 import { cumulative, mulberry32, pickCum, type Rng } from "./rng";
@@ -165,6 +165,18 @@ export class CellIndex {
     return res === FINEST_RES ? this.idsBase : this.parent(res).ids;
   }
 
+  private readonly idIndex = new Map<number, Map<string, number>>();
+
+  /** Key of a cell id at a resolution, or -1 when no point fell in it. */
+  indexOf(res: number, id: string): number {
+    let m = this.idIndex.get(res);
+    if (!m) {
+      m = new Map(this.idsAt(res).map((x, i) => [x, i]));
+      this.idIndex.set(res, m);
+    }
+    return m.get(id) ?? -1;
+  }
+
   /** SA2 index of each cell at a resolution, taken from the first point in it (-1: unknown). Home cells only. */
   sa2sAt(res: number): Int32Array {
     let out = this.sa2Cache.get(res);
@@ -223,23 +235,30 @@ export class CellIndex {
     }
     const hit = pop[key]!;
     if (hit >= 0) return hit;
-    const c = this.centresAt(res);
-    const lat0 = c.lat[key]!;
-    const lon0 = c.lon[key]!;
-    const sa2 = areas("sa2");
-    const density = (lat: number, lon: number): number => {
-      const i = sa2IndexAt(lon, lat);
-      const a = i < 0 ? undefined : sa2[i];
-      return a && a.areaKm2 > 0 ? a.population / a.areaKm2 : 0;
-    };
-    let sum = density(lat0, lon0);
-    for (const [vlat, vlon] of cellToBoundary(this.idsAt(res)[key]!)) {
-      sum += density(lat0 + (vlat - lat0) * 0.55, lon0 + (vlon - lon0) * 0.55);
-    }
-    const v = (sum / 7) * getHexagonAreaAvg(res, UNITS.km2);
+    const v = residentsInCell(this.idsAt(res)[key]!);
     pop[key] = v;
     return v;
   }
+}
+
+/**
+ * Residents in an h3 cell, from the ABS estimate: the mean residents-per-km2 of the SA2s at the cell's centre and at
+ * six points halfway to its corners (water counts as none), times the cell's area.
+ */
+export function residentsInCell(id: string): number {
+  const res = getResolution(id);
+  const [lat0, lon0] = cellToLatLng(id);
+  const sa2 = areas("sa2");
+  const density = (lat: number, lon: number): number => {
+    const i = sa2IndexAt(lon, lat);
+    const a = i < 0 ? undefined : sa2[i];
+    return a && a.areaKm2 > 0 ? a.population / a.areaKm2 : 0;
+  };
+  let sum = density(lat0, lon0);
+  for (const [vlat, vlon] of cellToBoundary(id)) {
+    sum += density(lat0 + (vlat - lat0) * 0.55, lon0 + (vlon - lon0) * 0.55);
+  }
+  return (sum / 7) * getHexagonAreaAvg(res, UNITS.km2);
 }
 
 export interface World {

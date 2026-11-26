@@ -20,23 +20,31 @@ describe("influence requests", () => {
     );
   });
 
-  it("asks for the whole country at resolution 4 and 5, with no box", () => {
-    expect(planInfluence(controls, { z: 5.5, bbox: australia }, null)).toBe(
-      "/api/map/influence?brand=all&audience=both&measure=count&month=2026-11&level=h3&res=4",
+  it("asks for the whole country at SA4 and SA3, with no box", () => {
+    expect(planInfluence(controls, { z: 5, bbox: australia }, null)).toBe(
+      "/api/map/influence?brand=all&audience=both&measure=count&month=2026-11&level=sa4",
     );
-    expect(planInfluence(controls, { z: 7, bbox: australia }, null)).toContain("res=5");
-    expect(planInfluence(controls, { z: 7, bbox: australia }, null)).not.toContain("bbox");
+    const sa3 = planInfluence(controls, { z: 6.2, bbox: australia }, null);
+    expect(sa3).toContain("level=sa3");
+    expect(sa3).not.toContain("bbox");
   });
 
-  it("asks for a box from resolution 6, and always at 7 and 8 (the API refuses them without)", () => {
-    for (const [z, res] of [
-      [8.4, 6],
-      [9.6, 7],
-      [11, 8],
+  it("asks for a box at SA2 and at H3 res 6 and 7 (the API refuses them without)", () => {
+    for (const [z, want] of [
+      [7.2, "level=sa2"],
+      [8.4, "level=h3&res=6"],
+      [9.6, "level=h3&res=7"],
+      [11.4, "level=h3&res=7"],
     ] as const) {
       const url = planInfluence(controls, { z, bbox: sydney }, null);
-      expect(url).toContain(`res=${res}`);
+      expect(url).toContain(want);
       expect(url).toContain("bbox=");
+    }
+  });
+
+  it("never asks for res 8: the map has no street level", () => {
+    for (const z of [10.6, 11.4, 12, 14]) {
+      expect(planInfluence(controls, { z, bbox: sydney }, null)).not.toContain("res=8");
     }
   });
 
@@ -53,6 +61,13 @@ describe("influence requests", () => {
     expect(planInfluence(controls, { z: 9.6, bbox: panned }, { url, query })).toBe(url);
   });
 
+  it("does the same for an SA2 view", () => {
+    const url = planInfluence(controls, { z: 7.2, bbox: sydney }, null);
+    const query: ShownInfluence = { ...controls, level: "sa2", bbox: snapBBox(sydney, 7.2) };
+    const panned: BBox = [sydney[0] + 0.06, sydney[1] + 0.06, sydney[2] + 0.06, sydney[3] + 0.06];
+    expect(planInfluence(controls, { z: 7.2, bbox: panned }, { url, query })).toBe(url);
+  });
+
   it("asks again after a pan that leaves the box", () => {
     const url = planInfluence(controls, { z: 9.6, bbox: sydney }, null);
     const query: ShownInfluence = { ...controls, level: { h3: 7 }, bbox: snapBBox(sydney, 9.6) };
@@ -67,10 +82,11 @@ describe("influence requests", () => {
     expect(month).not.toBe(url);
     expect(month).toContain("month=2026-10");
     expect(planInfluence(controls, { z: 8.4, bbox: sydney }, { url, query })).toContain("res=6");
+    expect(planInfluence(controls, { z: 7.2, bbox: sydney }, { url, query })).toContain("level=sa2");
   });
 
   it("builds a plain state query", () => {
-    expect(influenceUrl({ ...controls, brand: "yourtal", measure: "per1000" }, null)).toBe(
+    expect(influenceUrl({ ...controls, brand: "yourtal", measure: "per1000" }, "state")).toBe(
       "/api/map/influence?brand=yourtal&audience=both&measure=per1000&month=2026-11&level=state",
     );
   });
@@ -89,10 +105,11 @@ describe("activity requests", () => {
     expect(new URL(url, "http://x").searchParams.get("ageBand")).toBe("13–17");
   });
 
-  it("sends a box from resolution 6", () => {
+  it("sends a box from resolution 6, and never asks for res 8", () => {
     const url = planActivity(filters, { z: 9.6, bbox: sydney }, null);
     expect(url).toContain("h3=7");
     expect(url).toContain("bbox=");
+    expect(planActivity(filters, { z: 11.4, bbox: sydney }, null)).not.toContain("h3=8");
   });
 
   it("reuses the answer on screen for a small pan", () => {

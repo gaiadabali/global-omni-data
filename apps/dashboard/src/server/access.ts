@@ -33,12 +33,23 @@ export const PAGE_ACCESS: Record<PageId, readonly Role[]> = {
   admin: ["owner"],
 };
 
-export const API_IDS = ["map.influence", "map.activity"] as const;
+export const API_IDS = [
+  "map.influence",
+  "map.summary",
+  "map.area",
+  "map.activity",
+  "map.hotspots",
+  "map.activityArea",
+] as const;
 export type ApiId = (typeof API_IDS)[number];
 
 export const API_ACCESS: Record<ApiId, readonly Role[]> = {
   "map.influence": EVERYONE,
+  "map.summary": EVERYONE,
+  "map.area": EVERYONE,
   "map.activity": EVERYONE,
+  "map.hotspots": EVERYONE,
+  "map.activityArea": EVERYONE,
 };
 
 /** Pages that belong to one brand. A brand lead may open only their own. */

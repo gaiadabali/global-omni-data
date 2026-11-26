@@ -1,41 +1,24 @@
 import {
-  AGE_BANDS,
-  BRAND_BIT,
-  CATEGORIES,
   CURRENT_INDEX,
   MONTHS,
   MONTH_COUNT,
-  STATE_CODES,
-  STATE_NAMES,
-  STATE_POP_K,
-  TEEN_BAND,
-  generateMerchants,
   getWorld,
-  merchantReceipts,
-  monthIndex,
-  placeName,
   trend,
-  type PointFilter,
   type World,
 } from "@god/synthetic";
 import { monthLong, monthShort } from "@/lib/format";
 import { syntheticPages } from "./synthetic-pages";
+import { activityArea, activityHotspots, activityMap, influenceMap, mapArea, mapSummary, warmMaps } from "./synthetic-maps";
 import type { BrandId } from "../types";
 import {
   count,
   countSeries,
-  type ActivityQuery,
-  type ActivityRaw,
-  type BBox,
   type BrandRawMap,
   type Change,
   type RawCount,
   type TextRaw,
   type DashboardData,
   type FtrRaw,
-  type H3Res,
-  type InfluenceQuery,
-  type InfluenceRaw,
   type OverviewRaw,
   type Period,
   type SnapAppRaw,
@@ -48,7 +31,6 @@ import {
  */
 
 const AS_OF = "2026-11-26";
-const MAX_CELLS = 20_000;
 
 /** Months covered by a period, and the share of people who opened an app in it (as in the approved design). */
 const PERIOD: Record<Period, { months: number; active: number }> = {
@@ -71,16 +53,6 @@ function cumAt(a: readonly number[], x: number): number {
 function dayLabel(daysBefore: number): string {
   const d = new Date(Date.UTC(2026, 10, 26 - daysBefore));
   return `${d.getUTCDate()} ${monthShort(`2026-${String(d.getUTCMonth() + 1).padStart(2, "0")}`)}`;
-}
-
-function inBox(lat: number, lon: number, b: BBox | undefined): boolean {
-  return !b || (lon >= b[0] && lon <= b[2] && lat >= b[1] && lat <= b[3]);
-}
-
-function monthOrThrow(month: string): number {
-  const i = monthIndex(month);
-  if (i < 0) throw new RangeError(`month out of range: ${month}`);
-  return i;
 }
 
 function totals(w: World, key: BrandId | "god"): number[] {
@@ -386,142 +358,23 @@ async function brand<B extends BrandId>(b: B, q: { period: Period }): Promise<Br
   return result as BrandRawMap[B];
 }
 
-async function influenceMap(q: InfluenceQuery): Promise<InfluenceRaw> {
-  const w = getWorld();
-  const filter: PointFilter = { audience: q.audience, brand: q.brand, month: monthOrThrow(q.month) };
-
-  if (q.level === "state") {
-    const counts = w.aggregate(filter, w.state, 8);
-    return {
-      truncated: false,
-      cells: STATE_CODES.map((code, i) => ({
-        id: code,
-        label: STATE_NAMES[i]!,
-        count: count(counts[i]!),
-        population: STATE_POP_K[i]! * 1000,
-      })),
-    };
-  }
-
-  const res: H3Res = q.level.h3;
-  const ids = w.cells.idsAt(res);
-  const counts = w.aggregate(filter, w.cells.keysAt(res), ids.length);
-  const centres = w.cells.centresAt(res);
-  const found: { o: number; n: number }[] = [];
-  for (let o = 0; o < ids.length; o++) {
-    const n = counts[o]!;
-    if (n > 0 && inBox(centres.lat[o]!, centres.lon[o]!, q.bbox)) found.push({ o, n });
-  }
-  let truncated = false;
-  if (found.length > MAX_CELLS) {
-    found.sort((a, b) => b.n - a.n);
-    found.length = MAX_CELLS;
-    truncated = true;
-  }
-  const label = found.length <= 400;
-  return {
-    truncated,
-    cells: found.map(({ o, n }) => ({
-      id: ids[o]!,
-      ...(label ? { label: placeName(centres.lat[o]!, centres.lon[o]!) } : {}),
-      count: count(n),
-      population: Math.round(w.cells.populationAt(res, o)),
-    })),
-  };
-}
-
-async function activityMap(q: ActivityQuery): Promise<ActivityRaw> {
-  const w = getWorld();
-  const month = monthOrThrow(q.month);
-  const cat = q.category === undefined ? undefined : CATEGORIES.findIndex((c) => c.id === q.category);
-  const age = q.ageBand === undefined ? undefined : AGE_BANDS.indexOf(q.ageBand as (typeof AGE_BANDS)[number]);
-  if (cat !== undefined && cat < 0) throw new RangeError(`unknown category: ${q.category}`);
-  if (age !== undefined && age < 0) throw new RangeError(`unknown age band: ${q.ageBand}`);
-  const teen = age === TEEN_BAND;
-  if (teen && cat !== undefined && CATEGORIES[cat]!.sensitive) {
-    throw new RangeError("sensitive categories never appear in teen figures");
-  }
-
-  // Month factor: receipts that month relative to now, from SnapApp's growth.
-  const sa = w.peopleByMonth.snapapp;
-  const factor = sa[month]! / sa[CURRENT_INDEX]!;
-
-  // Share of SnapApp people who also use the brand a brand lead is limited to.
-  let audienceShare = 1;
-  if (q.audienceBrand) {
-    const bit = BRAND_BIT[q.audienceBrand];
-    let both = 0;
-    let saTotal = 0;
-    for (let mask = 1; mask < 8; mask++) {
-      if (!(mask & 2)) continue;
-      saTotal += w.peopleByMask[mask]!;
-      if (mask & bit) both += w.peopleByMask[mask]!;
-    }
-    audienceShare = saTotal ? both / saTotal : 0;
-  }
-
-  const merchants: ActivityRaw["merchants"] = [];
-  for (const m of generateMerchants()) {
-    if (!inBox(m.lat, m.lon, q.bbox)) continue;
-    if (cat !== undefined && m.category !== cat) continue;
-    const c = CATEGORIES[m.category]!;
-    if (teen && c.sensitive) continue;
-    const receipts = merchantReceipts(m, { factor, ageBand: age, audienceShare });
-    merchants.push({
-      id: m.id,
-      name: m.name,
-      category: c.id,
-      lat: m.lat,
-      lon: m.lon,
-      receipts: count(receipts, teen ? "teen" : c.sensitive ? "sensitive" : "adult"),
-    });
-  }
-
-  const heatKind = teen ? "teen" : cat !== undefined && CATEGORIES[cat]!.sensitive ? "sensitive" : "adult";
-  const ids = w.activity.idsAt(q.h3);
-  const filter: PointFilter = {
-    audience: "people",
-    brand: "snapapp",
-    month,
-    ageBand: age,
-    category: cat,
-    alsoBrand: q.audienceBrand,
-  };
-  const counts = w.aggregate(filter, w.activity.keysAt(q.h3), ids.length);
-  const centres = w.activity.centresAt(q.h3);
-  const found: { o: number; n: number }[] = [];
-  for (let o = 0; o < ids.length; o++) {
-    const n = counts[o]!;
-    if (n > 0 && inBox(centres.lat[o]!, centres.lon[o]!, q.bbox)) found.push({ o, n });
-  }
-  let truncated = false;
-  if (found.length > MAX_CELLS) {
-    found.sort((a, b) => b.n - a.n);
-    found.length = MAX_CELLS;
-    truncated = true;
-  }
-  return {
-    truncated,
-    merchants,
-    heat: found.map(({ o, n }) => ({ id: ids[o]!, people: count(n, heatKind) })),
-  };
-}
-
-export const syntheticData: DashboardData = { overview, brand, influenceMap, activityMap, ...syntheticPages };
+export const syntheticData: DashboardData = {
+  overview,
+  brand,
+  influenceMap,
+  mapSummary,
+  mapArea,
+  activityMap,
+  activityHotspots,
+  activityArea,
+  ...syntheticPages,
+};
 
 /**
- * Build the sample and every h3 index ahead of the first request (the server does this in the background at
- * start, see src/instrumentation.ts). Cold, this takes a few seconds; afterwards every map query is a scan.
+ * Build the sample and every index ahead of the first request (the server does this in the background at start, see
+ * src/instrumentation.ts): the sample, the polygon index, the h3 indexes and the merchants. Afterwards every map
+ * query is a scan.
  */
 export function warmSynthetic(): void {
-  const w = getWorld();
-  for (const res of [3, 4, 5, 6, 7, 8]) {
-    w.cells.keysAt(res);
-    w.cells.centresAt(res);
-  }
-  for (const res of [5, 6, 7, 8]) {
-    w.activity.keysAt(res);
-    w.activity.centresAt(res);
-  }
-  generateMerchants();
+  warmMaps();
 }

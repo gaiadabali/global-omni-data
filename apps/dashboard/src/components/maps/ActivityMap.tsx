@@ -1,6 +1,5 @@
 "use client";
 
-import { cellToLatLng } from "h3-js";
 import type { PickingInfo } from "@deck.gl/core";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Callout, Num, Select } from "@/components/ui";
@@ -20,7 +19,7 @@ import {
 } from "./hooks";
 import { LABEL_FONT_SPEC } from "./influence-layers";
 import { planActivity, type ShownActivity } from "./plan";
-import { coordName, topBy } from "./top";
+import { topBy } from "./top";
 import {
   isSensitive,
   isTeenBand,
@@ -28,7 +27,7 @@ import {
   type ActivityState,
   type MapMetaLike,
 } from "./url-state";
-import { HEX_WIDTH_KM, inBBox, kmLabel, type H3Resolution } from "./zoom";
+import { HEX_WIDTH_KM, inBBox, kmLabel } from "./zoom";
 
 export interface ActivityMapProps {
   initial: ActivityState;
@@ -156,10 +155,7 @@ export default function ActivityMap({ initial, meta, basemapUrl, lockedBrandName
   const heatPos = useMemo(() => {
     const m = new Map<string, [number, number]>();
     if (shown && ui.heat) {
-      for (const h of shown.heat) {
-        const [lat, lon] = cellToLatLng(h.id);
-        m.set(h.id, [lon, lat]);
-      }
+      for (const h of shown.heat) m.set(h.id, h.centroid);
     }
     return m;
   }, [shown, ui.heat]);
@@ -182,7 +178,7 @@ export default function ActivityMap({ initial, meta, basemapUrl, lockedBrandName
         ? topBy(
             shown.heat,
             (h) => h.value,
-            (h) => h.id,
+            (h) => h.name,
             (h) => {
               const p = heatPos.get(h.id);
               return !box || (p ? inBBox(p[0], p[1], box) : false);
@@ -200,8 +196,7 @@ export default function ActivityMap({ initial, meta, basemapUrl, lockedBrandName
   const selMerchant = ui.sel && isMerchantId(ui.sel) ? merchantById.get(ui.sel) : undefined;
   const selHeat = ui.sel && !isMerchantId(ui.sel) ? heatById.get(ui.sel) : undefined;
 
-  const selHeatPos = selHeat ? heatPos.get(selHeat.id) : undefined;
-  const selHeatName = selHeatPos ? coordName(selHeatPos[1], selHeatPos[0]) : "Activity area";
+  const selHeatName = selHeat?.name ?? "Activity area";
 
   const select = useCallback(
     (id: string | null) => {
@@ -233,10 +228,15 @@ export default function ActivityMap({ initial, meta, basemapUrl, lockedBrandName
       }
       const h = heatById.get(p.id);
       if (!h) return null;
-      const pos = heatPos.get(h.id);
-      return { title: pos ? coordName(pos[1], pos[0]) : "Activity area", rows: [["People active", h.display]] };
+      return {
+        title: h.name,
+        rows: [
+          ["People active", h.display],
+          ["Where", h.parent],
+        ],
+      };
     },
-    [merchantById, heatById, heatPos, categoryName],
+    [merchantById, heatById, categoryName],
   );
 
   const prefetch = useCallback(
@@ -251,9 +251,9 @@ export default function ActivityMap({ initial, meta, basemapUrl, lockedBrandName
   const toggleCategory = (id: string) =>
     setUi((u) => ({ ...u, off: u.off.includes(id) ? u.off.filter((x) => x !== id) : [...u.off, id] }));
 
-  const res = shown ? (shown.query.h3 as H3Resolution) : null;
+  const res = shown ? shown.query.h3 : null;
   const levelText = `${fmtInt(merchants.length)} merchant dots${
-    ui.heat && res ? ` · activity areas about ${kmLabel(HEX_WIDTH_KM[res])} across` : ""
+    ui.heat && res ? ` · activity areas about ${kmLabel(HEX_WIDTH_KM[res]!)} across` : ""
   }`;
   const shownMonth = shown?.query.month ?? ui.month;
   const shownAge = shown?.query.ageBand;
@@ -413,9 +413,10 @@ export default function ActivityMap({ initial, meta, basemapUrl, lockedBrandName
             <div className="gm-sel" aria-live="polite">
               <div>
                 <div className="gm-kicker">
-                  Activity area{res ? `, about ${kmLabel(HEX_WIDTH_KM[res])} across` : ""}
+                  Activity area{res ? `, about ${kmLabel(HEX_WIDTH_KM[res]!)} across` : ""}
                 </div>
                 <h3>{selHeatName}</h3>
+                {selHeat ? <div className="small muted">{selHeat.parent}</div> : null}
               </div>
               <div>
                 <div className="gm-big">
@@ -466,17 +467,14 @@ export default function ActivityMap({ initial, meta, basemapUrl, lockedBrandName
             <div className="gm-toplist">
               <div className="gm-kicker">Busiest activity areas on screen</div>
               <ol>
-                {topAreas.map((h) => {
-                  const p = heatPos.get(h.id);
-                  return (
-                    <li key={h.id}>
-                      <button type="button" onClick={() => select(h.id)} aria-pressed={h.id === ui.sel}>
-                        <span>{p ? coordName(p[1], p[0]) : h.id}</span>
-                        <b>{h.display}</b>
-                      </button>
-                    </li>
-                  );
-                })}
+                {topAreas.map((h) => (
+                  <li key={h.id}>
+                    <button type="button" onClick={() => select(h.id)} aria-pressed={h.id === ui.sel}>
+                      <span>{h.name}</span>
+                      <b>{h.display}</b>
+                    </button>
+                  </li>
+                ))}
               </ol>
             </div>
           ) : null}

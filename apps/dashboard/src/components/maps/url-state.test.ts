@@ -34,7 +34,7 @@ describe("view", () => {
   it("ignores nonsense and clamps zoom", () => {
     expect(parseView(sp("z=abc&lat=-33&lon=151"))).toBeNull();
     expect(parseView(sp("z=9&lat=-120&lon=151"))).toBeNull();
-    expect(parseView(sp("z=99&lat=-33&lon=151"))?.z).toBe(14);
+    expect(parseView(sp("z=99&lat=-33&lon=151"))?.z).toBe(11.4);
     expect(parseView(sp("z=0&lat=-33&lon=151"))?.z).toBe(2);
     expect(parseView(sp("z=&lat=&lon="))).toBeNull();
   });

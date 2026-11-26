@@ -107,7 +107,7 @@ export function nationalPopulation(): number {
 }
 
 /** Residents by ABS 5-year age group, with the total first: [total, "0–4", ..., "85 and over"]. */
-export function ageGroupCounts(level: Level, id: string): readonly number[] | undefined {
+export function ageGroupCounts(level: Level, id: string): ArrayLike<number> | undefined {
   const a = getArea(level, id);
   return a ? getStore().ages[level][a.index] : undefined;
 }
