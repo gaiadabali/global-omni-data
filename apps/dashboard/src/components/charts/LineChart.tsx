@@ -64,7 +64,7 @@ export function LineChart({
   const path = line<number>()
     .x((_, i) => x(i))
     .y((v) => y(v));
-  const step = Math.max(1, Math.ceil(n / Math.max(2, Math.floor(iw / 54))));
+  const step = Math.max(1, Math.ceil(n / Math.max(2, Math.floor(iw / 60))));
 
   const indexAt = (clientX: number, svg: SVGSVGElement) => {
     const r = svg.getBoundingClientRect();

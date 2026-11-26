@@ -148,7 +148,7 @@ export function BarChart({
   const k = stacked ? 1 : Math.max(1, shown.length);
   const barW = Math.min(MAX_BAR, (bw - GAP * (k - 1)) / k);
   const groupW = barW * k + GAP * (k - 1);
-  const step = Math.max(1, Math.ceil(n / Math.max(2, Math.floor((W - m.l - m.r) / 40))));
+  const step = Math.max(1, Math.ceil(n / Math.max(2, Math.floor((W - m.l - m.r) / 56))));
   const toggle = (id: string) =>
     setHidden((prev) => {
       const next = new Set(prev);

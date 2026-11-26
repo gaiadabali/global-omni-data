@@ -95,7 +95,7 @@ export default async function HomePage({
         />
       </StatGrid>
 
-      <div className="cols basis-520">
+      <div className="cols cols-lg">
         <Card title="Growth by brand">
           <p className="small muted">
             People and businesses registered, running total.
@@ -117,7 +117,7 @@ export default async function HomePage({
           />
         </Card>
 
-        <div className="stack basis-340">
+        <div className="stack col-sm">
           <Card title="Profile completeness">
             <p className="small muted">
               How many of the three apps each person has finished a profile in. This counts completed profiles, not

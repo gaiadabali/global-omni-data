@@ -2,7 +2,6 @@ import { Fragment, type ReactNode } from "react";
 import { navFor, phoneNavFor } from "@/server/access";
 import { isDevAuthEnabled } from "@/server/dev-auth";
 import { clearDevRole } from "@/server/dev-actions";
-import { DEV_ROLE_LABELS } from "@/server/dev-roles";
 import { devRoleValueOf } from "@/server/viewer";
 import { ROLE_LABELS, BRAND_LABELS, type Viewer } from "@/server/types";
 import type { Theme } from "@/lib/theme";
@@ -58,14 +57,14 @@ export function Shell({
               <Icon name="user" />
               <span className="lbl">
                 {viewer.displayName}
-                <span className="xs muted"> · {roleLabel}</span>
+                <span className="block xs muted">{roleLabel}</span>
               </span>
             </div>
             {dev ? (
               <form action={clearDevRole}>
                 <button type="submit" className="nav">
                   <Icon name="key" />
-                  <span className="lbl">Sign out ({DEV_ROLE_LABELS[devRole ?? "owner"]})</span>
+                  <span className="lbl">Sign out (dev)</span>
                 </button>
               </form>
             ) : null}

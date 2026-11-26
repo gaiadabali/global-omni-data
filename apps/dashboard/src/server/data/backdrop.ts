@@ -21,23 +21,33 @@ const K = (BACKDROP_SIZE.w - 20) / (((LON1 - LON0) * Math.PI) / 180);
 
 let cache: BackdropDot[] | null = null;
 
-export function backdropDots(n = 1000): BackdropDot[] {
+export function backdropDots(n = 2200): BackdropDot[] {
   if (cache && cache.length === n) return cache;
   const rnd = mulberry32(3);
-  const cum = cumulative(CITIES.map((c) => c.popK));
+  // Weight by population to the power 0.6, so the towns show as well as the capitals.
+  const cum = cumulative(CITIES.map((c) => Math.pow(c.popK, 0.6)));
   const dots: BackdropDot[] = [];
-  while (dots.length < n) {
-    const c = CITIES[pickCum(cum, rnd())]!;
-    const spread = c.spreadKm * 1.3;
-    const lat = c.lat + (gaussian(rnd) * spread) / 110.57;
-    const lon = c.lon + (gaussian(rnd) * spread) / (111.32 * Math.cos((c.lat * Math.PI) / 180));
-    if (stateAt(lat, lon) < 0) continue;
+  const place = (lat: number, lon: number) => {
     dots.push({
       x: Math.round((10 + ((lon - LON0) * Math.PI * K) / 180) * 10) / 10,
       y: Math.round((10 + (merc(LAT_TOP) - merc(lat)) * K) * 10) / 10,
-      r: Math.round((1 + rnd() * 1.6) * 10) / 10,
-      o: Math.round((0.15 + rnd() * 0.55) * 100) / 100,
+      r: Math.round((1 + rnd() * 1.4) * 10) / 10,
+      o: Math.round((0.15 + rnd() * 0.5) * 100) / 100,
     });
+  };
+  while (dots.length < n) {
+    if (rnd() < 0.2) {
+      // A thin spread over the land, so the shape of the country reads.
+      const lat = -10.8 - rnd() * 33;
+      const lon = 113.2 + rnd() * 40.5;
+      if (stateAt(lat, lon) >= 0) place(lat, lon);
+      continue;
+    }
+    const c = CITIES[pickCum(cum, rnd())]!;
+    const spread = c.spreadKm * 1.6;
+    const lat = c.lat + (gaussian(rnd) * spread) / 110.57;
+    const lon = c.lon + (gaussian(rnd) * spread) / (111.32 * Math.cos((c.lat * Math.PI) / 180));
+    if (stateAt(lat, lon) >= 0) place(lat, lon);
   }
   cache = dots;
   return dots;

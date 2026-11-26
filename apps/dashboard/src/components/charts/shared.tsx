@@ -108,7 +108,8 @@ export function SrTable({
   rows: (string | number)[][];
 }) {
   return (
-    <table className="sr-only-table">
+    <div className="sr-only">
+    <table>
       <caption>{caption}</caption>
       <thead>
         <tr>
@@ -127,6 +128,7 @@ export function SrTable({
         ))}
       </tbody>
     </table>
+    </div>
   );
 }
 
