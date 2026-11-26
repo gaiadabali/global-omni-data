@@ -31,14 +31,20 @@ export function ExportButton({
         confirmLabel="Check my passkey and export"
         intro={
           <p>
-            {reportName}. The report prints every count as a brand would see it: groups under 10 print as
-            &quot;&lt;10&quot; (under 20 for teens and sensitive categories), for every role.
+            {reportName}. The report prints every count as a brand would see it: groups under 10
+            print as &quot;&lt;10&quot; (under 20 for teens and sensitive categories), for every
+            role.
           </p>
         }
         onClose={() => setOpen(false)}
         onConfirm={async () => {
           const res = await exportReportAction({ kind, entity });
-          if (!res.ok) return { ok: false, error: res.error, ...(res.freshUrl ? { freshUrl: res.freshUrl } : {}) };
+          if (!res.ok)
+            return {
+              ok: false,
+              error: res.error,
+              ...(res.freshUrl ? { freshUrl: res.freshUrl } : {}),
+            };
           router.push(res.printPath);
           return { ok: true };
         }}

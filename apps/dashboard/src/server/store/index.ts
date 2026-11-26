@@ -18,7 +18,9 @@ export function getStores(): Stores {
   const g = globalThis as Holder;
   g.__godStores ??= {
     allowList: createMemoryAllowList({ seed: ALLOW_LIST_SEED }),
-    sessions: createMemorySessionStore(isDevAuthEnabled() ? { seed: devSessionSeed(Date.now()) } : {}),
+    sessions: createMemorySessionStore(
+      isDevAuthEnabled() ? { seed: devSessionSeed(Date.now()) } : {},
+    ),
     audit: getAuditLog(),
     kind: "memory",
   };

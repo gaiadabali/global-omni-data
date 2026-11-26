@@ -41,7 +41,13 @@ export function Shell({
       <div className="app">
         <aside className="side" aria-label="Main">
           {/* eslint-disable-next-line @next/next/no-img-element -- a static logo; next/image would add an inline style, which the CSP blocks */}
-          <img className="logo" src="/god-logo.png" alt="GOD, Global Omni Data" width="86" height="34" />
+          <img
+            className="logo"
+            src="/god-logo.png"
+            alt="GOD, Global Omni Data"
+            width="86"
+            height="34"
+          />
           {devRole ? <RoleSwitch value={devRole} /> : null}
           {groups.map((g) => (
             <Fragment key={g.title}>

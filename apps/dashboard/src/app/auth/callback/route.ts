@@ -36,7 +36,8 @@ export async function GET(request: NextRequest): Promise<Response> {
       stores: getStores(),
       secret: cfg.sessionSecret,
       now: Date.now,
-      redeem: async (query, expected) => redeem(await getConfiguration(cfg), cfg.redirectUri, query, expected),
+      redeem: async (query, expected) =>
+        redeem(await getConfiguration(cfg), cfg.redirectUri, query, expected),
     },
   );
 

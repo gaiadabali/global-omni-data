@@ -47,12 +47,15 @@ function gate(viewer: Viewer | null, page: "insight" | "teens" | "person" | "adm
 
 async function freshOrFail(deps: Deps): Promise<Fail | null> {
   const g = await (deps.fresh ?? FRESH_REFUSED)();
-  return g.ok ? null : { ok: false, error: g.error, ...(g.freshUrl ? { freshUrl: g.freshUrl } : {}) };
+  return g.ok
+    ? null
+    : { ok: false, error: g.error, ...(g.freshUrl ? { freshUrl: g.freshUrl } : {}) };
 }
 
 /* ---------------- open a Person 360 profile ---------------- */
 
-export type OpenResult = { ok: true; outcome: "opened" | "teen-refused" | "not-found"; id: string } | Fail;
+export type OpenResult =
+  { ok: true; outcome: "opened" | "teen-refused" | "not-found"; id: string } | Fail;
 
 export async function handleOpenProfile(
   viewer: Viewer | null,
@@ -66,7 +69,10 @@ export async function handleOpenProfile(
   if (!reason.ok) return reason;
   const stale = await freshOrFail(deps);
   if (stale) return stale;
-  const out = await getDashboardData(viewer, deps.source, deps.audit, deps.stores).personOpen(id, reason.reason);
+  const out = await getDashboardData(viewer, deps.source, deps.audit, deps.stores).personOpen(
+    id,
+    reason.reason,
+  );
   return { ok: true, outcome: out.kind, id };
 }
 
@@ -91,7 +97,10 @@ export async function handleExport(
   try {
     // Building the export view also proves the entity exists and may be reported on (a teen report never
     // covers a sensitive category).
-    const r = kind === "insight" ? await data.insight({ entity, forExport: true }) : await data.teens({ entity, forExport: true });
+    const r =
+      kind === "insight"
+        ? await data.insight({ entity, forExport: true })
+        : await data.teens({ entity, forExport: true });
     name = r.report.entity.name;
   } catch (e) {
     if (e instanceof RangeError) return { ok: false, error: "That report is not available." };
@@ -132,10 +141,16 @@ export function normaliseEmail(v: unknown): string | null {
 }
 
 function roleLabel(role: Role, brand?: AllowEntry["brand"]): string {
-  return role === "brand_lead" && brand ? `${ROLE_LABELS.brand_lead} (${BRAND_LABELS[brand]})` : ROLE_LABELS[role];
+  return role === "brand_lead" && brand
+    ? `${ROLE_LABELS.brand_lead} (${BRAND_LABELS[brand]})`
+    : ROLE_LABELS[role];
 }
 
-export async function handleInvite(viewer: Viewer | null, input: InviteInput, deps: Deps = {}): Promise<InviteResult> {
+export async function handleInvite(
+  viewer: Viewer | null,
+  input: InviteInput,
+  deps: Deps = {},
+): Promise<InviteResult> {
   const denied = gate(viewer, "admin");
   if (denied || !viewer) return denied ?? { ok: false, error: "Sign in required." };
 
@@ -147,10 +162,14 @@ export async function handleInvite(viewer: Viewer | null, input: InviteInput, de
   const role = (ROLES as readonly string[]).includes(roleText) ? (roleText as Role) : null;
   if (!role) return { ok: false, error: "Choose a role." };
   const brandText = str(input.brand, 20);
-  if (role === "brand_lead" && !isBrandId(brandText)) return { ok: false, error: "Choose the brand this brand lead looks after." };
+  if (role === "brand_lead" && !isBrandId(brandText))
+    return { ok: false, error: "Choose the brand this brand lead looks after." };
   const date = str(input.agreementSigned, 10);
   if (!isIsoDate(date) || date < "2020-01-01" || date > TODAY) {
-    return { ok: false, error: "Enter the date the paper agreement was signed. It cannot be in the future." };
+    return {
+      ok: false,
+      error: "Enter the date the paper agreement was signed. It cannot be in the future.",
+    };
   }
   const heldBy = str(input.originalHeldBy, 80).trim();
   if (!heldBy) return { ok: false, error: "Say who holds the signed paper original." };
@@ -181,7 +200,8 @@ export async function handleInvite(viewer: Viewer | null, input: InviteInput, de
 
 /* ---------------- suspend, reinstate or remove an allow-list entry ---------------- */
 
-export type ChangeResult = { ok: true; name: string; status: AllowStatus; sessionsEnded: number } | Fail;
+export type ChangeResult =
+  { ok: true; name: string; status: AllowStatus; sessionsEnded: number } | Fail;
 
 const CHANGES = { suspend: "suspended", remove: "removed", reinstate: "active" } as const;
 
@@ -193,29 +213,38 @@ export async function handleAllowListChange(
 ): Promise<ChangeResult> {
   const denied = gate(viewer, "admin");
   if (denied || !viewer) return denied ?? { ok: false, error: "Sign in required." };
-  const change = Object.hasOwn(CHANGES, input.change) ? (input.change as keyof typeof CHANGES) : null;
+  const change = Object.hasOwn(CHANGES, input.change)
+    ? (input.change as keyof typeof CHANGES)
+    : null;
   if (!change) return { ok: false, error: "Unknown change." };
   const stores = deps.stores ?? getStores();
   const entry = await stores.allowList.find(str(input.id, 60));
-  if (!entry || entry.status === "removed") return { ok: false, error: "That person is not on the allow-list." };
+  if (!entry || entry.status === "removed")
+    return { ok: false, error: "That person is not on the allow-list." };
   if (entry.id === viewer.id) return { ok: false, error: "You cannot change your own entry." };
-  if (change === "reinstate" && entry.status !== "suspended") return { ok: false, error: "Only a suspended person can be reinstated." };
-  if (change === "suspend" && entry.status === "suspended") return { ok: false, error: "That person is already suspended." };
+  if (change === "reinstate" && entry.status !== "suspended")
+    return { ok: false, error: "Only a suspended person can be reinstated." };
+  if (change === "suspend" && entry.status === "suspended")
+    return { ok: false, error: "That person is already suspended." };
 
   const stale = await freshOrFail(deps);
   if (stale) return stale;
 
   // A reinstated person who never signed in goes back to invited.
-  const status: AllowStatus = change === "reinstate" && entry.yourtalSub === null ? "invited" : CHANGES[change];
+  const status: AllowStatus =
+    change === "reinstate" && entry.yourtalSub === null ? "invited" : CHANGES[change];
   await stores.allowList.setStatus(entry.id, status);
   const at = new Date((deps.now ?? Date.now)()).toISOString();
-  const sessionsEnded = change === "reinstate" ? 0 : await stores.sessions.revokeAllForUser(entry.id, viewer.id, at);
+  const sessionsEnded =
+    change === "reinstate" ? 0 : await stores.sessions.revokeAllForUser(entry.id, viewer.id, at);
   await (deps.audit ?? getAuditLog()).append({
     who: viewer.id,
     action: "allowlist.change",
     target: entry.id,
     reason: `${entry.name}: ${change === "remove" ? "removed" : change === "suspend" ? "suspended" : "reinstated"}${
-      sessionsEnded ? `, ${sessionsEnded} ${sessionsEnded === 1 ? "session" : "sessions"} ended` : ""
+      sessionsEnded
+        ? `, ${sessionsEnded} ${sessionsEnded === 1 ? "session" : "sessions"} ended`
+        : ""
     }`,
   });
   return { ok: true, name: entry.name, status, sessionsEnded };
@@ -235,12 +264,24 @@ export async function handleRevokeSession(
   if (denied || !viewer) return denied ?? { ok: false, error: "Sign in required." };
   const audit = deps.audit ?? getAuditLog();
   const stores = deps.stores ?? getStores();
-  const sessions = await getDashboardData(viewer, deps.source, audit, stores).adminSessions(deps.currentSessionId ?? null);
+  const sessions = await getDashboardData(viewer, deps.source, audit, stores).adminSessions(
+    deps.currentSessionId ?? null,
+  );
   const found = sessions.find((s) => s.id === str(input.sessionId, 60));
   if (!found) return { ok: false, error: "That session is not in the list." };
-  if (found.current) return { ok: false, error: "That is your own session. Sign out from the menu instead." };
-  await stores.sessions.revoke(found.id, viewer.id, new Date((deps.now ?? Date.now)()).toISOString());
-  await audit.append({ who: viewer.id, action: "session.revoke", target: `${found.personId} (${found.id})`, reason: `Signed ${found.person} out of one session` });
+  if (found.current)
+    return { ok: false, error: "That is your own session. Sign out from the menu instead." };
+  await stores.sessions.revoke(
+    found.id,
+    viewer.id,
+    new Date((deps.now ?? Date.now)()).toISOString(),
+  );
+  await audit.append({
+    who: viewer.id,
+    action: "session.revoke",
+    target: `${found.personId} (${found.id})`,
+    reason: `Signed ${found.person} out of one session`,
+  });
   return { ok: true, person: found.person, ended: 1 };
 }
 
@@ -255,8 +296,13 @@ export async function handleRevokeAllForPerson(
   const stores = deps.stores ?? getStores();
   const entry = await stores.allowList.find(str(input.personId, 60));
   if (!entry) return { ok: false, error: "That person is not on the allow-list." };
-  if (entry.id === viewer.id) return { ok: false, error: "That is you. Sign out from the menu instead." };
-  const ended = await stores.sessions.revokeAllForUser(entry.id, viewer.id, new Date((deps.now ?? Date.now)()).toISOString());
+  if (entry.id === viewer.id)
+    return { ok: false, error: "That is you. Sign out from the menu instead." };
+  const ended = await stores.sessions.revokeAllForUser(
+    entry.id,
+    viewer.id,
+    new Date((deps.now ?? Date.now)()).toISOString(),
+  );
   await (deps.audit ?? getAuditLog()).append({
     who: viewer.id,
     action: "session.revoke",

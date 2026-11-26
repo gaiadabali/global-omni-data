@@ -28,7 +28,11 @@ export function sealTransaction(txn: Transaction, secret: string): string {
 const isStr = (v: unknown): v is string => typeof v === "string" && v.length > 0 && v.length <= 512;
 
 /** The transaction, or null when the cookie is missing, tampered with, malformed or older than 10 minutes. */
-export function openTransaction(value: string | undefined, secret: string, now: number): Transaction | null {
+export function openTransaction(
+  value: string | undefined,
+  secret: string,
+  now: number,
+): Transaction | null {
   if (!value || value.length > 4096) return null;
   const plain = open(value, deriveKey(secret, "oidc-transaction-v1"), AAD);
   if (plain === null) return null;

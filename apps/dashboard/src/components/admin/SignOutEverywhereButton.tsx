@@ -6,7 +6,13 @@ import { useToast } from "@/components/ui/Toast";
 import { revokeAllForPersonAction } from "@/server/audit/actions";
 
 /** Ends every session one person has. Recorded in the audit log. Not shown for yourself: sign out instead. */
-export function SignOutEverywhereButton({ personId, person }: { personId: string; person: string }) {
+export function SignOutEverywhereButton({
+  personId,
+  person,
+}: {
+  personId: string;
+  person: string;
+}) {
   const [busy, setBusy] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
@@ -20,7 +26,11 @@ export function SignOutEverywhereButton({ personId, person }: { personId: string
         setBusy(true);
         try {
           const res = await revokeAllForPersonAction({ personId });
-          toast(res.ok ? `${res.person} is signed out everywhere (${res.ended} ${res.ended === 1 ? "session" : "sessions"}).` : res.error);
+          toast(
+            res.ok
+              ? `${res.person} is signed out everywhere (${res.ended} ${res.ended === 1 ? "session" : "sessions"}).`
+              : res.error,
+          );
           if (res.ok) router.refresh();
         } finally {
           setBusy(false);

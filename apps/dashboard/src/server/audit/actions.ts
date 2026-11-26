@@ -30,13 +30,20 @@ async function deps(): Promise<Deps> {
   return { fresh: checkFresh, currentSessionId: state.kind === "ok" ? state.session.id : null };
 }
 
-export async function openProfileAction(input: { id: string; reasonId: string; note: string }): Promise<OpenResult> {
+export async function openProfileAction(input: {
+  id: string;
+  reasonId: string;
+  note: string;
+}): Promise<OpenResult> {
   const res = await handleOpenProfile(await getViewer(), input, await deps());
   if (res.ok) revalidatePath("/person");
   return res;
 }
 
-export async function exportReportAction(input: { kind: string; entity: string }): Promise<ExportResult> {
+export async function exportReportAction(input: {
+  kind: string;
+  entity: string;
+}): Promise<ExportResult> {
   return handleExport(await getViewer(), input, await deps());
 }
 
@@ -46,7 +53,10 @@ export async function inviteAction(input: InviteInput): Promise<InviteResult> {
   return res;
 }
 
-export async function allowListChangeAction(input: { id: string; change: string }): Promise<ChangeResult> {
+export async function allowListChangeAction(input: {
+  id: string;
+  change: string;
+}): Promise<ChangeResult> {
   const res = await handleAllowListChange(await getViewer(), input, await deps());
   if (res.ok) revalidatePath("/admin");
   return res;

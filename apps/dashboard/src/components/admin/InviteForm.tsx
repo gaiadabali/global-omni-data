@@ -43,7 +43,13 @@ export function InviteForm({ holders, today }: { holders: readonly string[]; tod
       <form className="grid invite-grid" onSubmit={submit} noValidate>
         <div className="field">
           <label htmlFor={idOf("name")}>Full name</label>
-          <input id={idOf("name")} type="text" autoComplete="off" value={name} onChange={(e) => setName(e.target.value)} />
+          <input
+            id={idOf("name")}
+            type="text"
+            autoComplete="off"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
         </div>
         <div className="field">
           <label htmlFor={idOf("email")}>Email of their YourTal account</label>
@@ -81,7 +87,13 @@ export function InviteForm({ holders, today }: { holders: readonly string[]; tod
         ) : null}
         <div className="field">
           <label htmlFor={idOf("date")}>Paper agreement signed on</label>
-          <input id={idOf("date")} type="date" max={today} value={date} onChange={(e) => setDate(e.target.value)} />
+          <input
+            id={idOf("date")}
+            type="date"
+            max={today}
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+          />
         </div>
         <div className="field">
           <label htmlFor={idOf("held")}>Paper original held by</label>
@@ -111,10 +123,17 @@ export function InviteForm({ holders, today }: { holders: readonly string[]; tod
         confirmLabel="Check my passkey and invite"
         intro={
           <p>
-            {name.trim() || "This person"} ({email.trim().toLowerCase() || "no email yet"}) will be added to the allow-list
-            as {ROLE_LABELS[(ROLES as readonly string[]).includes(role) ? (role as (typeof ROLES)[number]) : "executive"]}.
-            They sign in with YourTal using a passkey, and their account is matched to this email once, at their first
-            sign-in.
+            {name.trim() || "This person"} ({email.trim().toLowerCase() || "no email yet"}) will be
+            added to the allow-list as{" "}
+            {
+              ROLE_LABELS[
+                (ROLES as readonly string[]).includes(role)
+                  ? (role as (typeof ROLES)[number])
+                  : "executive"
+              ]
+            }
+            . They sign in with YourTal using a passkey, and their account is matched to this email
+            once, at their first sign-in.
           </p>
         }
         onClose={() => setAsking(false)}
@@ -127,7 +146,12 @@ export function InviteForm({ holders, today }: { holders: readonly string[]; tod
             agreementSigned: date,
             originalHeldBy: heldBy,
           });
-          if (!res.ok) return { ok: false, error: res.error, ...(res.freshUrl ? { freshUrl: res.freshUrl } : {}) };
+          if (!res.ok)
+            return {
+              ok: false,
+              error: res.error,
+              ...(res.freshUrl ? { freshUrl: res.freshUrl } : {}),
+            };
           toast(`Invited ${res.name}. They sign in with YourTal and a passkey.`);
           setName("");
           setEmail("");

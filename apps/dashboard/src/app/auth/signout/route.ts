@@ -25,7 +25,12 @@ export async function POST(request: NextRequest): Promise<Response> {
   const state = await resolveSession(request.cookies.get(SESSION_COOKIE)?.value, stores, now);
   if (state.kind === "ok") {
     await stores.sessions.revoke(state.session.id, state.entry.id, new Date(now).toISOString());
-    await stores.audit.append({ who: state.entry.id, action: "signout", target: `session:${state.session.id}`, reason: "Signed out" });
+    await stores.audit.append({
+      who: state.entry.id,
+      action: "signout",
+      target: `session:${state.session.id}`,
+      reason: "Signed out",
+    });
   }
   const res = redirectTo(request, cfg, signinPath("signed-out"));
   clearCookie(res, SESSION_COOKIE);

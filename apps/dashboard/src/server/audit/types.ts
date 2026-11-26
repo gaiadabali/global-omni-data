@@ -25,7 +25,7 @@ export const AUDIT_ACTION_LABELS: Record<AuditAction, string> = {
   "signin.refused": "Sign-in refused",
   "signin.ok": "Signed in",
   "signin.fresh": "Passkey checked",
-  "signout": "Signed out",
+  signout: "Signed out",
 };
 
 export function isAuditAction(v: string): v is AuditAction {

@@ -27,7 +27,11 @@ export function viewerOf(entry: AllowEntry): Viewer | null {
 
 type SessionStores = Pick<Stores, "allowList" | "sessions">;
 
-export async function resolveSession(token: string | undefined, stores: SessionStores, now: number): Promise<SessionState> {
+export async function resolveSession(
+  token: string | undefined,
+  stores: SessionStores,
+  now: number,
+): Promise<SessionState> {
   if (!token || !TOKEN_SHAPE.test(token)) return { kind: "none" };
   const session = await stores.sessions.findByTokenHash(sha256Hex(token));
   if (!session) return { kind: "none" };
@@ -59,15 +63,40 @@ export function ipPrefixOf(ip: string | null | undefined): string | null {
 /** "Chrome on Windows" from a user agent, for Admin. Unknown parts say so. */
 export function deviceLabel(ua: string | null): string {
   if (!ua) return "Unknown device";
-  const browser = /Edg\//.test(ua) ? "Edge" : /Firefox\//.test(ua) ? "Firefox" : /Chrome\//.test(ua) ? "Chrome" : /Safari\//.test(ua) ? "Safari" : "A browser";
-  const os = /iPhone|iPad/.test(ua) ? "iPhone" : /Android/.test(ua) ? "Android" : /Windows/.test(ua) ? "Windows" : /Mac OS X|Macintosh/.test(ua) ? "macOS" : /Linux/.test(ua) ? "Linux" : "an unknown system";
+  const browser = /Edg\//.test(ua)
+    ? "Edge"
+    : /Firefox\//.test(ua)
+      ? "Firefox"
+      : /Chrome\//.test(ua)
+        ? "Chrome"
+        : /Safari\//.test(ua)
+          ? "Safari"
+          : "A browser";
+  const os = /iPhone|iPad/.test(ua)
+    ? "iPhone"
+    : /Android/.test(ua)
+      ? "Android"
+      : /Windows/.test(ua)
+        ? "Windows"
+        : /Mac OS X|Macintosh/.test(ua)
+          ? "macOS"
+          : /Linux/.test(ua)
+            ? "Linux"
+            : "an unknown system";
   return `${browser} on ${os}`;
 }
 
 /** Starts a session for an allow-listed person after a passkey sign-in. Returns the cookie token once. */
 export async function startSession(
   stores: SessionStores,
-  input: { entry: AllowEntry; authTime: string; amr: readonly string[]; userAgent: string | null; ip: string | null; now: number },
+  input: {
+    entry: AllowEntry;
+    authTime: string;
+    amr: readonly string[];
+    userAgent: string | null;
+    ip: string | null;
+    now: number;
+  },
 ): Promise<{ token: string; session: SessionRecord }> {
   const token = newToken();
   const createdAt = new Date(input.now).toISOString();

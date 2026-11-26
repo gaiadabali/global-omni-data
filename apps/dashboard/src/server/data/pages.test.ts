@@ -1,12 +1,21 @@
 import { describe, expect, it } from "vitest";
 import { allProfiles, featuredProfiles, teenEntities } from "@god/synthetic";
 import { createMemoryAuditLog } from "../audit";
+import { createMemoryAllowList, createMemorySessionStore } from "../store/memory";
+import { ALLOW_LIST_SEED, devSessionSeed } from "../store/seed";
 import type { PNum } from "../privacy";
 import type { Viewer } from "../types";
 import { viewerFromDevCookie } from "../viewer";
 import { DataAccessError, getDashboardData } from "./index";
 import { syntheticData } from "./synthetic";
-import { count, isRawCount, isRawSeries, type DashboardData, type RawCount, type RawSeries } from "./types";
+import {
+  count,
+  isRawCount,
+  isRawSeries,
+  type DashboardData,
+  type RawCount,
+  type RawSeries,
+} from "./types";
 
 const viewer = (cookie: string): Viewer => {
   const v = viewerFromDevCookie(cookie);
@@ -20,7 +29,11 @@ function pnums(v: unknown, out: PNum[] = []): PNum[] {
     for (const x of v) pnums(x, out);
   } else if (v && typeof v === "object") {
     const o = v as Record<string, unknown>;
-    if (typeof o.display === "string" && typeof o.suppressed === "boolean" && typeof o.value === "number") {
+    if (
+      typeof o.display === "string" &&
+      typeof o.suppressed === "boolean" &&
+      typeof o.value === "number"
+    ) {
       out.push(o as unknown as PNum);
     } else {
       for (const x of Object.values(o)) pnums(x, out);
@@ -38,7 +51,10 @@ function raws(v: unknown, out: (RawCount | RawSeries)[] = []): (RawCount | RawSe
 }
 
 /** Numbers in presented series (a hidden point is plotted as 0). */
-function seriesNumbers(t: { teensSeries: number[]; report: { audienceSeries: number[] } }): number[] {
+function seriesNumbers(t: {
+  teensSeries: number[];
+  report: { audienceSeries: number[] };
+}): number[] {
   return [...t.teensSeries, ...t.report.audienceSeries];
 }
 
@@ -71,10 +87,16 @@ describe("teen market", () => {
       ...syntheticData,
       teens: async () => ({
         ...real,
-        interestsDeclared: [{ label: "Tiny", value: count(12, "teen") }, ...real.interestsDeclared.slice(1)],
+        interestsDeclared: [
+          { label: "Tiny", value: count(12, "teen") },
+          ...real.interestsDeclared.slice(1),
+        ],
         report: {
           ...real.report,
-          homeAreas: [{ ...real.report.homeAreas[0]!, people: count(19, "teen") }, ...real.report.homeAreas.slice(1)],
+          homeAreas: [
+            { ...real.report.homeAreas[0]!, people: count(19, "teen") },
+            ...real.report.homeAreas.slice(1),
+          ],
         },
       }),
     };
@@ -108,8 +130,12 @@ describe("teen market", () => {
 
   it("refuses a sensitive category outright", async () => {
     await expect(syntheticData.teens({ entity: "cat-pharm" })).rejects.toThrow(/sensitive/);
-    await expect(getDashboardData(viewer("owner")).teens({ entity: "cat-pharm" })).rejects.toThrow(/sensitive/);
-    await expect(getDashboardData(viewer("owner")).teens({ entity: "nope" })).rejects.toThrow(/unknown/);
+    await expect(getDashboardData(viewer("owner")).teens({ entity: "cat-pharm" })).rejects.toThrow(
+      /sensitive/,
+    );
+    await expect(getDashboardData(viewer("owner")).teens({ entity: "nope" })).rejects.toThrow(
+      /unknown/,
+    );
   });
 
   it("has no occupation or income for teens", async () => {
@@ -130,9 +156,18 @@ describe("brand insight", () => {
         ...real,
         report: {
           ...real.report,
-          homeAreas: [{ ...real.report.homeAreas[0]!, people: count(4) }, ...real.report.homeAreas.slice(1)],
-          segments: [{ ...real.report.segments[0]!, audience: count(7) }, ...real.report.segments.slice(1)],
-          alsoShopsAt: [{ label: "Tiny rival", value: count(9, "adult") }, ...real.report.alsoShopsAt.slice(1)],
+          homeAreas: [
+            { ...real.report.homeAreas[0]!, people: count(4) },
+            ...real.report.homeAreas.slice(1),
+          ],
+          segments: [
+            { ...real.report.segments[0]!, audience: count(7) },
+            ...real.report.segments.slice(1),
+          ],
+          alsoShopsAt: [
+            { label: "Tiny rival", value: count(9, "adult") },
+            ...real.report.alsoShopsAt.slice(1),
+          ],
         },
       }),
     };
@@ -150,15 +185,27 @@ describe("brand insight", () => {
           expect(p.value).toBeGreaterThanOrEqual(10);
         }
       }
-      expect(printed.report.homeAreas[0]?.people).toEqual({ value: 0, display: "<10", suppressed: true });
+      expect(printed.report.homeAreas[0]?.people).toEqual({
+        value: 0,
+        display: "<10",
+        suppressed: true,
+      });
       expect(JSON.stringify(printed)).not.toMatch(/small number/);
     }
 
     // On screen the Owner and Data team still see the exact value, with the marker.
     const screen = await getDashboardData(viewer("owner"), small).insight({ entity: "southern" });
-    expect(screen.report.homeAreas[0]?.people).toEqual({ value: 4, display: "4", suppressed: true });
+    expect(screen.report.homeAreas[0]?.people).toEqual({
+      value: 4,
+      display: "4",
+      suppressed: true,
+    });
     const exec = await getDashboardData(viewer("executive"), small).insight({ entity: "southern" });
-    expect(exec.report.homeAreas[0]?.people).toEqual({ value: 0, display: "<10", suppressed: true });
+    expect(exec.report.homeAreas[0]?.people).toEqual({
+      value: 0,
+      display: "<10",
+      suppressed: true,
+    });
   });
 
   it("sensitive-category reports use the higher threshold", async () => {
@@ -169,7 +216,9 @@ describe("brand insight", () => {
   });
 
   it("refuses an unknown report", async () => {
-    await expect(getDashboardData(viewer("owner")).insight({ entity: "nope" })).rejects.toThrow(/unknown/);
+    await expect(getDashboardData(viewer("owner")).insight({ entity: "nope" })).rejects.toThrow(
+      /unknown/,
+    );
   });
 });
 
@@ -238,9 +287,16 @@ describe("Person 360", () => {
     await expect(owner.personOpen(id, "short")).rejects.toBeInstanceOf(DataAccessError);
     expect(await audit.list()).toHaveLength(0);
 
-    expect(await owner.personOpen(id, "Check a sync or merge problem: two accounts joined")).toEqual({ kind: "opened", id });
+    expect(
+      await owner.personOpen(id, "Check a sync or merge problem: two accounts joined"),
+    ).toEqual({ kind: "opened", id });
     const [ev] = await audit.list();
-    expect(ev).toMatchObject({ who: "dev-owner", action: "person.open", target: id, outcome: "done" });
+    expect(ev).toMatchObject({
+      who: "dev-owner",
+      action: "person.open",
+      target: id,
+      outcome: "done",
+    });
     expect(ev?.reason).toContain("Check a sync or merge problem");
 
     const got = await owner.personGet(id);
@@ -299,9 +355,11 @@ describe("each page's data refuses the roles it is not for", () => {
   it("executives get no person, quality or admin data; the Data team gets no admin data", async () => {
     const exec = people("executive");
     await expect(exec.personSearch("")).rejects.toBeInstanceOf(DataAccessError);
-    await expect(exec.personOpen("G-AAAA-BBBB", "Check a sync or merge problem: x")).rejects.toBeInstanceOf(DataAccessError);
+    await expect(
+      exec.personOpen("G-AAAA-BBBB", "Check a sync or merge problem: x"),
+    ).rejects.toBeInstanceOf(DataAccessError);
     await expect(exec.quality()).rejects.toBeInstanceOf(DataAccessError);
-    await expect(exec.adminSessions()).rejects.toBeInstanceOf(DataAccessError);
+    await expect(exec.adminSessions(null)).rejects.toBeInstanceOf(DataAccessError);
     await expect(exec.insight({ entity: "southern" })).resolves.toBeDefined();
     await expect(exec.teens({})).resolves.toBeDefined();
 
@@ -313,11 +371,21 @@ describe("each page's data refuses the roles it is not for", () => {
   });
 
   it("only the Owner reads the allow-list, the audit log and sessions", async () => {
-    const owner = getDashboardData(viewer("owner"), syntheticData);
+    const stores = {
+      allowList: createMemoryAllowList({ seed: ALLOW_LIST_SEED }),
+      sessions: createMemorySessionStore({ seed: devSessionSeed(Date.now()) }),
+    };
+    const owner = getDashboardData(viewer("owner"), syntheticData, undefined, stores);
     expect((await owner.adminAllowList()).length).toBeGreaterThanOrEqual(5);
     expect((await owner.adminAudit()).rows.length).toBeGreaterThan(0);
-    const sessions = await owner.adminSessions();
+    // Dev sign-in has no session id: the viewer's own sessions are "current".
+    const sessions = await owner.adminSessions(null);
     expect(sessions.filter((s) => s.current).map((s) => s.person)).toEqual(["Alex Morgan"]);
+    expect(sessions.map((s) => s.device)).toContain("Chrome on Windows");
+    // With a real session, only that one is "current".
+    const marked = await owner.adminSessions("s-dev-2");
+    expect(marked.filter((s) => s.current).map((s) => s.id)).toEqual(["s-dev-2"]);
+    expect(JSON.stringify(sessions)).not.toMatch(/tokenHash|[0-9a-f]{64}/);
   });
 });
 

@@ -8,7 +8,10 @@ import { allowListChangeAction } from "@/server/audit/actions";
 
 type Change = "suspend" | "remove" | "reinstate";
 
-const COPY: Record<Change, { button: string; title: string; confirm: string; text: (name: string) => string }> = {
+const COPY: Record<
+  Change,
+  { button: string; title: string; confirm: string; text: (name: string) => string }
+> = {
   suspend: {
     button: "Suspend",
     title: "Suspend this person?",
@@ -19,7 +22,8 @@ const COPY: Record<Change, { button: string; title: string; confirm: string; tex
     button: "Remove",
     title: "Remove this person?",
     confirm: "Check my passkey and remove",
-    text: (n) => `${n} is signed out everywhere and taken off the allow-list. Inviting them again makes a new entry.`,
+    text: (n) =>
+      `${n} is signed out everywhere and taken off the allow-list. Inviting them again makes a new entry.`,
   },
   reinstate: {
     button: "Reinstate",
@@ -34,7 +38,8 @@ export function EntryActions({ id, name, status }: { id: string; name: string; s
   const [open, setOpen] = useState<Change | null>(null);
   const router = useRouter();
   const { toast } = useToast();
-  const changes: Change[] = status === "suspended" ? ["reinstate", "remove"] : ["suspend", "remove"];
+  const changes: Change[] =
+    status === "suspended" ? ["reinstate", "remove"] : ["suspend", "remove"];
   const copy = open ? COPY[open] : null;
   return (
     <>
@@ -60,7 +65,12 @@ export function EntryActions({ id, name, status }: { id: string; name: string; s
         onConfirm={async () => {
           if (!open) return { ok: true };
           const res = await allowListChangeAction({ id, change: open });
-          if (!res.ok) return { ok: false, error: res.error, ...(res.freshUrl ? { freshUrl: res.freshUrl } : {}) };
+          if (!res.ok)
+            return {
+              ok: false,
+              error: res.error,
+              ...(res.freshUrl ? { freshUrl: res.freshUrl } : {}),
+            };
           toast(
             res.sessionsEnded
               ? `${res.name}: done. ${res.sessionsEnded} ${res.sessionsEnded === 1 ? "session" : "sessions"} ended.`

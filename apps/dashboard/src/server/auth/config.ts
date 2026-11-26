@@ -26,7 +26,13 @@ export interface AuthConfig {
 
 type Env = Record<string, string | undefined>;
 
-export const AUTH_ENV = ["YOURTAL_ISSUER", "GOD_OIDC_CLIENT_ID", "GOD_OIDC_KEY_FILE", "GOD_PUBLIC_URL", "GOD_SESSION_SECRET"] as const;
+export const AUTH_ENV = [
+  "YOURTAL_ISSUER",
+  "GOD_OIDC_CLIENT_ID",
+  "GOD_OIDC_KEY_FILE",
+  "GOD_PUBLIC_URL",
+  "GOD_SESSION_SECRET",
+] as const;
 
 export const MIN_SECRET_BYTES = 32;
 
@@ -42,14 +48,20 @@ function httpUrl(v: string | undefined, insecure: boolean): URL | null {
 }
 
 /** Everything wrong with the sign-in settings, by variable name. Empty when they are usable. */
-export function authConfigProblems(env: Env = process.env, fileExists: (p: string) => boolean = existsSync): string[] {
+export function authConfigProblems(
+  env: Env = process.env,
+  fileExists: (p: string) => boolean = existsSync,
+): string[] {
   const insecure = env.GOD_DEPLOYMENT === "dev";
   const problems: string[] = [];
   const issuer = httpUrl(env.YOURTAL_ISSUER, insecure);
-  if (!issuer || issuer.search || issuer.hash) problems.push("YOURTAL_ISSUER must be the YourTal issuer URL (https)");
-  if (!/^[A-Za-z0-9._-]{1,100}$/.test(env.GOD_OIDC_CLIENT_ID ?? "")) problems.push("GOD_OIDC_CLIENT_ID is missing or malformed");
+  if (!issuer || issuer.search || issuer.hash)
+    problems.push("YOURTAL_ISSUER must be the YourTal issuer URL (https)");
+  if (!/^[A-Za-z0-9._-]{1,100}$/.test(env.GOD_OIDC_CLIENT_ID ?? ""))
+    problems.push("GOD_OIDC_CLIENT_ID is missing or malformed");
   if (!env.GOD_OIDC_KEY_FILE) problems.push("GOD_OIDC_KEY_FILE is not set");
-  else if (!fileExists(env.GOD_OIDC_KEY_FILE)) problems.push("GOD_OIDC_KEY_FILE does not point at a file");
+  else if (!fileExists(env.GOD_OIDC_KEY_FILE))
+    problems.push("GOD_OIDC_KEY_FILE does not point at a file");
   const pub = httpUrl(env.GOD_PUBLIC_URL, insecure);
   if (!pub || (pub.pathname !== "/" && pub.pathname !== "") || pub.search || pub.hash) {
     problems.push("GOD_PUBLIC_URL must be the dashboard's https origin, with no path");
@@ -88,7 +100,10 @@ export class AuthConfigError extends Error {
 }
 
 /** Throws when dev sign-in is off and the real sign-in settings are missing or bad. */
-export function assertAuthConfig(env: Env = process.env, fileExists: (p: string) => boolean = existsSync): void {
+export function assertAuthConfig(
+  env: Env = process.env,
+  fileExists: (p: string) => boolean = existsSync,
+): void {
   if (devAuthState(env) !== "off") return;
   const problems = authConfigProblems(env, fileExists);
   if (problems.length) throw new AuthConfigError(problems);

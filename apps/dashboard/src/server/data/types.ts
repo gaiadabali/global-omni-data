@@ -322,7 +322,11 @@ export interface AudienceReportRaw {
   spend: CountRow[];
   alsoShopsAt: CountRow[];
   godBrands: CountRow[];
-  census: { medianWeeklyHouseholdIncome: number; householdsWithChildrenPct: number; bornOverseasPct: number };
+  census: {
+    medianWeeklyHouseholdIncome: number;
+    householdsWithChildrenPct: number;
+    bornOverseasPct: number;
+  };
 }
 
 export interface InsightRaw {
@@ -358,8 +362,7 @@ export interface TeensRaw {
 
 /** One search hit. A teen hit is an id and nothing else: a teen profile has no body anywhere in this contract. */
 export type PersonSearchRow =
-  | { id: string; teen: true }
-  | { id: string; teen: false; ageBand: string; brands: BrandId[] };
+  { id: string; teen: true } | { id: string; teen: false; ageBand: string; brands: BrandId[] };
 
 export interface PersonAccount {
   brand: BrandId;
@@ -381,7 +384,14 @@ export interface PersonProfileRaw {
   lastSeen: string;
   timeline: { date: string; title: string; detail: string }[];
   /** One person's own receipts at a merchant and suburb. Their own history, not an aggregate. */
-  places: { merchant: string; suburb: string; state: string; category: string; receipts: number; lastVisit: string }[];
+  places: {
+    merchant: string;
+    suburb: string;
+    state: string;
+    category: string;
+    receipts: number;
+    lastVisit: string;
+  }[];
   dots: { lat: number; lon: number; label: string; category: string }[];
   areas: { label: string; lat: number; lon: number; radiusKm: number }[];
   interests: { label: string; kind: "Declared" | "Learned"; source: string; confidence: number }[];
@@ -402,7 +412,13 @@ export interface QualityRaw {
   rows: { app: string; table: string; inGod: RawCount; inApp: RawCount }[];
   geocoding: CountRow[];
   merges: { bySignIn: RawCount; byEmail: RawCount; undone: RawCount };
-  jobs: { name: string; schedule: string; lastRun: string; duration: string; result: "ok" | "warn" | "crit" }[];
+  jobs: {
+    name: string;
+    schedule: string;
+    lastRun: string;
+    duration: string;
+    result: "ok" | "warn" | "crit";
+  }[];
   verification: {
     id: string;
     kind: "synthetic" | "sampled";

@@ -23,21 +23,40 @@ const HTTP_TIMEOUT_S = 10;
 
 export class RedeemError extends Error {
   constructor(readonly kind: "unavailable" | "failed") {
-    super(kind === "unavailable" ? "YourTal could not be reached" : "The sign-in could not be completed");
+    super(
+      kind === "unavailable"
+        ? "YourTal could not be reached"
+        : "The sign-in could not be completed",
+    );
     this.name = "RedeemError";
   }
 }
 
 /** The private JWK in GOD_OIDC_KEY_FILE, a single key or a one-key set. It must carry a kid. */
 export async function loadClientKey(file: string): Promise<{ key: CryptoKey; kid: string }> {
-  const parsed = JSON.parse(await readFile(file, "utf8")) as { keys?: unknown[] } & Record<string, unknown>;
-  const jwk = (Array.isArray(parsed.keys) ? parsed.keys[0] : parsed) as JsonWebKey & { kid?: string };
+  const parsed = JSON.parse(await readFile(file, "utf8")) as { keys?: unknown[] } & Record<
+    string,
+    unknown
+  >;
+  const jwk = (Array.isArray(parsed.keys) ? parsed.keys[0] : parsed) as JsonWebKey & {
+    kid?: string;
+  };
   if (!jwk || jwk.kty !== "RSA" || !jwk.d || typeof jwk.kid !== "string" || !jwk.kid) {
     throw new Error("GOD_OIDC_KEY_FILE must hold a private RSA JWK with a kid");
   }
   const key = await crypto.subtle.importKey(
     "jwk",
-    { kty: jwk.kty, n: jwk.n, e: jwk.e, d: jwk.d, p: jwk.p, q: jwk.q, dp: jwk.dp, dq: jwk.dq, qi: jwk.qi },
+    {
+      kty: jwk.kty,
+      n: jwk.n,
+      e: jwk.e,
+      d: jwk.d,
+      p: jwk.p,
+      q: jwk.q,
+      dp: jwk.dp,
+      dq: jwk.dq,
+      qi: jwk.qi,
+    },
     { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
     false,
     ["sign"],
@@ -60,12 +79,19 @@ export function getConfiguration(cfg: AuthConfig): Promise<oidc.Configuration> {
     return oidc.discovery(
       issuer,
       cfg.clientId,
-      { redirect_uris: [cfg.redirectUri], response_types: ["code"], id_token_signed_response_alg: "RS256" },
+      {
+        redirect_uris: [cfg.redirectUri],
+        response_types: ["code"],
+        id_token_signed_response_alg: "RS256",
+      },
       oidc.PrivateKeyJwt({ key: signingKey, kid }),
       {
         timeout: HTTP_TIMEOUT_S,
         // The insecure flag first, so the signature check's JWKS fetch is allowed on a developer's http issuer.
-        execute: [...(cfg.insecure && issuer.protocol === "http:" ? [oidc.allowInsecureRequests] : []), oidc.enableNonRepudiationChecks],
+        execute: [
+          ...(cfg.insecure && issuer.protocol === "http:" ? [oidc.allowInsecureRequests] : []),
+          oidc.enableNonRepudiationChecks,
+        ],
       },
     );
   })();
@@ -85,7 +111,11 @@ export interface Started {
 
 /** The authorization URL, and the secrets the callback must match. A fresh check sends max_age=0, which YourTal
  *  treats as prompt=login: the person signs in again before anything is issued. */
-export async function buildStart(config: oidc.Configuration, redirectUri: string, fresh: boolean): Promise<Started> {
+export async function buildStart(
+  config: oidc.Configuration,
+  redirectUri: string,
+  fresh: boolean,
+): Promise<Started> {
   const state = oidc.randomState();
   const nonce = oidc.randomNonce();
   const codeVerifier = oidc.randomPKCECodeVerifier();
@@ -133,7 +163,8 @@ export async function redeem(
   } catch (e) {
     // Never pass the library's message on: it can quote the response.
     const name = (e as { name?: string } | null)?.name;
-    if (e instanceof TypeError || name === "TimeoutError" || name === "AbortError") throw new RedeemError("unavailable");
+    if (e instanceof TypeError || name === "TimeoutError" || name === "AbortError")
+      throw new RedeemError("unavailable");
     throw new RedeemError("failed");
   }
   const claims = tokens.claims();

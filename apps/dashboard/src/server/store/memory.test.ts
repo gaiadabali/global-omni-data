@@ -27,7 +27,12 @@ describe("memory allow-list", () => {
   it("invites by lower-case email, once, and refuses the same email while it is listed", async () => {
     const store = createMemoryAllowList({ now: () => T0 });
     const a = await store.invite(invite);
-    expect(a).toMatchObject({ email: "riley.tran@example.com", status: "invited", yourtalSub: null, lastSignIn: null });
+    expect(a).toMatchObject({
+      email: "riley.tran@example.com",
+      status: "invited",
+      yourtalSub: null,
+      lastSignIn: null,
+    });
     expect(a?.invitedAt).toBe(iso(T0));
     expect(await store.invite({ ...invite, email: "RILEY.TRAN@example.com" })).toBeNull();
     await store.setStatus(a!.id, "removed");
@@ -80,7 +85,9 @@ describe("memory sessions", () => {
 
   it("stores only a SHA-256 hex digest, never a token", async () => {
     const store = createMemorySessionStore();
-    await expect(store.create({ ...base, tokenHash: "raw-token-value" })).rejects.toThrow(/SHA-256/);
+    await expect(store.create({ ...base, tokenHash: "raw-token-value" })).rejects.toThrow(
+      /SHA-256/,
+    );
     const rec = await store.create({ ...base, tokenHash: hash("t1") });
     expect(JSON.stringify(rec)).not.toContain(hash("t1"));
     expect(await store.findByTokenHash(hash("t1"))).toMatchObject({ id: rec.id });
@@ -93,10 +100,14 @@ describe("memory sessions", () => {
     const b = await store.create({ ...base, tokenHash: hash("b") });
     const c = await store.create({ ...base, tokenHash: hash("c") });
     await store.revoke(c.id, "dev-owner", iso(T0 + 1000));
-    expect((await store.listActive(iso(T0 + SESSION_IDLE_MS - 1))).map((s) => s.id).sort()).toEqual([a.id, b.id].sort());
+    expect((await store.listActive(iso(T0 + SESSION_IDLE_MS - 1))).map((s) => s.id).sort()).toEqual(
+      [a.id, b.id].sort(),
+    );
     expect(await store.listActive(iso(T0 + SESSION_IDLE_MS))).toEqual([]);
     await store.touch(a.id, iso(T0 + 20 * 60_000));
-    expect((await store.listActive(iso(T0 + SESSION_IDLE_MS + 1))).map((s) => s.id)).toEqual([a.id]);
+    expect((await store.listActive(iso(T0 + SESSION_IDLE_MS + 1))).map((s) => s.id)).toEqual([
+      a.id,
+    ]);
   });
 
   it("revokes all of one person's sessions and counts them", async () => {
@@ -113,7 +124,10 @@ describe("memory sessions", () => {
     const store = createMemorySessionStore();
     const a = await store.create({ ...base, tokenHash: hash("a") });
     await store.updateAuth(a.id, iso(T0 + 60_000), ["hwk", "mfa"]);
-    expect(await store.findByTokenHash(hash("a"))).toMatchObject({ authTime: iso(T0 + 60_000), amr: ["hwk", "mfa"] });
+    expect(await store.findByTokenHash(hash("a"))).toMatchObject({
+      authTime: iso(T0 + 60_000),
+      amr: ["hwk", "mfa"],
+    });
     await store.revoke(a.id, "x", iso(T0 + 70_000));
     await store.updateAuth(a.id, iso(T0 + 90_000), ["hwk"]);
     expect((await store.findByTokenHash(hash("a")))?.authTime).toBe(iso(T0 + 60_000));
@@ -121,7 +135,9 @@ describe("memory sessions", () => {
 });
 
 describe("session limits", () => {
-  const s = (over: Partial<{ lastSeenAt: string; absoluteExpiresAt: string; revokedAt: string | null }> = {}) => ({
+  const s = (
+    over: Partial<{ lastSeenAt: string; absoluteExpiresAt: string; revokedAt: string | null }> = {},
+  ) => ({
     lastSeenAt: iso(T0),
     absoluteExpiresAt: iso(T0 + SESSION_ABSOLUTE_MS),
     revokedAt: null,

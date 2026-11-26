@@ -11,7 +11,12 @@ import { first } from "@/lib/params";
 import { PAGES } from "@/lib/pages";
 import { requirePage } from "@/server/access";
 import { getSessionState } from "@/server/auth/current";
-import { AUDIT_ACTIONS, AUDIT_ACTION_LABELS, isAuditAction, type AuditAction } from "@/server/audit/types";
+import {
+  AUDIT_ACTIONS,
+  AUDIT_ACTION_LABELS,
+  isAuditAction,
+  type AuditAction,
+} from "@/server/audit/types";
 import { getDashboardData } from "@/server/data";
 import { ORIGINAL_HOLDERS } from "@/server/data/allowlist";
 import { BRAND_LABELS, ROLE_LABELS } from "@/server/types";
@@ -52,7 +57,9 @@ const ACTION_TONE: Record<AuditAction, BadgeTone> = {
 export default async function AdminPage({ searchParams }: Props) {
   const viewer = requirePage(await getViewer(), "admin");
   const sp = await searchParams;
-  const tab = ["allow", "audit", "sessions"].includes(first(sp.tab) ?? "") ? (first(sp.tab) as string) : "allow";
+  const tab = ["allow", "audit", "sessions"].includes(first(sp.tab) ?? "")
+    ? (first(sp.tab) as string)
+    : "allow";
 
   const who = (first(sp.who) ?? "").slice(0, 60);
   const actionText = first(sp.action) ?? "";
@@ -106,9 +113,17 @@ export default async function AdminPage({ searchParams }: Props) {
                   <td>{fmtDate(p.agreementSigned)}</td>
                   <td>{p.originalHeldBy}</td>
                   <td>
-                    <Badge tone={STATUS[p.status]?.tone ?? "default"}>{STATUS[p.status]?.text ?? p.status}</Badge>
+                    <Badge tone={STATUS[p.status]?.tone ?? "default"}>
+                      {STATUS[p.status]?.text ?? p.status}
+                    </Badge>
                   </td>
-                  <td>{p.lastSignIn ? fmtDateTime(p.lastSignIn) : <span className="muted">Never</span>}</td>
+                  <td>
+                    {p.lastSignIn ? (
+                      fmtDateTime(p.lastSignIn)
+                    ) : (
+                      <span className="muted">Never</span>
+                    )}
+                  </td>
                   <td>
                     {p.id === viewer.id || p.status === "removed" ? null : (
                       <EntryActions id={p.id} name={p.name} status={p.status} />
@@ -196,7 +211,13 @@ export default async function AdminPage({ searchParams }: Props) {
                 <tr key={e.id}>
                   <td className="nowrap">{fmtDateTime(e.when)}</td>
                   <td>
-                    <Badge tone={e.outcome === "refused" && e.action !== "signin.refused" ? "crit" : ACTION_TONE[e.action]}>
+                    <Badge
+                      tone={
+                        e.outcome === "refused" && e.action !== "signin.refused"
+                          ? "crit"
+                          : ACTION_TONE[e.action]
+                      }
+                    >
                       {e.actionLabel}
                     </Badge>
                   </td>
@@ -256,7 +277,9 @@ export default async function AdminPage({ searchParams }: Props) {
                   {s.current ? null : (
                     <div className="row justify-end">
                       <RevokeButton sessionId={s.id} person={s.person} />
-                      {s.personId === viewer.id ? null : <SignOutEverywhereButton personId={s.personId} person={s.person} />}
+                      {s.personId === viewer.id ? null : (
+                        <SignOutEverywhereButton personId={s.personId} person={s.person} />
+                      )}
                     </div>
                   )}
                 </td>
@@ -266,8 +289,9 @@ export default async function AdminPage({ searchParams }: Props) {
         </table>
       </div>
       <p className="xs muted pad">
-        Sessions end after 30 minutes without activity, and after 8 hours in any case. Revoke ends one session at once;
-        Sign out everywhere ends all of that person&apos;s sessions. Suspending or removing someone ends theirs too.
+        Sessions end after 30 minutes without activity, and after 8 hours in any case. Revoke ends
+        one session at once; Sign out everywhere ends all of that person&apos;s sessions. Suspending
+        or removing someone ends theirs too.
       </p>
     </Card>
   );

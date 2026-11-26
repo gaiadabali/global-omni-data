@@ -1,4 +1,12 @@
-import { createCipheriv, createDecipheriv, createHash, createHmac, hkdfSync, randomBytes, timingSafeEqual } from "node:crypto";
+import {
+  createCipheriv,
+  createDecipheriv,
+  createHash,
+  createHmac,
+  hkdfSync,
+  randomBytes,
+  timingSafeEqual,
+} from "node:crypto";
 
 /**
  * The small pieces of cryptography sign-in needs, all from node:crypto. Keys are derived from GOD_SESSION_SECRET
@@ -8,7 +16,15 @@ import { createCipheriv, createDecipheriv, createHash, createHmac, hkdfSync, ran
 export type KeyPurpose = "oidc-transaction-v1" | "audit-sub-v1";
 
 export function deriveKey(secret: string, purpose: KeyPurpose): Buffer {
-  return Buffer.from(hkdfSync("sha256", Buffer.from(secret, "utf8"), Buffer.alloc(0), `god-dashboard/${purpose}`, 32));
+  return Buffer.from(
+    hkdfSync(
+      "sha256",
+      Buffer.from(secret, "utf8"),
+      Buffer.alloc(0),
+      `god-dashboard/${purpose}`,
+      32,
+    ),
+  );
 }
 
 /** A new session token: 256 random bits, base64url (43 characters). Only ever sent in the cookie. */

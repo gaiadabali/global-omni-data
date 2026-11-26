@@ -6,7 +6,10 @@ import { getStores } from "@/server/store";
 
 export const dynamic = "force-dynamic";
 
-type Holder = { __godSetSeen?: Map<string, number>; __godJwks?: { uri: string; get: ReturnType<typeof createRemoteJWKSet> } };
+type Holder = {
+  __godSetSeen?: Map<string, number>;
+  __godJwks?: { uri: string; get: ReturnType<typeof createRemoteJWKSet> };
+};
 
 /**
  * POST /auth/yourtal/events: YourTal's signed events (docs/26 §2.3). Server to server, so no cookie and no
@@ -26,17 +29,28 @@ export async function POST(request: Request): Promise<Response> {
 
   const g = globalThis as Holder;
   g.__godSetSeen ??= new Map();
-  if (g.__godJwks?.uri !== jwksUri) g.__godJwks = { uri: jwksUri, get: createRemoteJWKSet(new URL(jwksUri), { timeoutDuration: 10_000 }) };
+  if (g.__godJwks?.uri !== jwksUri)
+    g.__godJwks = {
+      uri: jwksUri,
+      get: createRemoteJWKSet(new URL(jwksUri), { timeoutDuration: 10_000 }),
+    };
 
-  const answer = await handleSecurityEvent(request.headers.get("content-type"), await request.text(), {
-    issuer: cfg.issuer,
-    clientId: cfg.clientId,
-    getKey: g.__godJwks.get,
-    stores: getStores(),
-    now: Date.now,
-    seen: g.__godSetSeen,
-  });
+  const answer = await handleSecurityEvent(
+    request.headers.get("content-type"),
+    await request.text(),
+    {
+      issuer: cfg.issuer,
+      clientId: cfg.clientId,
+      getKey: g.__godJwks.get,
+      stores: getStores(),
+      now: Date.now,
+      seen: g.__godSetSeen,
+    },
+  );
   return answer.body
-    ? Response.json(answer.body, { status: answer.status, headers: { "Cache-Control": "no-store" } })
+    ? Response.json(answer.body, {
+        status: answer.status,
+        headers: { "Cache-Control": "no-store" },
+      })
     : new Response(null, { status: answer.status, headers: { "Cache-Control": "no-store" } });
 }

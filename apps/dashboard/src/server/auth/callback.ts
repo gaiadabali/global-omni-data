@@ -20,7 +20,13 @@ import { openTransaction, type Transaction } from "./transaction";
  */
 
 export type CallbackOutcome =
-  | { kind: "signed-in"; token: string; session: SessionRecord; entry: AllowEntry; returnTo: string | null }
+  | {
+      kind: "signed-in";
+      token: string;
+      session: SessionRecord;
+      entry: AllowEntry;
+      returnTo: string | null;
+    }
   | { kind: "fresh-ok"; returnTo: string | null }
   | { kind: "refused"; reason: SigninReason; endSession?: boolean };
 
@@ -29,7 +35,10 @@ export interface CallbackDeps {
   secret: string;
   now: () => number;
   /** Redeems the code (openid-client); throws RedeemError. */
-  redeem: (query: URLSearchParams, expected: Pick<Transaction, "state" | "nonce" | "codeVerifier">) => Promise<Record<string, unknown>>;
+  redeem: (
+    query: URLSearchParams,
+    expected: Pick<Transaction, "state" | "nonce" | "codeVerifier">,
+  ) => Promise<Record<string, unknown>>;
 }
 
 export interface CallbackInput {
@@ -47,13 +56,27 @@ const PROVIDER_REFUSALS: Record<string, SigninReason> = {
   teen_invite_required: "teen",
 };
 
-export async function handleCallback(input: CallbackInput, deps: CallbackDeps): Promise<CallbackOutcome> {
+export async function handleCallback(
+  input: CallbackInput,
+  deps: CallbackDeps,
+): Promise<CallbackOutcome> {
   const { stores, secret } = deps;
   const now = deps.now();
   const at = new Date(now).toISOString();
 
-  const refuse = async (reason: SigninReason, why: string, sub?: string | null, endSession = false): Promise<CallbackOutcome> => {
-    await stores.audit.append({ who: "sign-in", action: "signin.refused", target: subLabel(sub, secret), reason: why, outcome: "refused" });
+  const refuse = async (
+    reason: SigninReason,
+    why: string,
+    sub?: string | null,
+    endSession = false,
+  ): Promise<CallbackOutcome> => {
+    await stores.audit.append({
+      who: "sign-in",
+      action: "signin.refused",
+      target: subLabel(sub, secret),
+      reason: why,
+      outcome: "refused",
+    });
     return { kind: "refused", reason, ...(endSession ? { endSession } : {}) };
   };
 
@@ -61,13 +84,17 @@ export async function handleCallback(input: CallbackInput, deps: CallbackDeps): 
   const txn = openTransaction(input.txnCookie, secret, now);
   if (!txn) return refuse("retry", "Sign-in state missing, expired or altered");
   const state = input.query.get("state") ?? "";
-  if (!state || !sameString(state, txn.state)) return refuse("retry", "State did not match this browser's sign-in");
+  if (!state || !sameString(state, txn.state))
+    return refuse("retry", "State did not match this browser's sign-in");
 
   const error = input.query.get("error");
   if (error) {
     const code = (input.query.get("error_description") ?? "").slice(0, 60);
     const mapped = PROVIDER_REFUSALS[code];
-    return refuse(mapped ?? "retry", `YourTal refused or the person cancelled (${/^[a-z_]+$/.test(code) ? code : error.slice(0, 40)})`);
+    return refuse(
+      mapped ?? "retry",
+      `YourTal refused or the person cancelled (${/^[a-z_]+$/.test(code) ? code : error.slice(0, 40)})`,
+    );
   }
 
   // 2. Redeem and validate.
@@ -75,17 +102,28 @@ export async function handleCallback(input: CallbackInput, deps: CallbackDeps): 
   try {
     claims = await deps.redeem(input.query, txn);
   } catch (e) {
-    if (e instanceof RedeemError && e.kind === "unavailable") return refuse("unavailable", "YourTal could not be reached");
+    if (e instanceof RedeemError && e.kind === "unavailable")
+      return refuse("unavailable", "YourTal could not be reached");
     return refuse("retry", "The code or ID token failed validation");
   }
-  const sub = typeof claims.sub === "string" && claims.sub.length > 0 && claims.sub.length <= 255 ? claims.sub : null;
-  const amr = Array.isArray(claims.amr) ? claims.amr.filter((v): v is string => typeof v === "string") : [];
-  const authTimeS = typeof claims.auth_time === "number" && Number.isFinite(claims.auth_time) ? claims.auth_time : null;
-  if (!sub || authTimeS === null) return refuse("retry", "The ID token has no sub or auth_time", sub);
+  const sub =
+    typeof claims.sub === "string" && claims.sub.length > 0 && claims.sub.length <= 255
+      ? claims.sub
+      : null;
+  const amr = Array.isArray(claims.amr)
+    ? claims.amr.filter((v): v is string => typeof v === "string")
+    : [];
+  const authTimeS =
+    typeof claims.auth_time === "number" && Number.isFinite(claims.auth_time)
+      ? claims.auth_time
+      : null;
+  if (!sub || authTimeS === null)
+    return refuse("retry", "The ID token has no sub or auth_time", sub);
   const authTime = new Date(authTimeS * 1000).toISOString();
 
   // 3. A passkey.
-  if (!amr.includes("hwk")) return refuse("password", "Signed in without a passkey (amr has no hwk)", sub);
+  if (!amr.includes("hwk"))
+    return refuse("password", "Signed in without a passkey (amr has no hwk)", sub);
   // 4. Adults only. Anything but "adult" is refused; a missing band is not assumed to be adult.
   if (claims.age_band === "teen") return refuse("teen", "A teen account", sub);
   if (claims.age_band !== "adult") return refuse("retry", "The ID token has no age_band", sub);
@@ -93,26 +131,44 @@ export async function handleCallback(input: CallbackInput, deps: CallbackDeps): 
   // A fresh passkey check for an existing session.
   if (txn.freshFor) {
     const current = await resolveSession(input.sessionToken, stores, now);
-    if (current.kind !== "ok" || current.session.id !== txn.freshFor) return refuse("expired", "Passkey check for a session that has ended", sub);
+    if (current.kind !== "ok" || current.session.id !== txn.freshFor)
+      return refuse("expired", "Passkey check for a session that has ended", sub);
     if (current.entry.yourtalSub !== sub) {
       // Someone else's YourTal account answered this person's check: end the session.
       await stores.sessions.revoke(current.session.id, "sign-in", at);
-      return refuse("expired", "Passkey check answered by a different YourTal account; session ended", sub, true);
+      return refuse(
+        "expired",
+        "Passkey check answered by a different YourTal account; session ended",
+        sub,
+        true,
+      );
     }
     if (!isFreshAuth({ authTime, amr }, now) || authTimeS * 1000 < txn.startedAt - 5_000) {
       return refuse("retry", "Passkey check did not include a new sign-in", sub);
     }
     await stores.sessions.updateAuth(current.session.id, authTime, amr);
-    await stores.audit.append({ who: current.entry.id, action: "signin.fresh", target: `session:${current.session.id}`, reason: "Passkey checked again" });
+    await stores.audit.append({
+      who: current.entry.id,
+      action: "signin.fresh",
+      target: `session:${current.session.id}`,
+      reason: "Passkey checked again",
+    });
     return { kind: "fresh-ok", returnTo: txn.returnTo };
   }
 
   // 5. The allow-list: by sub, or bind an unbound entry by its email, once.
   let entry = await stores.allowList.findBySub(sub);
   if (!entry) {
-    const email = typeof claims.email === "string" && claims.email_verified === true ? claims.email.trim().toLowerCase() : "";
+    const email =
+      typeof claims.email === "string" && claims.email_verified === true
+        ? claims.email.trim().toLowerCase()
+        : "";
     const unbound = email ? await stores.allowList.findUnboundByEmail(email) : null;
-    if (unbound && (unbound.status === "invited" || unbound.status === "active") && (await stores.allowList.bindSub(unbound.id, sub))) {
+    if (
+      unbound &&
+      (unbound.status === "invited" || unbound.status === "active") &&
+      (await stores.allowList.bindSub(unbound.id, sub))
+    ) {
       entry = await stores.allowList.find(unbound.id);
     }
   }
@@ -129,7 +185,19 @@ export async function handleCallback(input: CallbackInput, deps: CallbackDeps): 
   const previous = await resolveSession(input.sessionToken, stores, now);
   if (previous.kind === "ok") await stores.sessions.revoke(previous.session.id, entry.id, at);
 
-  const { token, session } = await startSession(stores, { entry, authTime, amr, userAgent: input.userAgent, ip: input.ip, now });
-  await stores.audit.append({ who: entry.id, action: "signin.ok", target: `session:${session.id}`, reason: "Signed in with a passkey" });
+  const { token, session } = await startSession(stores, {
+    entry,
+    authTime,
+    amr,
+    userAgent: input.userAgent,
+    ip: input.ip,
+    now,
+  });
+  await stores.audit.append({
+    who: entry.id,
+    action: "signin.ok",
+    target: `session:${session.id}`,
+    reason: "Signed in with a passkey",
+  });
   return { kind: "signed-in", token, session, entry, returnTo: txn.returnTo };
 }

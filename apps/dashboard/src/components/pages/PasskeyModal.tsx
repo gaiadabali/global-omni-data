@@ -75,8 +75,9 @@ export function PasskeyModal({
       {intro ? <div>{intro}</div> : null}
       <div className="callout" role="note">
         <div>
-          <b>Confirm with your passkey.</b> If you have not used your passkey in the last 5 minutes, YourTal asks
-          for it first and brings you back here. What you do next is written to the audit log.
+          <b>Confirm with your passkey.</b> If you have not used your passkey in the last 5 minutes,
+          YourTal asks for it first and brings you back here. What you do next is written to the
+          audit log.
         </div>
       </div>
       <div className="small muted" aria-live="polite">

@@ -73,7 +73,8 @@ export default async function SignInPage({
   const dev = isDevAuthEnabled();
   const real = isRealSignInOn();
   const session = dev ? null : await getSessionState();
-  const reasonKey: Reason | null = key && key in REASONS ? (key as Reason) : session?.kind === "ended" ? "expired" : null;
+  const reasonKey: Reason | null =
+    key && key in REASONS ? (key as Reason) : session?.kind === "ended" ? "expired" : null;
   const reason = reasonKey ? REASONS[reasonKey] : null;
   const viewer = dev ? await getViewer() : session?.kind === "ok" ? session.viewer : null;
   const dots = backdropDots();
@@ -94,7 +95,13 @@ export default async function SignInPage({
       </div>
       <main className="form">
         {/* eslint-disable-next-line @next/next/no-img-element -- a static logo; see Shell */}
-        <img className="logo" src="/god-logo.png" alt="GOD, Global Omni Data" width="142" height="56" />
+        <img
+          className="logo"
+          src="/god-logo.png"
+          alt="GOD, Global Omni Data"
+          width="142"
+          height="56"
+        />
         <div>
           <h1>Sign in</h1>
           <p className="muted mt-1.5">
@@ -108,7 +115,12 @@ export default async function SignInPage({
               Sign in with YourTal
             </a>
           ) : (
-            <button type="button" className="btn primary wide" disabled aria-describedby="signin-note">
+            <button
+              type="button"
+              className="btn primary wide"
+              disabled
+              aria-describedby="signin-note"
+            >
               Sign in with YourTal
             </button>
           )}
@@ -125,7 +137,10 @@ export default async function SignInPage({
         </div>
         {reason ? (
           <div aria-live="polite">
-            <Callout tone={reasonKey === "signed-out" ? "default" : "crit"} role={reasonKey === "signed-out" ? "status" : "alert"}>
+            <Callout
+              tone={reasonKey === "signed-out" ? "default" : "crit"}
+              role={reasonKey === "signed-out" ? "status" : "alert"}
+            >
               <b>{reason.title}</b>
               <div className="small mt-1">{reason.text}</div>
               {reason.action ? (
@@ -144,7 +159,9 @@ export default async function SignInPage({
         ) : null}
         {dev ? (
           <div className="demo">
-            <div className="lab xs mono faint uppercase tracking-wider">Dev sign-in is on: what happens next</div>
+            <div className="lab xs mono faint uppercase tracking-wider">
+              Dev sign-in is on: what happens next
+            </div>
             <div className="seg" role="group" aria-label="Refusal states">
               {DEMO.map((d) => (
                 <Link

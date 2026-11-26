@@ -39,7 +39,14 @@ export async function GET(request: NextRequest): Promise<Response> {
   setTxnCookie(
     res,
     sealTransaction(
-      { state: started.state, nonce: started.nonce, codeVerifier: started.codeVerifier, returnTo, freshFor, startedAt: Date.now() },
+      {
+        state: started.state,
+        nonce: started.nonce,
+        codeVerifier: started.codeVerifier,
+        returnTo,
+        freshFor,
+        startedAt: Date.now(),
+      },
       cfg.sessionSecret,
     ),
   );

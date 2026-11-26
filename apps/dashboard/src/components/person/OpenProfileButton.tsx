@@ -69,7 +69,11 @@ export function OpenProfileButton({
 
   return (
     <>
-      <button type="button" className={`btn sm${primary ? " primary" : ""}`} onClick={() => setOpen(true)}>
+      <button
+        type="button"
+        className={`btn sm${primary ? " primary" : ""}`}
+        onClick={() => setOpen(true)}
+      >
         {label}
       </button>
       <Modal
@@ -90,16 +94,20 @@ export function OpenProfileButton({
         }
       >
         <p>
-          You are about to open <span className="mono">{id}</span>. This is recorded in the audit log with your name,
-          the time and your reason.
+          You are about to open <span className="mono">{id}</span>. This is recorded in the audit
+          log with your name, the time and your reason.
         </p>
         <p className="small muted">
-          Opening a profile needs your passkey in the last 5 minutes. If it is older, YourTal asks for it and brings
-          you back here; then open the profile again.
+          Opening a profile needs your passkey in the last 5 minutes. If it is older, YourTal asks
+          for it and brings you back here; then open the profile again.
         </p>
         <div className="field">
           <label htmlFor={`${uid}-reason`}>Reason</label>
-          <select id={`${uid}-reason`} value={reasonId} onChange={(e) => setReasonId(e.target.value)}>
+          <select
+            id={`${uid}-reason`}
+            value={reasonId}
+            onChange={(e) => setReasonId(e.target.value)}
+          >
             {OPEN_REASONS.map((r) => (
               <option key={r.id} value={r.id}>
                 {r.label}

@@ -30,8 +30,13 @@ export interface EventAnswer {
 
 const bad = (err: string): EventAnswer => ({ status: 400, body: { err } });
 
-export async function handleSecurityEvent(contentType: string | null, body: string, deps: EventDeps): Promise<EventAnswer> {
-  if (!(contentType ?? "").toLowerCase().startsWith("application/secevent+jwt")) return bad("invalid_request");
+export async function handleSecurityEvent(
+  contentType: string | null,
+  body: string,
+  deps: EventDeps,
+): Promise<EventAnswer> {
+  if (!(contentType ?? "").toLowerCase().startsWith("application/secevent+jwt"))
+    return bad("invalid_request");
   const token = body.trim();
   if (!token || token.length > MAX_BODY) return bad("invalid_request");
 
@@ -61,10 +66,18 @@ export async function handleSecurityEvent(contentType: string | null, body: stri
   const jti = typeof payload.jti === "string" ? payload.jti : "";
   const subId = payload.sub_id as { format?: unknown; iss?: unknown; sub?: unknown } | undefined;
   const events = payload.events as Record<string, unknown> | undefined;
-  if (!jti || !subId || subId.format !== "iss_sub" || subId.iss !== deps.issuer || typeof subId.sub !== "string" || !subId.sub) {
+  if (
+    !jti ||
+    !subId ||
+    subId.format !== "iss_sub" ||
+    subId.iss !== deps.issuer ||
+    typeof subId.sub !== "string" ||
+    !subId.sub
+  ) {
     return bad("invalid_request");
   }
-  if (!events || typeof events !== "object" || Object.keys(events).length !== 1) return bad("invalid_request");
+  if (!events || typeof events !== "object" || Object.keys(events).length !== 1)
+    return bad("invalid_request");
 
   const now = deps.now();
   for (const [k, t] of deps.seen) if (now - t > SEEN_MS) deps.seen.delete(k);
@@ -76,7 +89,10 @@ export async function handleSecurityEvent(contentType: string | null, body: stri
     if (entry) {
       const at = new Date(now).toISOString();
       const ended = await deps.stores.sessions.revokeAllForUser(entry.id, "yourtal", at);
-      const detail = type === DELETED ? "YourTal account deleted" : `YourTal access ended (${String((events[type] as { reason?: unknown })?.reason ?? "no reason").slice(0, 40)})`;
+      const detail =
+        type === DELETED
+          ? "YourTal account deleted"
+          : `YourTal access ended (${String((events[type] as { reason?: unknown })?.reason ?? "no reason").slice(0, 40)})`;
       await deps.stores.audit.append({
         who: "yourtal",
         action: "session.revoke",

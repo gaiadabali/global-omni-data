@@ -11,7 +11,9 @@ const SHA256_HEX = /^[0-9a-f]{64}$/;
 
 type Clock = () => number;
 
-export function createMemoryAllowList(opts: { seed?: readonly AllowEntry[]; now?: Clock } = {}): AllowListStore {
+export function createMemoryAllowList(
+  opts: { seed?: readonly AllowEntry[]; now?: Clock } = {},
+): AllowListStore {
   const now = opts.now ?? Date.now;
   const rows: AllowEntry[] = (opts.seed ?? []).map((e) => ({ ...e, email: e.email.toLowerCase() }));
   const copy = (e: AllowEntry | undefined): AllowEntry | null => (e ? { ...e } : null);
@@ -32,7 +34,9 @@ export function createMemoryAllowList(opts: { seed?: readonly AllowEntry[]; now?
       const want = email.trim().toLowerCase();
       if (!want) return null;
       // A removed entry is history: it never matches again. A re-invite makes a new entry.
-      return copy(rows.find((r) => r.yourtalSub === null && r.status !== "removed" && r.email === want));
+      return copy(
+        rows.find((r) => r.yourtalSub === null && r.status !== "removed" && r.email === want),
+      );
     },
     async invite(input) {
       const email = input.email.trim().toLowerCase();
@@ -71,7 +75,9 @@ export function createMemoryAllowList(opts: { seed?: readonly AllowEntry[]; now?
   };
 }
 
-export function createMemorySessionStore(opts: { seed?: readonly (SessionRecord & { tokenHash: string })[] } = {}): SessionStore {
+export function createMemorySessionStore(
+  opts: { seed?: readonly (SessionRecord & { tokenHash: string })[] } = {},
+): SessionStore {
   // Keyed by the token's SHA-256. The token itself never reaches this store.
   const rows = new Map<string, SessionRecord>();
   for (const s of opts.seed ?? []) {
@@ -83,7 +89,8 @@ export function createMemorySessionStore(opts: { seed?: readonly (SessionRecord 
 
   return {
     async create(input) {
-      if (!SHA256_HEX.test(input.tokenHash)) throw new RangeError("sessions: tokenHash must be a SHA-256 hex digest");
+      if (!SHA256_HEX.test(input.tokenHash))
+        throw new RangeError("sessions: tokenHash must be a SHA-256 hex digest");
       if (rows.has(input.tokenHash)) throw new RangeError("sessions: duplicate token");
       const rec: SessionRecord = {
         id: `s-${randomBytes(8).toString("hex")}`,

@@ -17,11 +17,13 @@ export function safeReturnPath(value: unknown): string | null {
     return null;
   }
   if (u.origin !== "https://dashboard.invalid") return null;
-  if (u.pathname.startsWith("/auth/") || u.pathname === "/signin" || u.pathname === "/healthz") return null;
+  if (u.pathname.startsWith("/auth/") || u.pathname === "/signin" || u.pathname === "/healthz")
+    return null;
   return `${u.pathname}${u.search}`;
 }
 
-export type SigninReason = "not-listed" | "password" | "teen" | "expired" | "retry" | "unavailable" | "signed-out";
+export type SigninReason =
+  "not-listed" | "password" | "teen" | "expired" | "retry" | "unavailable" | "signed-out";
 
 export function signinPath(reason: SigninReason): string {
   return `/signin?reason=${reason}`;

@@ -8,13 +8,83 @@ import type { AllowEntry, SessionRecord } from "./types";
  * (src/server/viewer.ts), so the dev role switch and the allow-list agree. Active entries carry a made-up sub.
  */
 export const ALLOW_LIST_SEED: readonly AllowEntry[] = [
-  entry("dev-owner", "Alex Morgan", "alex.morgan", "owner", undefined, "2026-11-02", "GOD registered office, safe", "active", "2026-11-26T09:12:00+11:00"),
-  entry("dev-executive", "Priya Nair", "priya.nair", "executive", undefined, "2026-11-09", "Alex Morgan", "active", "2026-11-25T16:40:00+11:00"),
-  entry("dev-data", "Jordan Lee", "jordan.lee", "data", undefined, "2026-11-09", "Alex Morgan", "active", "2026-11-26T08:41:00+11:00"),
-  entry("u-chen-wei", "Chen Wei", "chen.wei", "data", undefined, "2026-11-16", "Priya Nair", "invited", null),
-  entry("dev-bl-yourtal", "Sam Ortega", "sam.ortega", "brand_lead", "yourtal", "2026-11-18", "YourTal office, Brisbane", "active", "2026-11-24T11:03:00+11:00"),
-  entry("dev-bl-snapapp", "Taylor Reid", "taylor.reid", "brand_lead", "snapapp", "2026-11-19", "Alex Morgan", "active", "2026-11-25T10:20:00+11:00"),
-  entry("dev-bl-ftr", "Morgan Blake", "morgan.blake", "brand_lead", "ftr", "2026-11-19", "Alex Morgan", "active", "2026-11-23T14:55:00+11:00"),
+  entry(
+    "dev-owner",
+    "Alex Morgan",
+    "alex.morgan",
+    "owner",
+    undefined,
+    "2026-11-02",
+    "GOD registered office, safe",
+    "active",
+    "2026-11-26T09:12:00+11:00",
+  ),
+  entry(
+    "dev-executive",
+    "Priya Nair",
+    "priya.nair",
+    "executive",
+    undefined,
+    "2026-11-09",
+    "Alex Morgan",
+    "active",
+    "2026-11-25T16:40:00+11:00",
+  ),
+  entry(
+    "dev-data",
+    "Jordan Lee",
+    "jordan.lee",
+    "data",
+    undefined,
+    "2026-11-09",
+    "Alex Morgan",
+    "active",
+    "2026-11-26T08:41:00+11:00",
+  ),
+  entry(
+    "u-chen-wei",
+    "Chen Wei",
+    "chen.wei",
+    "data",
+    undefined,
+    "2026-11-16",
+    "Priya Nair",
+    "invited",
+    null,
+  ),
+  entry(
+    "dev-bl-yourtal",
+    "Sam Ortega",
+    "sam.ortega",
+    "brand_lead",
+    "yourtal",
+    "2026-11-18",
+    "YourTal office, Brisbane",
+    "active",
+    "2026-11-24T11:03:00+11:00",
+  ),
+  entry(
+    "dev-bl-snapapp",
+    "Taylor Reid",
+    "taylor.reid",
+    "brand_lead",
+    "snapapp",
+    "2026-11-19",
+    "Alex Morgan",
+    "active",
+    "2026-11-25T10:20:00+11:00",
+  ),
+  entry(
+    "dev-bl-ftr",
+    "Morgan Blake",
+    "morgan.blake",
+    "brand_lead",
+    "ftr",
+    "2026-11-19",
+    "Alex Morgan",
+    "active",
+    "2026-11-23T14:55:00+11:00",
+  ),
 ];
 
 function entry(
@@ -50,7 +120,14 @@ function entry(
  */
 export function devSessionSeed(nowMs: number): (SessionRecord & { tokenHash: string })[] {
   const at = (minutesAgo: number) => new Date(nowMs - minutesAgo * 60_000).toISOString();
-  const make = (id: string, userId: string, startedMin: number, seenMin: number, userAgent: string, ipPrefix: string) => ({
+  const make = (
+    id: string,
+    userId: string,
+    startedMin: number,
+    seenMin: number,
+    userAgent: string,
+    ipPrefix: string,
+  ) => ({
     tokenHash: createHash("sha256").update(randomBytes(32)).digest("hex"),
     id,
     userId,
@@ -65,9 +142,37 @@ export function devSessionSeed(nowMs: number): (SessionRecord & { tokenHash: str
     revokedBy: null,
   });
   return [
-    make("s-dev-1", "dev-owner", 40, 0, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/142.0", "203.0.113.x"),
-    make("s-dev-2", "dev-data", 120, 12, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Edg/142.0", "198.51.100.x"),
-    make("s-dev-3", "dev-executive", 300, 20, "Mozilla/5.0 (iPhone; CPU iPhone OS 19_1 like Mac OS X) Safari/605.1", "192.0.2.x"),
-    make("s-dev-4", "dev-bl-yourtal", 420, 25, "Mozilla/5.0 (Macintosh; Intel Mac OS X 15_6) Chrome/142.0", "203.0.113.x"),
+    make(
+      "s-dev-1",
+      "dev-owner",
+      40,
+      0,
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/142.0",
+      "203.0.113.x",
+    ),
+    make(
+      "s-dev-2",
+      "dev-data",
+      120,
+      12,
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Edg/142.0",
+      "198.51.100.x",
+    ),
+    make(
+      "s-dev-3",
+      "dev-executive",
+      300,
+      20,
+      "Mozilla/5.0 (iPhone; CPU iPhone OS 19_1 like Mac OS X) Safari/605.1",
+      "192.0.2.x",
+    ),
+    make(
+      "s-dev-4",
+      "dev-bl-yourtal",
+      420,
+      25,
+      "Mozilla/5.0 (Macintosh; Intel Mac OS X 15_6) Chrome/142.0",
+      "203.0.113.x",
+    ),
   ];
 }

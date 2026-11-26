@@ -9,18 +9,37 @@ export const NO_STORE = { "Cache-Control": "no-store", Vary: "Cookie" } as const
 
 /** Redirects go to the configured public origin (behind nginx the request URL is the upstream's), or to the
  *  request's own origin when real sign-in is off. */
-export function redirectTo(request: NextRequest, cfg: AuthConfig | null, path: string): NextResponse {
+export function redirectTo(
+  request: NextRequest,
+  cfg: AuthConfig | null,
+  path: string,
+): NextResponse {
   const res = NextResponse.redirect(new URL(path, cfg?.publicUrl ?? request.nextUrl.origin), 303);
   for (const [k, v] of Object.entries(NO_STORE)) res.headers.set(k, v);
   return res;
 }
 
 export function setTxnCookie(res: NextResponse, value: string): void {
-  res.cookies.set(TXN_COOKIE, value, { httpOnly: true, secure: true, sameSite: "lax", path: "/", maxAge: TXN_TTL_MS / 1000 });
+  res.cookies.set(TXN_COOKIE, value, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "lax",
+    path: "/",
+    maxAge: TXN_TTL_MS / 1000,
+  });
 }
 
-export function clearCookie(res: NextResponse, name: typeof TXN_COOKIE | typeof SESSION_COOKIE): void {
-  res.cookies.set(name, "", { httpOnly: true, secure: true, sameSite: "lax", path: "/", maxAge: 0 });
+export function clearCookie(
+  res: NextResponse,
+  name: typeof TXN_COOKIE | typeof SESSION_COOKIE,
+): void {
+  res.cookies.set(name, "", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "lax",
+    path: "/",
+    maxAge: 0,
+  });
 }
 
 /** The caller's address as nginx passes it. Only a coarse prefix of it is ever stored. */

@@ -12,7 +12,8 @@ import { getViewer } from "@/server/viewer";
 export default async function ShellLayout({ children }: { children: React.ReactNode }) {
   const viewer = await getViewer();
   // An ended session says so; on a client navigation the page's own check sends to /signin, which says it too.
-  if (!viewer) redirect((await getSessionState()).kind === "ended" ? "/signin?reason=expired" : "/signin");
+  if (!viewer)
+    redirect((await getSessionState()).kind === "ended" ? "/signin?reason=expired" : "/signin");
   const theme = parseTheme((await cookies()).get(THEME_COOKIE)?.value);
   return (
     <Shell viewer={viewer} theme={theme}>

@@ -32,4 +32,7 @@ export function freshGate(state: SessionState, devSignIn: boolean, now: number):
 }
 
 /** What a handler uses when nobody supplied a gate: refuse. A forgotten gate never lets an action through. */
-export const FRESH_REFUSED: () => Promise<FreshGate> = async () => ({ ok: false, error: FRESH_NEEDED });
+export const FRESH_REFUSED: () => Promise<FreshGate> = async () => ({
+  ok: false,
+  error: FRESH_NEEDED,
+});
