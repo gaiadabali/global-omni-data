@@ -162,3 +162,28 @@ export const API_HEADERS: Record<string, string> = {
   Vary: "Cookie",
   "Content-Security-Policy": "default-src 'none'; frame-ancestors 'none'",
 };
+
+/**
+ * What the map screens need to draw their controls: the months on offer, the age bands, and the categories with
+ * their sensitive flag. It comes from here so the screens never hard-code a list the API validates against.
+ */
+export interface MapMeta {
+  /** "YYYY-MM", oldest first. */
+  months: string[];
+  currentMonth: string;
+  /** Age band names as the API spells them ("13–17", "18–24", ...). */
+  ageBands: string[];
+  /** Index into `ageBands` of the teen band. */
+  teenBand: number;
+  categories: { id: string; name: string; sensitive: boolean }[];
+}
+
+export function mapMeta(): MapMeta {
+  return {
+    months: [...MONTHS],
+    currentMonth: CURRENT_MONTH,
+    ageBands: [...AGE_BANDS],
+    teenBand: TEEN_BAND,
+    categories: CATEGORIES.map((c) => ({ id: c.id, name: c.name, sensitive: c.sensitive })),
+  };
+}
