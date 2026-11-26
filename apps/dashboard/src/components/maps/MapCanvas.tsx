@@ -264,7 +264,10 @@ export function MapCanvas(props: MapCanvasProps) {
         pitchWithRotate: false,
         touchPitch: false,
         maxPitch: 0,
-        renderWorldCopies: false,
+        // With a single world MapLibre will not move the centre east of where the world's edge would show, which is exactly
+        // where the national view has to go to sit beside a panel. Nothing is drawn in the copies (the land is Australia's
+        // own outline, once), and they are 4,000 px away at this zoom.
+        renderWorldCopies: true,
       });
       if (sameOrigin) map.addControl(new AttributionControl({ compact: false, customAttribution: BASEMAP_ATTRIBUTION }));
       if (!initialView) fitBox(map, AUSTRALIA_BOUNDS, readInsets(stage), 16, MAX_ZOOM, 0);
