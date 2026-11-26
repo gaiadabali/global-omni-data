@@ -1,6 +1,6 @@
 import type { AuditEvent } from "../../audit/types";
 import type { BrandId, Role } from "../../types";
-import type { AllowEntry, AllowStatus, SessionRecord } from "../types";
+import type { AllowEntry, AllowStatus, BreakGlassKey, SessionRecord } from "../types";
 
 /** Row mapping, pure so it can be unit tested without a database. Time values leave here as ISO strings. */
 
@@ -101,6 +101,31 @@ export function toAuditEvent(r: AuditRow): AuditEvent {
     reason: r.reason,
     outcome: r.outcome,
   });
+}
+
+export const BREAK_GLASS_COLUMNS = "credential_id, public_key, sign_count, owner_id, created_at, last_used_at, revoked_at";
+
+export interface BreakGlassRow {
+  credential_id: string;
+  public_key: Buffer;
+  /** bigint arrives as a string. */
+  sign_count: string | number;
+  owner_id: string;
+  created_at: Date;
+  last_used_at: Date | null;
+  revoked_at: Date | null;
+}
+
+export function toBreakGlassKey(r: BreakGlassRow): BreakGlassKey {
+  return {
+    credentialId: r.credential_id,
+    publicKey: new Uint8Array(r.public_key),
+    signCount: Number(r.sign_count),
+    ownerId: r.owner_id,
+    createdAt: iso(r.created_at),
+    lastUsedAt: isoOrNull(r.last_used_at),
+    revokedAt: isoOrNull(r.revoked_at),
+  };
 }
 
 /** Emails are stored lower case and trimmed (the table has a CHECK for it). */

@@ -4,6 +4,8 @@
  *   AllowListStore  who may sign in, with what role, and their paper agreement
  *   SessionStore    signed-in sessions (revocable, listed in Admin)
  *   AuditLog        append-only record of sensitive actions (src/server/audit/types.ts)
+ *   BreakGlassStore the sealed emergency Owner keys (WebAuthn, local to the dashboard) and their one-time
+ *                   enrolment codes (src/server/breakglass/)
  *
  * Two implementations of each: in memory (dev, tests, screenshots) and Postgres (staging, production).
  * getStores() in ./index.ts picks one: Postgres when GOD_DATABASE_URL is set, memory otherwise.
@@ -88,7 +90,7 @@ export interface SessionStore {
   }): Promise<SessionRecord>;
   findByTokenHash(tokenHash: string): Promise<SessionRecord | null>;
   touch(id: string, at: string): Promise<void>;
-  /** After a fresh passkey check. */
+  /** After a fresh passkey check. Never for an emergency session (amr has "break-glass"): that stays as it is. */
   updateAuth(id: string, authTime: string, amr: readonly string[]): Promise<void>;
   revoke(id: string, by: string, at: string): Promise<void>;
   revokeAllForUser(userId: string, by: string, at: string): Promise<number>;
@@ -96,10 +98,63 @@ export interface SessionStore {
   listActive(at: string): Promise<SessionRecord[]>;
 }
 
+/**
+ * A break-glass key: a WebAuthn credential registered with the dashboard itself, for one Owner entry, used only when
+ * YourTal is down. Only what verification needs is kept: no name, no device, nothing about the person.
+ */
+export interface BreakGlassKey {
+  /** base64url WebAuthn credential id. */
+  credentialId: string;
+  /** COSE public key. */
+  publicKey: Uint8Array;
+  signCount: number;
+  /** AllowEntry.id of the Owner. */
+  ownerId: string;
+  createdAt: string;
+  lastUsedAt: string | null;
+  revokedAt: string | null;
+}
+
+/** What an enrolment code is, by its hash, at a given time. */
+export type CodeCheck =
+  | { state: "ok"; ownerId: string }
+  | { state: "expired"; ownerId: string }
+  | { state: "used"; ownerId: string }
+  | { state: "unknown" };
+
+export interface BreakGlassStore {
+  /** Every key, active and revoked, newest first (Admin). */
+  list(): Promise<BreakGlassKey[]>;
+  /** A key that is not revoked, by credential id; null otherwise. */
+  findActive(credentialId: string): Promise<BreakGlassKey | null>;
+  /**
+   * Stores a new key. Null (refused) when its Owner already has an active key or 2 keys are active. The Postgres
+   * store also refuses a key for anyone but an active Owner, in the database.
+   */
+  create(input: {
+    credentialId: string;
+    publicKey: Uint8Array;
+    signCount: number;
+    ownerId: string;
+  }): Promise<BreakGlassKey | null>;
+  /**
+   * After a verified assertion. True only for an active key whose counter moved forward (or stays 0 for an
+   * authenticator with no counter). False is a replay, a cloned key or a key revoked meanwhile.
+   */
+  recordUse(credentialId: string, signCount: number, at: string): Promise<boolean>;
+  /** True when the key was active and is now revoked. Revocation is final. */
+  revoke(credentialId: string, at: string): Promise<boolean>;
+  /** The state of an enrolment code by its hash. The code itself never reaches a store. */
+  checkCode(codeHash: string, at: string): Promise<CodeCheck>;
+  /** Uses the code, once: true only for this Owner's code, unused and unexpired at `at`. */
+  useCode(codeHash: string, ownerId: string, at: string): Promise<boolean>;
+}
+
 export interface Stores {
   allowList: AllowListStore;
   sessions: SessionStore;
   audit: AuditLog;
+  breakGlass: BreakGlassStore;
   /** "memory" in dev and tests, "postgres" when GOD_DATABASE_URL is set. */
   kind: "memory" | "postgres";
 }

@@ -4,6 +4,15 @@
  */
 export const SESSION_IDLE_MS = 30 * 60_000;
 export const SESSION_ABSOLUTE_MS = 8 * 3_600_000;
+/** An emergency (break-glass) session ends 1 hour after it began, whatever else happens. The database checks it too. */
+export const BREAK_GLASS_ABSOLUTE_MS = 3_600_000;
+/** The `amr` of an emergency session: a passkey local to the dashboard, used as the break-glass key. */
+export const BREAK_GLASS_AMR = ["hwk", "break-glass"] as const;
+
+/** Whether a session is an emergency (break-glass) session. Once one, always one. */
+export function isBreakGlassSession(s: { amr: readonly string[] }): boolean {
+  return s.amr.includes("break-glass");
+}
 /** lastSeenAt is written at most this often, so a busy page does not write on every request. */
 export const SESSION_TOUCH_MS = 60_000;
 
