@@ -1,7 +1,7 @@
 # @god/dashboard
 
 The GOD group dashboard (dashboard.god.gaiada.com). Allow-listed GOD staff only. Next 16 App Router, React 19,
-Tailwind 4. In this phase every figure is synthetic (`@god/synthetic`) and sign-in is a dev cookie. Two seams
+Tailwind 4. In this phase every figure is synthetic (`@god/synthetic`) and sign-in is a dev cookie. The map geography is real, from `@god/geo`. Two seams
 replace those later, and nothing else changes:
 
 | Seam | File | Today | Later |
@@ -25,7 +25,7 @@ src/
     (shell)/insight|teens|person|quality|admin/   Brand insight (with ?print=1), Teen market, Person 360,
                                  Data quality, Admin. Actions write to the audit seam (server/audit)
     (shell)/forbidden.tsx     the 403 screen (a real 403, via forbidden())
-    api/map/influence|activity/route.ts   GET handlers, thin wrappers over src/server/map-api.ts
+    api/map/influence|summary|area|activity|hotspots|activity-area/route.ts   GET handlers, thin wrappers over src/server/map-api.ts
   proxy.ts                  Next 16 "middleware": per-request nonce CSP
   instrumentation.ts        refuses to start on a bad dev-auth config; warms the synthetic sample
   lib/                      pure helpers: pages registry, format, theme, csp, period
@@ -83,18 +83,25 @@ UI-ready form `{ value, display, suppressed }` (`value` is 0 for a suppressed co
 
 ### Map API
 
-Both are `GET`, JSON, `Cache-Control: private, no-cache`, `Vary: Cookie`. Thresholds are applied on the server. Bad query:
-400. Not signed in: 401. Role or brand not allowed: 403.
+The contract is `src/server/data/MAPS-CONTRACT.md` (read it before building a map screen). In short, all `GET`, JSON,
+`Cache-Control: private, no-cache`, `Vary: Cookie`, thresholds applied on the server, no person-level field anywhere:
 
-`/api/map/influence?brand=yourtal|snapapp|ftr|all&audience=businesses|people|both&measure=count|per1000&month=YYYY-MM&level=state|h3&res=3..8&bbox=w,s,e,n`
-returns `{ query, unit, cells: [{ id, label?, value, display, suppressed, population?, band }], legend: [{ band, label, min, max }], truncated }`.
-`id` is a state code (`NSW`) or an h3 index. `res` 7 and 8 need `bbox`. Defaults: `brand=all`, `audience=both`,
-`measure=count`, the current month, `level=state`.
+| Endpoint | What |
+|---|---|
+| `/api/map/influence` | cells at `level=state\|sa4\|sa3\|sa2\|h3` (`res=6\|7`; `bbox` required from SA2 down), each with a real `name`, `parent`, `centroid`, `population`, 12-month `trend` and `newThisMonth` |
+| `/api/map/summary` | headline totals, a ranked list of areas with sparklines, and the top movers |
+| `/api/map/area` | one area: parent chain, population, totals per brand and for GOD, 24-month series, age mix, per 1,000 against the nation, rank in its parent |
+| `/api/map/activity` | merchant dots and activity heat (`h3=5\|6\|7`), heat cells named for suburbs |
+| `/api/map/hotspots` | the top activity areas, with suburb name and category mix |
+| `/api/map/activity-area` | one heat cell or SA2: category mix, age mix, top merchants |
 
-`/api/map/activity?category=fuel|groc|cafe|retail|pharm|ent&ageBand=13–17|18–24|...&month=YYYY-MM&h3=5..8&bbox=w,s,e,n`
-returns `{ query, merchants: [{ id, name, category, lat, lon, value, display, suppressed }], heat: [{ id, value, display, suppressed, band }], legend, truncated }`.
-Merchants are businesses (exact shop locations). `heat` is h3 aggregates, never a person-level point. A brand lead gets
-only people who also use their brand. Teen figures use `<20`, and a teen query for a sensitive category is a 400.
+There is no street level: `res=8` is a 400, and the map zoom is capped at suburb size (`MAX_ZOOM` 11.4 in
+`components/maps/zoom.ts`). Bad query: 400. Not signed in: 401. Role or brand not allowed: 403. Unknown area: 404.
+
+Geography is real (`@god/geo`, ABS ASGS Edition 3 and ERP 30 June 2025); the people are synthetic. The outlines are static
+files, `/geo/state.json`, `sa4.json`, `sa3.json`, `sa2.json`, generated from `packages/geo/data` by
+`packages/geo/scripts/emit-public.mjs` when `dev` or `build` runs (not committed, so the data is in git once). They are served
+with `Cache-Control: public, max-age=31536000, immutable`; `mapMeta().geo.levels` gives the versioned URLs.
 
 ## Components
 

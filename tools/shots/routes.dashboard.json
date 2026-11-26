@@ -108,20 +108,7 @@
     "delayMs": 1500
   },
   {
-    "name": "map-sydney-res8",
-    "path": "/map?z=12&lat=-33.87&lon=151.2",
-    "role": "owner",
-    "themes": [
-      "light"
-    ],
-    "widths": [
-      1440
-    ],
-    "waitFor": "[data-map-ready=\"true\"]",
-    "delayMs": 1500
-  },
-  {
-    "name": "map-east-res5",
+    "name": "map-east-sa3",
     "path": "/map?z=6.6&lat=-33&lon=148.5&brand=yourtal&audience=people",
     "role": "owner",
     "themes": [
@@ -274,6 +261,101 @@
     "name": "activity-lead-yourtal",
     "path": "/activity",
     "role": "brand_lead_yourtal",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440
+    ],
+    "waitFor": "[data-map-ready=\"true\"]",
+    "delayMs": 1500
+  },
+  {
+    "name": "map-sa4",
+    "path": "/map?z=5&lat=-31&lon=146&sel=125",
+    "role": "owner",
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "widths": [
+      1440,
+      390
+    ],
+    "waitFor": "[data-map-ready=\"true\"]",
+    "delayMs": 1500
+  },
+  {
+    "name": "map-sa4-per1000",
+    "path": "/map?z=5&lat=-31&lon=146&measure=per1000",
+    "role": "owner",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440
+    ],
+    "waitFor": "[data-map-ready=\"true\"]",
+    "delayMs": 1500
+  },
+  {
+    "name": "map-sa3-east",
+    "path": "/map?z=6.2&lat=-33.4&lon=150.2&brand=yourtal&audience=people",
+    "role": "owner",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440
+    ],
+    "waitFor": "[data-map-ready=\"true\"]",
+    "delayMs": 1500
+  },
+  {
+    "name": "map-sa2-sydney",
+    "path": "/map?z=7.4&lat=-33.87&lon=151.0&sel=125041717",
+    "role": "owner",
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "widths": [
+      1440,
+      390
+    ],
+    "waitFor": "[data-map-ready=\"true\"]",
+    "delayMs": 1500
+  },
+  {
+    "name": "map-sa2-melbourne",
+    "path": "/map?z=7.4&lat=-37.81&lon=144.96",
+    "role": "owner",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440
+    ],
+    "waitFor": "[data-map-ready=\"true\"]",
+    "delayMs": 1500
+  },
+  {
+    "name": "map-sa2-lead-yourtal",
+    "path": "/map?z=7.4&lat=-33.87&lon=151.0",
+    "role": "brand_lead_yourtal",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440
+    ],
+    "waitFor": "[data-map-ready=\"true\"]",
+    "delayMs": 1500
+  },
+  {
+    "name": "map-suburb-cap",
+    "path": "/map?z=14&lat=-33.87&lon=151.2",
+    "role": "owner",
     "themes": [
       "light"
     ],
