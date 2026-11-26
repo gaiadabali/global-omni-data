@@ -86,7 +86,7 @@ let initialised = false;
 function initMapLibre(): void {
   if (initialised) return;
   initialised = true;
-  setWorkerUrl(`/map/maplibre-worker?v=${getVersion()}`);
+  setWorkerUrl(`/maplibre/maplibre-gl-worker.mjs?v=${getVersion()}`);
   const protocol = new Protocol();
   addProtocol("pmtiles", protocol.tile as unknown as Parameters<typeof addProtocol>[1]);
 }

@@ -3,3 +3,6 @@ public/geo/state.json
 public/geo/sa4.json
 public/geo/sa3.json
 public/geo/sa2.json
+
+# Copied from maplibre-gl by scripts/copy-maplibre-worker.mjs at dev and build time
+public/maplibre/

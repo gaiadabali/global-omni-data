@@ -53,7 +53,7 @@ let workerSet = false;
 function initMapLibre(): void {
   if (workerSet) return;
   workerSet = true;
-  setWorkerUrl(`/map/maplibre-worker?v=${getVersion()}`);
+  setWorkerUrl(`/maplibre/maplibre-gl-worker.mjs?v=${getVersion()}`);
 }
 
 /* ---------------- theme tokens, motion, fonts, states ---------------- */
