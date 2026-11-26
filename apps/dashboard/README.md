@@ -149,6 +149,7 @@ stored, logged or sent to the browser.
 | `GET /auth/callback`                     | Deletes the transaction cookie, then refuses or signs in (below).                                                                                                                                                                                                        |
 | `POST /auth/signout`                     | POST only, Origin must be `GOD_PUBLIC_URL`; revokes the session, clears the cookie, goes to `/signin?reason=signed-out`.                                                                                                                                                 |
 | `POST /auth/yourtal/events`              | YourTal's signed events (SET, verified with `jose` against YourTal's JWKS): `account-deleted` and `access-ended` end the person's sessions.                                                                                                                              |
+| `GET /auth/emergency`, `POST /auth/emergency/options`, `POST /auth/emergency/verify` | Emergency Owner sign-in without YourTal (below). |
 | `GET /healthz`                           | `{ ok, signIn: "yourtal" \| "dev" \| "off", store }`. Nothing else.                                                                                                                                                                                                      |
 
 **The callback, in order, before any session exists** (`callback.ts`): the transaction cookie opens and `state`
@@ -164,10 +165,10 @@ under 30 minutes idle and 8 hours old, and the person still active on the allow-
 once a minute. An ended session lands on `/signin?reason=expired`.
 
 **Fresh passkey check** (`fresh.ts`): exports (insight and teens), opening a Person 360 profile, invites and allow-list
-changes need the session's last YourTal sign-in under 5 minutes old with `amr` containing `hwk`. Otherwise the action
+changes, and adding or revoking emergency keys need the session's last YourTal sign-in under 5 minutes old with `amr` containing `hwk`. Otherwise the action
 answers with `/auth/start?fresh=1`, the modal sends the browser there (YourTal asks for the passkey again) and back,
 and the person presses the button again. The handlers refuse when no gate is passed. Revoking sessions needs no fresh
-check: it only protects.
+check: it only protects. An emergency (break-glass) session never passes the gate.
 
 **Settings** (`config.ts`, names in `.env.example`): `YOURTAL_ISSUER`, `GOD_OIDC_CLIENT_ID`, `GOD_OIDC_KEY_FILE`
 (secret), `GOD_PUBLIC_URL`, `GOD_SESSION_SECRET` (secret, 32 bytes or more). With dev sign-in off, a missing or bad
@@ -184,8 +185,25 @@ It prints the public JWKS: that goes to YourTal as `/opt/yourtal/secrets/oidc/cl
 `form-action` to a form's redirects too). Sign-out is a form POST to this origin, answered with a redirect to
 `/signin`, also this origin.
 
-**TODO (founder decision, god TASKS 9.0.d): the break-glass Owner login** for when YourTal is down. Nothing is built
-for it: until it is decided, a YourTal outage stops new sign-ins (open sessions carry on).
+## Emergency Owner access (break-glass, `src/server/breakglass/`)
+
+Founder decision 2026-11-27: one sealed emergency Owner key, local to the dashboard, for when YourTal is down. It is a
+WebAuthn credential (a hardware security key or a passkey) registered with **this dashboard** as the relying party
+(RP ID = the host of `GOD_PUBLIC_URL`, origin = `GOD_PUBLIC_URL`), never with YourTal. `@simplewebauthn/server` and
+`@simplewebauthn/browser` (14.x, as YourTal), user verification required every time. Nothing new to configure: it is on
+whenever real sign-in is configured, and off while dev sign-in is on. Lead's steps: `infra/dashboard/RUNBOOK.md`,
+"Emergency Owner access".
+
+| Piece | What |
+| --- | --- |
+| Store | `BreakGlassStore` (`store/types.ts`), memory and Postgres (migration 0003). Only the public key, credential id, counter, Owner entry id, created, last used and revoked. At most one active key per Owner and two in total, enforced in the database too. |
+| Enrolment | Admin, Emergency access (`enrol.ts`, server actions in `actions.ts`). An Owner in a normal YourTal session, the fresh passkey check, and a one-time code the lead makes on the server (`node /app/db/src/cli.ts break-glass-code --owner <id>`, 15 minutes, used once, only its SHA-256 stored; `god_app` cannot make one). Two people: server access plus an Owner session. |
+| Sign-in | `/auth/emergency` (not in any nav, not linked from `/signin`), one button. `POST /auth/emergency/options` (rate limit: 5 per network prefix and 20 in total per 15 minutes; a single-use 2-minute challenge, no key named) and `POST /auth/emergency/verify` (`signin.ts`): the key is active, its Owner entry is active with role owner, signature, origin, RP ID and user verification check out, the counter moves forward. Then a normal session row with `amr: ["hwk","break-glass"]` and an absolute limit of **1 hour** (the database checks it too). |
+| Least power | An emergency session (`viewer.breakGlass`) reads every Owner page and can revoke sessions. It cannot export (including the print view by URL), open a Person 360 profile, invite or change the allow-list, or add or revoke emergency keys. Enforced twice on the server: `allowedInEmergency` in the handlers (`access.ts`) and the fresh passkey gate, which fails closed for an emergency session with no way to step up; the data layer refuses export views and profiles too. Every screen shows "Emergency access. Every action is recorded." |
+| Alert | Audit events `breakglass.code`, `.enrol`, `.revoke`, `.signin`, `.refused` (every refusal). `notifyBreakGlass` (`notify.ts`) writes one JSON line to stderr (`docker logs`). **TODO for the lead:** wire it to the ERP alert route. |
+
+The ceremonies and the rate limit live in process memory (one Node process on Helios): a restart forgets open
+ceremonies and resets the limit.
 
 ## Dev sign-in
 
