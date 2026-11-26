@@ -6,3 +6,4 @@ export * from "./profiles";
 export * from "./series";
 export * from "./insight";
 export * from "./person";
+export * from "./person-map";

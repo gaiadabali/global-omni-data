@@ -1,4 +1,4 @@
-import { allProfiles, featuredProfiles } from "@god/synthetic";
+import { allProfiles, featuredMapProfile, featuredProfiles } from "@god/synthetic";
 import type { SeedEvent } from "./memory";
 
 /**
@@ -13,6 +13,8 @@ export function seedAuditEvents(nowMs: number): SeedEvent[] {
     .map((p) => p.id);
   const other = (i: number) => adults[i] ?? adult.id;
   const minutesAgo = (m: number) => new Date(nowMs - m * 60_000).toISOString();
+  // The profile with the fullest activity map, opened as well, so a fresh server can show it (and the screenshots do).
+  const mapPerson = featuredMapProfile();
 
   return [
     { when: "2026-11-18T10:05:00+11:00", who: "dev-owner", action: "allowlist.change", target: "@sam.ortega", reason: "Added as brand lead for YourTal" },
@@ -28,5 +30,11 @@ export function seedAuditEvents(nowMs: number): SeedEvent[] {
     { when: "2026-11-26T08:44:00+11:00", who: "dev-data", action: "person.open", target: other(2), reason: "Confirm a geocoding result: home placed at postcode level" },
     { when: minutesAgo(6), who: "dev-owner", action: "person.open", target: adult.id, reason: "Check a sync or merge problem: three accounts joined, confirming the links" },
     { when: minutesAgo(3), who: "dev-data", action: "person.open", target: adult.id, reason: "Confirm a geocoding result: home area looks too wide" },
+    ...(mapPerson && mapPerson.id !== adult.id
+      ? [
+          { when: minutesAgo(5), who: "dev-owner", action: "person.open", target: mapPerson.id, reason: "Confirm a geocoding result: check the activity areas" },
+          { when: minutesAgo(2), who: "dev-data", action: "person.open", target: mapPerson.id, reason: "Confirm a geocoding result: outliers look far from home" },
+        ] satisfies SeedEvent[]
+      : []),
   ];
 }

@@ -1,5 +1,7 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { allProfiles, featuredProfiles, teenEntities } from "@god/synthetic";
+import { allProfiles, featuredMapProfile, featuredProfiles, generateMerchants, generateProfileDetail, teenEntities } from "@god/synthetic";
 import { createMemoryAuditLog } from "../audit";
 import { createMemoryAllowList, createMemorySessionStore } from "../store/memory";
 import { ALLOW_LIST_SEED, devSessionSeed } from "../store/seed";
@@ -323,7 +325,71 @@ describe("Person 360", () => {
       const got = await syntheticData.personGet(p.id);
       if (got.kind !== "profile") continue;
       for (const pl of got.profile.places) expect(pl.category).not.toBe("pharm");
-      for (const d of got.profile.dots) expect(d.category).not.toBe("pharm");
+      for (const o of got.profile.activity?.outliers ?? []) expect(o.category).not.toBe("pharm");
+      for (const a of got.profile.activity?.areas ?? [])
+        for (const c of a.categories) expect(c.category).not.toBe("pharm");
+    }
+  });
+
+  it("activity areas and outliers: every receipt count is a RawCount from the provider and a presented count for the page", async () => {
+    const id = adults.find((p) => {
+      const g = generateProfileDetail(p as Parameters<typeof generateProfileDetail>[0]);
+      return g.activity !== null && g.activity.areas.length >= 2 && g.activity.outliers.length > 0;
+    })?.id;
+    expect(id).toBeTruthy();
+    const raw = await syntheticData.personGet(id!);
+    if (raw.kind !== "profile") throw new Error("expected a profile");
+    const a = raw.profile.activity!;
+    expect(isRawCount(a.totalReceipts)).toBe(true);
+    for (const x of a.areas) {
+      expect(isRawCount(x.receipts)).toBe(true);
+      for (const c of x.categories) expect(isRawCount(c.receipts)).toBe(true);
+    }
+    for (const p of a.points) expect(isRawCount(p.receipts)).toBe(true);
+
+    // Through the page's door: Owner and Data team see the exact small count, marked small; nothing raw is left.
+    for (const role of ["owner", "data"]) {
+      const audit = createMemoryAuditLog();
+      const d = getDashboardData(viewer(role), syntheticData, audit);
+      await d.personOpen(id!, "Confirm a geocoding result: home area looks too wide");
+      const got = await d.personGet(id!);
+      if (got.kind !== "profile") throw new Error("expected a profile");
+      expect(raws(got.profile)).toEqual([]);
+      const act = got.profile.activity!;
+      expect(act.areas.length).toBe(a.areas.length);
+      for (const [i, x] of act.areas.entries()) {
+        expect(x.receipts.value).toBe(a.areas[i]!.receipts.n);
+        expect(typeof x.receipts.display).toBe("string");
+        expect(x.receipts.suppressed).toBe(x.receipts.value < 10);
+      }
+      // The fences are plain GeoJSON after presentation.
+      expect(["Polygon", "MultiPolygon"]).toContain(act.areas[0]!.fence.type);
+      expect(act.outliers.length).toBe(a.outliers.length);
+    }
+  });
+
+  it("the screenshot route for the activity map opens the featured map profile (an adult with areas and outliers)", async () => {
+    const routes = JSON.parse(readFileSync(resolve(process.cwd(), "../../tools/shots/routes.dashboard.json"), "utf8")) as {
+      name: string;
+      path: string;
+    }[];
+    const route = routes.find((r) => r.name === "person-map-owner");
+    const p = featuredMapProfile();
+    expect(p).not.toBeNull();
+    expect(route?.path).toBe(`/person?id=${p!.id}`);
+    const a = generateProfileDetail(p!).activity!;
+    expect(a.areas.length).toBeGreaterThanOrEqual(2);
+    expect(a.outliers.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("the activity map never carries a shop's own coordinates", async () => {
+    const merchants = new Set(generateMerchants().map((m) => `${m.lat},${m.lon}`));
+    for (const p of adults.slice(0, 40)) {
+      const got = await syntheticData.personGet(p.id);
+      if (got.kind !== "profile" || !got.profile.activity) continue;
+      const a = got.profile.activity;
+      for (const pt of a.points) expect(merchants.has(`${pt.lat},${pt.lon}`)).toBe(false);
+      for (const o of a.outliers) expect(merchants.has(`${o.lat},${o.lon}`)).toBe(false);
     }
   });
 
