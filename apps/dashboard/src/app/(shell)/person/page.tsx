@@ -65,6 +65,11 @@ export default async function PersonPage({ searchParams }: Props) {
           </button>
         </form>
 
+        {viewer.breakGlass ? (
+          <Callout tone="warn">
+            Emergency access: profiles can&apos;t be opened. The list shows ids only.
+          </Callout>
+        ) : null}
         {outcome ? (
           <p className="small">
             <Link href={q ? `/person?q=${encodeURIComponent(q)}` : "/person"}>Back to the list of profiles</Link>
@@ -99,7 +104,7 @@ export default async function PersonPage({ searchParams }: Props) {
                       )}
                     </div>
                   </div>
-                  {p.teen ? (
+                  {viewer.breakGlass ? null : p.teen ? (
                     <Link className="btn sm" href={`/person?id=${p.id}`} prefetch={false}>
                       Open
                     </Link>
@@ -143,6 +148,14 @@ export default async function PersonPage({ searchParams }: Props) {
             }
           >
             Teen data is checked through the verification runs on the Data quality page. This attempt has been logged.
+          </EmptyState>
+        </Card>
+      ) : null}
+
+      {outcome?.kind === "emergency-refused" ? (
+        <Card title="Not available in emergency access">
+          <EmptyState title="Profiles can't be opened in an emergency session">
+            Person 360 needs a normal sign-in with YourTal. This attempt has been logged.
           </EmptyState>
         </Card>
       ) : null}

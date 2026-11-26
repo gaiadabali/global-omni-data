@@ -15,6 +15,14 @@
 dialog.modal {
   text-align: left;
 }
+.bg-steps {
+  margin: 0;
+  padding-left: 20px;
+  list-style: decimal;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
 .pad {
   padding: 0 16px 6px;
 }

@@ -134,3 +134,35 @@ describe("the overview for a brand lead", () => {
     );
   });
 });
+
+/** Every string in an element tree's props (titles, children), without rendering it. */
+function textOf(node: unknown, seen = new WeakSet<object>()): string {
+  if (typeof node === "string" || typeof node === "number") return String(node);
+  if (!node || typeof node !== "object" || seen.has(node)) return "";
+  seen.add(node);
+  if (Array.isArray(node)) return node.map((n) => textOf(n, seen)).join(" ");
+  const props = (node as { props?: Record<string, unknown> }).props;
+  return props ? Object.values(props).map((v) => textOf(v, seen)).join(" ") : "";
+}
+
+describe("an emergency (break-glass) Owner session", () => {
+  beforeEach(() => vi.mocked(getViewer).mockReset());
+  const emergency: Viewer = { ...V.owner!, breakGlass: true };
+
+  it("reads the Owner's pages, but gets a 403 on an export view even by its URL", async () => {
+    vi.mocked(getViewer).mockResolvedValue(emergency);
+    for (const page of [InsightPage, TeensPage, PersonPage, AdminPage]) {
+      await expect(page(empty)).resolves.toBeTruthy();
+    }
+    await expect(InsightPage({ searchParams: Promise.resolve({ print: "1" }) })).rejects.toThrow("FORBIDDEN");
+    await expect(TeensPage({ searchParams: Promise.resolve({ print: "1", entity: "kidzone" }) })).rejects.toThrow(
+      "FORBIDDEN",
+    );
+  });
+
+  it("opens no profile from a link", async () => {
+    vi.mocked(getViewer).mockResolvedValue(emergency);
+    const text = textOf(await PersonPage({ searchParams: Promise.resolve({ id: "G-AAAA-BBBB" }) }));
+    expect(text).toMatch(/emergency session/);
+  });
+});

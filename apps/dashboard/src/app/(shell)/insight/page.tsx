@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { forbidden } from "next/navigation";
 import "@/components/pages/pages.css";
 import { AudienceReport } from "@/components/insight/AudienceReport";
 import { EntityPicker } from "@/components/insight/EntityPicker";
@@ -22,6 +23,8 @@ export default async function InsightPage({ searchParams }: Props) {
   const viewer = requirePage(await getViewer(), "insight");
   const sp = await searchParams;
   const print = first(sp.print) === "1";
+  // An export view, even opened by its URL, is not for an emergency (break-glass) session. The data layer refuses too.
+  if (print && viewer.breakGlass) forbidden();
   const data = getDashboardData(viewer);
 
   // An unknown ?entity= falls back to the first report instead of failing.
@@ -58,7 +61,7 @@ export default async function InsightPage({ searchParams }: Props) {
       <PageHeader
         title={PAGES.insight.title}
         sub={PAGES.insight.sub}
-        actions={<ExportButton kind="insight" entity={entity.id} reportName={`Brand insight report: ${entity.name}`} />}
+        actions={viewer.breakGlass ? null : <ExportButton kind="insight" entity={entity.id} reportName={`Brand insight report: ${entity.name}`} />}
       />
       <Card>
         <div className="row picker-row">

@@ -536,6 +536,19 @@
     ]
   },
   {
+    "name": "emergency-signin",
+    "path": "/auth/emergency",
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "widths": [
+      1440,
+      390
+    ],
+    "delayMs": 300
+  },
+  {
     "name": "no-role-home",
     "path": "/",
     "themes": [
@@ -900,6 +913,20 @@
     "role": "owner",
     "themes": [
       "light"
+    ],
+    "widths": [
+      1440,
+      390
+    ],
+    "delayMs": 300
+  },
+  {
+    "name": "admin-emergency",
+    "path": "/admin?tab=emergency",
+    "role": "owner",
+    "themes": [
+      "light",
+      "dark"
     ],
     "widths": [
       1440,

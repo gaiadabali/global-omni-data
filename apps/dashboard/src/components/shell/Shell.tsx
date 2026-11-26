@@ -85,6 +85,13 @@ export function Shell({
           </div>
         </aside>
         <div className="shell">
+          {viewer.breakGlass ? (
+            // On every screen of an emergency session. Not dismissible.
+            <div className="emergency-bar" role="status">
+              <Icon name="key" />
+              <span>Emergency access. Every action is recorded.</span>
+            </div>
+          ) : null}
           <div className="topbar">
             {/* eslint-disable-next-line @next/next/no-img-element -- see above */}
             <img className="logo" src="/god-logo.png" alt="GOD" width="71" height="28" />
