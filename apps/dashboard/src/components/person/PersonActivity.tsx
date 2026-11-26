@@ -73,11 +73,11 @@ function outsideAreas(a: PersonActivity): number {
  * Person 360, "Receipts and activity areas": the map, a legend, and two lists (areas, outliers). A row highlights
  * its feature on the map and the other way round. Suburb precision only: nothing here knows a street.
  */
-export function PersonActivityPanel({ activity }: { activity: PersonActivity }) {
-  const [view, setView] = useState<ActivityView>(() => defaultView(activity));
+export function PersonActivityPanel({ activity, initialView, initialSelected }: { activity: PersonActivity; initialView?: ActivityView; initialSelected?: string }) {
+  const [view, setView] = useState<ActivityView>(() => initialView ?? defaultView(activity));
   const [fitN, setFitN] = useState(0);
   const [hover, setHover] = useState<string | null>(null);
-  const [selected, setSelected] = useState<string | null>(null);
+  const [selected, setSelected] = useState<string | null>(initialSelected ?? null);
   const [focus, setFocus] = useState<MapFocus | null>(null);
 
   const far = hasFarOutliers(activity);

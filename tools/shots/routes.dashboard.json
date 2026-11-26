@@ -872,6 +872,50 @@
     "delayMs": 500
   },
   {
+    "name": "person-map-all-owner",
+    "path": "/person?id=G-Q8AW-N2G4&mapview=all",
+    "role": "owner",
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "widths": [
+      1440,
+      390
+    ],
+    "waitFor": "[data-map-ready=\"true\"]",
+    "delayMs": 500
+  },
+  {
+    "name": "person-map-area-owner",
+    "path": "/person?id=G-Q8AW-N2G4&mapsel=area:work",
+    "role": "owner",
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "widths": [
+      1440,
+      390
+    ],
+    "waitFor": "[data-map-ready=\"true\"]",
+    "delayMs": 500
+  },
+  {
+    "name": "person-map-outlier-owner",
+    "path": "/person?id=G-Q8AW-N2G4&mapview=all&mapsel=out:o1",
+    "role": "owner",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440,
+      390
+    ],
+    "waitFor": "[data-map-ready=\"true\"]",
+    "delayMs": 500
+  },
+  {
     "name": "person-teen-refusal",
     "path": "/person?id=G-5RJD-68WR",
     "role": "owner",

@@ -29,7 +29,7 @@ function groupByMerchant(places: PersonProfile["places"]) {
  * An opened adult profile (Owner and Data team only, after a recorded reason). Pseudonymous: a GOD id and bands,
  * no name, email, phone or address. The receipt figures are this one person's own history, not aggregates.
  */
-export function ProfileView({ p, accessedBy }: { p: PersonProfile; accessedBy: AccessEntry[] }) {
+export function ProfileView({ p, accessedBy, mapView, mapSelected }: { p: PersonProfile; accessedBy: AccessEntry[]; mapView?: "areas" | "all"; mapSelected?: string }) {
   const groups = groupByMerchant(p.places);
   return (
     <div className="stack">
@@ -93,7 +93,7 @@ export function ProfileView({ p, accessedBy }: { p: PersonProfile; accessedBy: A
 
       <Card title="Receipts and activity areas">
         {p.activity ? (
-          <PersonActivityPanel activity={p.activity} />
+          <PersonActivityPanel activity={p.activity} {...(mapView ? { initialView: mapView } : {})} {...(mapSelected ? { initialSelected: mapSelected } : {})} />
         ) : (
           <p className="small muted">No receipts: this person does not use SnapApp.</p>
         )}
