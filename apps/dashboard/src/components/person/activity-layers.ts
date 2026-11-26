@@ -63,6 +63,11 @@ export function readActivityTokens(el: Element): ActivityTokens {
 }
 
 export const rgbCss = (c: RGB): string => `rgb(${c[0]}, ${c[1]}, ${c[2]})`;
+const mixRgb = (a: RGB, b: RGB, pct: number): RGB => [
+  Math.round(a[0] + (b[0] - a[0]) * pct),
+  Math.round(a[1] + (b[1] - a[1]) * pct),
+  Math.round(a[2] + (b[2] - a[2]) * pct),
+];
 const withAlpha = (c: RGB, a: number): RGBA => [c[0], c[1], c[2], Math.round(Math.max(0, Math.min(1, a)) * 255)];
 
 /** Inter, already loaded by the page, so deck.gl's text atlas needs no glyph server. */
@@ -74,19 +79,22 @@ export const LABEL_FONT_SPEC = '600 13px "Inter Variable"';
 export interface ActivityLayerInput {
   activity: PersonActivity;
   tokens: ActivityTokens;
-  /** The state outlines, for land at the national view. */
+  /** The state outlines: the dimmed land beyond the neighbourhood the SA2 outlines cover. */
   states: unknown;
-  /** True while the map is zoomed out to the country: land is then the state outlines. */
-  national: boolean;
+  /** Draw the faint line from each outlier to the area it is measured from (the whole-picture view). */
+  showLinks: boolean;
   /** The id under the pointer or the list row (area:home, out:o1), or null. */
   hover: string | null;
   /** The id that was clicked. */
   selected: string | null;
   fontReady: boolean;
+  /** The labels that fit without touching another one (area:home, out:o1 ...), or null before the first measure. */
+  labelKeys: ReadonlySet<string> | null;
+  /** Outlier labels that go to the left of their ring (near the right edge of the map). */
+  labelsLeft: ReadonlySet<string>;
+  /** Mark each area with a dot too: at the whole-country view a fence is only a few pixels wide. */
+  markAreas: boolean;
 }
-
-/** Below this zoom the land is the state outlines; above it, the SA2 outlines (a finer coast). */
-export const STATE_ZOOM = 6.8;
 
 interface FenceProps {
   id: string;
@@ -122,20 +130,20 @@ export function activityLayers(i: ActivityLayerInput): LayersList {
       new GeoJsonLayer({
         id: "states",
         data: i.states as never,
-        visible: i.national,
         pickable: false,
         stroked: true,
         filled: true,
         lineWidthUnits: "pixels",
         lineWidthMinPixels: 1,
-        getFillColor: withAlpha(t.land, 1),
-        getLineColor: withAlpha(t.line, 1),
+        // Land beyond the neighbourhood is dimmed: the bright part is the area the SA2 outlines cover.
+        getFillColor: withAlpha(mixRgb(t.sea, t.land, 0.5), 1),
+        getLineColor: withAlpha(t.line, 0.6),
         updateTriggers: { getFillColor: [t], getLineColor: [t] },
       }),
     );
   }
 
-  // The SA2 outlines near the areas: land and faint context. Same fill as the states, so only the edge differs.
+  // The SA2 outlines near the areas: land and faint context, at full brightness.
   layers.push(
     new GeoJsonLayer({
       id: "context",
@@ -203,7 +211,7 @@ export function activityLayers(i: ActivityLayerInput): LayersList {
   layers.push(
     new LineLayer<ActivityOutlier>({
       id: "outlier-links",
-      data: links,
+      data: i.showLinks ? links : [],
       pickable: false,
       getSourcePosition: (o) => [o.lon, o.lat],
       getTargetPosition: (o) => centreOf.get(o.from as PersonAreaKind)!,
@@ -213,6 +221,25 @@ export function activityLayers(i: ActivityLayerInput): LayersList {
       updateTriggers: { getColor: [t, hover, selected], getWidth: [hover, selected] },
     }),
   );
+
+  if (i.markAreas) {
+    layers.push(
+      new ScatterplotLayer({
+        id: "area-marks",
+        data: a.areas,
+        pickable: false,
+        getPosition: (d: PersonActivity["areas"][number]): [number, number] => [d.centre.lon, d.centre.lat],
+        getRadius: 6.5,
+        radiusUnits: "pixels",
+        stroked: true,
+        lineWidthUnits: "pixels",
+        getLineWidth: 2,
+        getFillColor: (d: PersonActivity["areas"][number]) => withAlpha(t.kinds[d.kind], 1),
+        getLineColor: withAlpha(t.land, 1),
+        updateTriggers: { getFillColor: [t], getLineColor: [t] },
+      }),
+    );
+  }
 
   // Receipt dots, inside the fences. Each is a cell centre (or a suburb point), with the receipts stacked on it.
   layers.push(
@@ -279,26 +306,26 @@ export function activityLayers(i: ActivityLayerInput): LayersList {
     layers.push(
       new TextLayer<PersonActivity["areas"][number]>({
         id: "area-labels",
-        data: a.areas,
+        data: a.areas.filter((x) => !i.labelKeys || i.labelKeys.has(areaKey(x.kind))),
         getPosition: (d) => [d.centre.lon, d.centre.lat],
         getText: (d) => d.label,
         getSize: (d) => (emphasised(areaKey(d.kind)) ? 14 : 12.5),
         getTextAnchor: "middle",
         getAlignmentBaseline: "bottom",
-        getPixelOffset: [0, -10],
+        getPixelOffset: [0, i.markAreas ? -12 : -18],
         updateTriggers: { getSize: [hover, selected], getColor: [t], outlineColor: [t] },
         ...text,
       }),
       new TextLayer<ActivityOutlier>({
         id: "outlier-labels",
-        data: outlierLabels(a),
+        data: outlierLabels(a).filter((o) => !i.labelKeys || i.labelKeys.has(outlierKey(o.id))),
         getPosition: (d) => [d.lon, d.lat],
         getText: (d) => d.suburb,
         getSize: 12,
-        getTextAnchor: "start",
+        getTextAnchor: (d) => (i.labelsLeft.has(outlierKey(d.id)) ? "end" : "start"),
         getAlignmentBaseline: "center",
-        getPixelOffset: [13, 0],
-        updateTriggers: { getColor: [t], outlineColor: [t] },
+        getPixelOffset: (d) => [i.labelsLeft.has(outlierKey(d.id)) ? -13 : 13, 0],
+        updateTriggers: { getColor: [t], outlineColor: [t], getTextAnchor: [i.labelsLeft], getPixelOffset: [i.labelsLeft] },
         ...text,
         getColor: withAlpha(t.dark ? t.outlier : [180, 30, 38], 1),
       }),

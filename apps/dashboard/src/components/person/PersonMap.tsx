@@ -17,6 +17,7 @@ import { fmtDate } from "@/lib/dates";
 import {
   areaKey,
   outlierKey,
+  outlierLabels,
   tipForArea,
   tipForOutlier,
   type ActivityView,
@@ -47,8 +48,6 @@ export interface PersonMapProps {
 
 const MIN_ZOOM = 2.5;
 const MAX_ZOOM = 13;
-/** Below this the land is the state outlines (the SA2 outlines only cover the neighbourhood of the areas). */
-const NATIONAL_ZOOM = 6.8;
 
 let workerSet = false;
 function initMapLibre(): void {
@@ -157,8 +156,9 @@ export default function PersonMap(props: PersonMapProps) {
   const mapRef = useRef<MapLibreMap | null>(null);
   const overlayRef = useRef<MapboxOverlay | null>(null);
   const [loaded, setLoaded] = useState(false);
-  const [national, setNational] = useState(false);
   const [readyMs, setReadyMs] = useState<number | null>(null);
+  const [labelKeys, setLabelKeys] = useState<ReadonlySet<string> | null>(null);
+  const [labelsLeft, setLabelsLeft] = useState<ReadonlySet<string>>(new Set());
   const [failed, setFailed] = useState<string | null>(null);
   const [tip, setTip] = useState<{ x: number; y: number; content: TipContent } | null>(null);
   const tokensRef = useLatest(tokens);
@@ -251,13 +251,36 @@ export default function PersonMap(props: PersonMapProps) {
     map.on("load", () => {
       map.addControl(overlay as unknown as IControl);
       setLoaded(true);
-      setNational(map.getZoom() < NATIONAL_ZOOM);
     });
-    // Only a change of side is worth a render: the land is the states below this zoom, the SA2 outlines above.
-    map.on("zoom", () => {
-      const n = map.getZoom() < NATIONAL_ZOOM;
-      setNational((prev) => (prev === n ? prev : n));
-    });
+    // Keep the labels that fit: areas first, then outliers, each only if it does not touch one already kept.
+    const declutter = () => {
+      const a = latest.current.activity;
+      const mark = latest.current.view === "all";
+      const kept: { x0: number; y0: number; x1: number; y1: number }[] = [];
+      const keys = new Set<string>();
+      const left = new Set<string>();
+      const width = container.clientWidth;
+      const place = (key: string, lon: number, lat: number, text: string, kind: "area" | "outlier") => {
+        const p = map.project([lon, lat]);
+        const w = text.length * 7 + 8;
+        const r =
+          kind === "area"
+            ? { x0: p.x - w / 2, x1: p.x + w / 2, y0: p.y - (mark ? 12 : 18) - 16, y1: p.y - (mark ? 12 : 18) + 2 }
+            : p.x + 13 + w > width - 8
+              ? { x0: p.x - 13 - w, x1: p.x - 11, y0: p.y - 9, y1: p.y + 9 }
+              : { x0: p.x + 11, x1: p.x + 13 + w, y0: p.y - 9, y1: p.y + 9 };
+        if (kept.some((k) => r.x0 < k.x1 + 4 && r.x1 > k.x0 - 4 && r.y0 < k.y1 + 2 && r.y1 > k.y0 - 2)) return;
+        kept.push(r);
+        keys.add(key);
+        if (kind === "outlier" && p.x + 13 + w > width - 8) left.add(key);
+      };
+      for (const x of a.areas) place(areaKey(x.kind), x.centre.lon, x.centre.lat, x.label, "area");
+      for (const o of outlierLabels(a)) place(outlierKey(o.id), o.lon, o.lat, o.suburb, "outlier");
+      setLabelsLeft((prev) => (prev.size === left.size && [...left].every((k) => prev.has(k)) ? prev : left));
+      setLabelKeys((prev) => (prev && prev.size === keys.size && [...keys].every((k) => prev.has(k)) ? prev : keys));
+    };
+    map.on("moveend", declutter);
+    map.on("load", declutter);
     map.on("error", (e) => {
       const message = (e as unknown as { error?: { message?: string } }).error?.message ?? "";
       if (/worker|webgl/i.test(message)) setFailed(message);
@@ -323,8 +346,8 @@ export default function PersonMap(props: PersonMapProps) {
   }, [focus]);
 
   const layers = useMemo(
-    () => (tokens ? activityLayers({ activity, tokens, states, national, hover, selected, fontReady }) : []),
-    [activity, tokens, states, national, hover, selected, fontReady],
+    () => (tokens ? activityLayers({ activity, tokens, states, showLinks: view === "all", markAreas: view === "all", labelKeys, labelsLeft, hover, selected, fontReady }) : []),
+    [activity, tokens, states, view, labelKeys, labelsLeft, hover, selected, fontReady],
   );
   useEffect(() => {
     if (!loaded) return;

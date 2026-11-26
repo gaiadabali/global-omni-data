@@ -56,6 +56,12 @@
   gap: 8px;
   min-width: 0;
 }
+@media (min-width: 1061px) {
+  .pa-mapcol {
+    position: sticky;
+    top: 16px;
+  }
+}
 @media (max-width: 1060px) {
   .pa-grid {
     grid-template-columns: minmax(0, 1fr);
