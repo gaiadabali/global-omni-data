@@ -451,6 +451,8 @@ export interface SessionRow {
   /** ISO time */
   lastActive: string;
   passkey: boolean;
+  /** An emergency (break-glass) session: an hour at most, read-only apart from revoking sessions. */
+  emergency: boolean;
   current: boolean;
 }
 

@@ -1,3 +1,4 @@
+import { isBreakGlassSession } from "../store/limits";
 import type { AllowEntry, SessionRecord, Stores } from "../store/types";
 import { sameString, subLabel } from "./crypto";
 import { isFreshAuth } from "./fresh";
@@ -133,6 +134,9 @@ export async function handleCallback(
     const current = await resolveSession(input.sessionToken, stores, now);
     if (current.kind !== "ok" || current.session.id !== txn.freshFor)
       return refuse("expired", "Passkey check for a session that has ended", sub);
+    // An emergency session stays one: a YourTal check cannot lift its limits. Sign in with YourTal instead.
+    if (isBreakGlassSession(current.session))
+      return refuse("retry", "Passkey check asked for an emergency session; refused", sub);
     if (current.entry.yourtalSub !== sub) {
       // Someone else's YourTal account answered this person's check: end the session.
       await stores.sessions.revoke(current.session.id, "sign-in", at);

@@ -1,6 +1,6 @@
 import { TODAY, fmtDate, isIsoDate } from "@/lib/dates";
-import { canAccessPage } from "../access";
-import { FRESH_REFUSED, type FreshGate } from "../auth/fresh";
+import { allowedInEmergency, canAccessPage, type GuardedAction } from "../access";
+import { EMERGENCY_REFUSED, FRESH_REFUSED, type FreshGate } from "../auth/fresh";
 import { getDashboardData } from "../data";
 import type { DashboardData } from "../data/types";
 import { getStores } from "../store";
@@ -39,9 +39,28 @@ export interface Fail {
 
 const str = (v: unknown, max = 500): string => (typeof v === "string" ? v.slice(0, max) : "");
 
-function gate(viewer: Viewer | null, page: "insight" | "teens" | "person" | "admin"): Fail | null {
+/**
+ * Who may do it: signed in, a role that may open the page, and (for an emergency session) an action an emergency
+ * session may take. An emergency refusal is itself recorded.
+ */
+async function gate(
+  viewer: Viewer | null,
+  page: "insight" | "teens" | "person" | "admin",
+  action: GuardedAction,
+  deps: Pick<Deps, "audit">,
+): Promise<Fail | null> {
   if (!viewer) return { ok: false, error: "Sign in required." };
   if (!canAccessPage(viewer, page)) return { ok: false, error: "Your role cannot do this." };
+  if (!allowedInEmergency(viewer, action)) {
+    await (deps.audit ?? getAuditLog()).append({
+      who: viewer.id,
+      action: "breakglass.refused",
+      target: action,
+      reason: `Refused in emergency access: ${action}`,
+      outcome: "refused",
+    });
+    return { ok: false, error: EMERGENCY_REFUSED };
+  }
   return null;
 }
 
@@ -62,7 +81,7 @@ export async function handleOpenProfile(
   input: { id: string; reasonId: string; note: string },
   deps: Deps = {},
 ): Promise<OpenResult> {
-  const denied = gate(viewer, "person");
+  const denied = await gate(viewer, "person", "person.open", deps);
   if (denied || !viewer) return denied ?? { ok: false, error: "Sign in required." };
   const id = str(input.id, 20).trim().toUpperCase();
   const reason = buildReason(str(input.reasonId, 40), str(input.note, 1000));
@@ -87,7 +106,7 @@ export async function handleExport(
 ): Promise<ExportResult> {
   const kind = input.kind === "teens" ? "teens" : input.kind === "insight" ? "insight" : null;
   if (!kind) return { ok: false, error: "Unknown report." };
-  const denied = gate(viewer, kind);
+  const denied = await gate(viewer, kind, "export", deps);
   if (denied || !viewer) return denied ?? { ok: false, error: "Sign in required." };
   const entity = str(input.entity, 40);
   const audit = deps.audit ?? getAuditLog();
@@ -151,7 +170,7 @@ export async function handleInvite(
   input: InviteInput,
   deps: Deps = {},
 ): Promise<InviteResult> {
-  const denied = gate(viewer, "admin");
+  const denied = await gate(viewer, "admin", "allowlist.invite", deps);
   if (denied || !viewer) return denied ?? { ok: false, error: "Sign in required." };
 
   const name = str(input.name, 80).trim();
@@ -211,7 +230,7 @@ export async function handleAllowListChange(
   input: { id: string; change: string },
   deps: Deps = {},
 ): Promise<ChangeResult> {
-  const denied = gate(viewer, "admin");
+  const denied = await gate(viewer, "admin", "allowlist.change", deps);
   if (denied || !viewer) return denied ?? { ok: false, error: "Sign in required." };
   const change = Object.hasOwn(CHANGES, input.change)
     ? (input.change as keyof typeof CHANGES)
@@ -260,7 +279,7 @@ export async function handleRevokeSession(
   input: { sessionId: string },
   deps: Deps = {},
 ): Promise<RevokeResult> {
-  const denied = gate(viewer, "admin");
+  const denied = await gate(viewer, "admin", "session.revoke", deps);
   if (denied || !viewer) return denied ?? { ok: false, error: "Sign in required." };
   const audit = deps.audit ?? getAuditLog();
   const stores = deps.stores ?? getStores();
@@ -291,7 +310,7 @@ export async function handleRevokeAllForPerson(
   input: { personId: string },
   deps: Deps = {},
 ): Promise<RevokeResult> {
-  const denied = gate(viewer, "admin");
+  const denied = await gate(viewer, "admin", "session.revoke", deps);
   if (denied || !viewer) return denied ?? { ok: false, error: "Sign in required." };
   const stores = deps.stores ?? getStores();
   const entry = await stores.allowList.find(str(input.personId, 60));

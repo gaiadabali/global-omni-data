@@ -9,7 +9,9 @@ import {
 import type { BrandId, Viewer } from "../types";
 import { deviceLabel } from "../auth/session";
 import { getStores } from "../store";
-import type { AllowEntry, Stores } from "../store/types";
+import { isBreakGlassSession } from "../store/limits";
+import type { AllowEntry, BreakGlassStore, Stores } from "../store/types";
+import { keyLabel } from "../breakglass/notify";
 import {
   presentActivity,
   presentInfluence,
@@ -71,6 +73,7 @@ export const PERSON_GRANT_MS = 30 * 60_000;
 /** What a page gets for a Person 360 id. A teen is refused: there is no variant that carries a teen profile. */
 export type PersonOutcome =
   | { kind: "profile"; profile: PersonProfileRaw }
+  | { kind: "emergency-refused"; id: string }
   | { kind: "needs-reason"; id: string }
   | { kind: "teen-refused"; id: string }
   | { kind: "not-found" };
@@ -97,6 +100,17 @@ export interface AuditRow {
   outcome: "done" | "refused";
 }
 
+/** One emergency (break-glass) key, as Admin shows it. The public key never leaves the server. */
+export interface BreakGlassKeyRow {
+  credentialId: string;
+  label: string;
+  ownerId: string;
+  owner: string;
+  added: string;
+  lastUsed: string | null;
+  revoked: string | null;
+}
+
 export interface AuditView {
   rows: AuditRow[];
   /** Everyone who appears in the log, for the "who" filter. */
@@ -121,6 +135,8 @@ export interface ViewerData {
   /** `currentSessionId` marks "This session"; null (dev sign-in) marks the viewer's own sessions instead. */
   adminSessions(currentSessionId: string | null): Promise<SessionRow[]>;
   adminAudit(filter?: AuditFilter): Promise<AuditView>;
+  /** Every emergency key, newest first. */
+  adminBreakGlass(): Promise<BreakGlassKeyRow[]>;
 }
 
 /** What a brand would see: the executive-level threshold view, used for printed reports. */
@@ -130,6 +146,8 @@ const EXPORT_VIEW = { role: "executive" } as const;
 const SYSTEM_NAMES: Record<string, string> = {
   "sign-in": "Someone signing in",
   yourtal: "YourTal",
+  "break-glass": "Someone at the emergency sign-in",
+  server: "The server (lead, on Helios)",
 };
 
 async function namer(stores: Pick<Stores, "allowList">): Promise<(who: string) => string> {
@@ -146,11 +164,15 @@ export function getDashboardData(
   viewer: Viewer,
   source: DashboardData = provider(),
   audit: AuditLog = getAuditLog(),
-  stores: Pick<Stores, "allowList" | "sessions"> = getStores(),
+  stores: Pick<Stores, "allowList" | "sessions"> & { breakGlass?: BreakGlassStore } = getStores(),
 ): ViewerData {
   const need = (page: "insight" | "teens" | "person" | "quality" | "admin") => {
     if (!canAccessPage(viewer, page))
       throw new DataAccessError(`This role cannot read ${page} data`);
+  };
+  // Defence in depth for emergency (break-glass) sessions: no export view and no Person 360 profile, here too.
+  const notInEmergency = (what: string) => {
+    if (viewer.breakGlass) throw new DataAccessError(`${what} is not available in emergency access`);
   };
 
   return {
@@ -177,11 +199,13 @@ export function getDashboardData(
 
     async insight(q) {
       need("insight");
+      if (q.forExport) notInEmergency("An export");
       const raw = await source.insight(q);
       return presentTree(raw, q.forExport ? EXPORT_VIEW : viewer);
     },
     async teens(q) {
       need("teens");
+      if (q.forExport) notInEmergency("An export");
       const raw = await source.teens({ ...(q.entity ? { entity: q.entity } : {}) });
       return presentTree(raw, q.forExport ? EXPORT_VIEW : viewer);
     },
@@ -193,6 +217,7 @@ export function getDashboardData(
     },
     async personOpen(id, reason) {
       need("person");
+      notInEmergency("Opening a profile");
       if (reason.trim().length < 8)
         throw new DataAccessError("A reason is required to open a profile");
       const raw = await source.personGet(id);
@@ -212,6 +237,8 @@ export function getDashboardData(
     },
     async personGet(id) {
       need("person");
+      // Not even a profile this Owner opened earlier with YourTal: an emergency session sees no person.
+      if (viewer.breakGlass) return { kind: "emergency-refused", id };
       const raw = await source.personGet(id);
       if (raw.kind === "not-found") return { kind: "not-found" };
       if (raw.kind === "teen") {
@@ -268,7 +295,24 @@ export function getDashboardData(
         started: s.createdAt,
         lastActive: s.lastSeenAt,
         passkey: s.amr.includes("hwk"),
+        emergency: isBreakGlassSession(s),
         current: currentSessionId === null ? s.userId === viewer.id : s.id === currentSessionId,
+      }));
+    },
+    async adminBreakGlass() {
+      need("admin");
+      const [keys, nameOf] = await Promise.all([
+        (stores.breakGlass ?? getStores().breakGlass).list(),
+        namer(stores),
+      ]);
+      return keys.map((k) => ({
+        credentialId: k.credentialId,
+        label: keyLabel(k.credentialId),
+        ownerId: k.ownerId,
+        owner: nameOf(k.ownerId),
+        added: k.createdAt,
+        lastUsed: k.lastUsedAt,
+        revoked: k.revokedAt,
       }));
     },
     async adminAudit(filter = {}) {

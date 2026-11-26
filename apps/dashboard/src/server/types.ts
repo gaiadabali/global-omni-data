@@ -24,6 +24,11 @@ export interface Viewer {
   role: Role;
   /** Set for a brand lead: the one brand they may see. */
   brand?: BrandId;
+  /**
+   * Set when this is an emergency (break-glass) session: an Owner who signed in with the sealed emergency key while
+   * YourTal was down. They may read what an Owner reads and revoke sessions, nothing more (see access.ts).
+   */
+  breakGlass?: true;
 }
 
 export function isBrandId(v: string): v is BrandId {

@@ -100,6 +100,29 @@ export function requireApi(viewer: Viewer | null, apiId: ApiId): ApiGate {
   return { ok: true, viewer };
 }
 
+/* ---------------- emergency (break-glass) sessions ---------------- */
+
+/**
+ * The recorded actions, by what they do. An emergency session (viewer.breakGlass: an Owner signed in with the sealed
+ * emergency key while YourTal was down) may read every page an Owner can and may revoke sessions, and nothing else
+ * here: no export, no Person 360 profile, no invite or allow-list change, no adding or revoking emergency keys.
+ * The handlers check this before anything else; the fresh passkey gate also fails closed for an emergency session.
+ */
+export type GuardedAction =
+  | "export"
+  | "person.open"
+  | "allowlist.invite"
+  | "allowlist.change"
+  | "breakglass.enrol"
+  | "breakglass.revoke"
+  | "session.revoke";
+
+const EMERGENCY_ALLOWED: readonly GuardedAction[] = ["session.revoke"];
+
+export function allowedInEmergency(viewer: Viewer | null, action: GuardedAction): boolean {
+  return viewer?.breakGlass !== true || EMERGENCY_ALLOWED.includes(action);
+}
+
 /** Where a viewer lands: a brand lead on their brand page, everyone else on the overview. */
 export function homeFor(viewer: Viewer): PageId {
   if (viewer.role === "brand_lead" && viewer.brand) return viewer.brand;
