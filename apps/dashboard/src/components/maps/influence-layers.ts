@@ -2,6 +2,7 @@ import { H3HexagonLayer } from "@deck.gl/geo-layers";
 import { GeoJsonLayer, TextLayer } from "@deck.gl/layers";
 import type { LayersList } from "@deck.gl/core";
 import type { InfluenceCell, PresentedInfluence } from "@/server/data";
+import { boundaryCode, type BoundaryCollection, type BoundaryFeature } from "./boundaries";
 import { bandColor, labelColors, withAlpha, type MapTokens, type RGB, type RGBA } from "./colors";
 import { CAPITALS, stateCode, type StateCollection, type StateFeature, type StateLabel } from "./states";
 import type { BrandChoice } from "./url-state";
@@ -12,6 +13,8 @@ export const LABEL_FONT_SPEC = '600 14px "Inter Variable"';
 
 export interface InfluenceLayerInput {
   states: StateCollection | null;
+  /** The outlines of the shown SA4, SA3 or SA2 level, once loaded. */
+  areas: BoundaryCollection | null;
   labels: StateLabel[];
   data: PresentedInfluence | null;
   tokens: MapTokens;
@@ -36,10 +39,12 @@ export function bandPalette(data: PresentedInfluence, tokens: MapTokens, brand: 
 export function influenceLayers(i: InfluenceLayerInput): LayersList {
   const { data, tokens, selected } = i;
   const stateLevel = data === null || data.query.level === "state";
+  // SA4, SA3 and SA2 are real outlines joined to the cells by area code; H3 is hexagons.
+  const outlineLevel = data !== null && typeof data.query.level === "string" && data.query.level !== "state";
   const palette = data ? bandPalette(data, tokens, i.brand) : [];
   const brand = brandRgb(tokens, i.brand);
   const cellById = new Map<string, InfluenceCell>();
-  if (data && stateLevel) for (const c of data.cells) cellById.set(c.id, c);
+  if (data && (stateLevel || outlineLevel)) for (const c of data.cells) cellById.set(c.id, c);
 
   const layers: LayersList = [];
 
@@ -78,7 +83,38 @@ export function influenceLayers(i: InfluenceLayerInput): LayersList {
     );
   }
 
-  if (data && !stateLevel) {
+  if (data && outlineLevel && i.areas) {
+    const none: RGBA = [0, 0, 0, 0];
+    layers.push(
+      new GeoJsonLayer({
+        id: "areas",
+        data: i.areas as never,
+        pickable: true,
+        autoHighlight: true,
+        highlightColor: withAlpha(tokens.ink, 0.16),
+        stroked: true,
+        filled: true,
+        lineWidthUnits: "pixels",
+        lineWidthMinPixels: 0.5,
+        getFillColor: (f: unknown) => {
+          const cell = cellById.get(boundaryCode(f as BoundaryFeature));
+          return cell ? (palette[cell.band] ?? palette[palette.length - 1] ?? none) : none;
+        },
+        getLineColor: (f: unknown) =>
+          selected !== null && boundaryCode(f as BoundaryFeature) === selected
+            ? withAlpha(tokens.ink, 1)
+            : withAlpha(tokens.bg, 0.85),
+        getLineWidth: (f: unknown) => (selected !== null && boundaryCode(f as BoundaryFeature) === selected ? 3 : 0.6),
+        updateTriggers: {
+          getFillColor: [data, tokens, i.brand, i.areas],
+          getLineColor: [tokens, selected, data],
+          getLineWidth: [selected, data],
+        },
+      }),
+    );
+  }
+
+  if (data && !stateLevel && !outlineLevel) {
     const last = palette[palette.length - 1] ?? withAlpha(brand, 1);
     // Cells under the threshold get a brand-coloured outline, so "<10" reads differently from empty land.
     const lowLine = withAlpha(brand, 0.7);

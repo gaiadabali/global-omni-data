@@ -60,7 +60,10 @@ export const PERIOD_LABELS: Record<Period, string> = {
 };
 
 export type BBox = [west: number, south: number, east: number, north: number];
-export type H3Res = 3 | 4 | 5 | 6 | 7 | 8;
+/** Influence maps stop at suburb size: H3 resolution 6 (about 5.6 km across) and 7 (about 2.1 km). There is no res 8. */
+export type H3Res = 6 | 7;
+export type AreaLevel = "state" | "sa4" | "sa3" | "sa2";
+export type InfluenceLevel = AreaLevel | { h3: H3Res };
 
 export interface InfluenceQuery {
   brand: BrandId | "all";
@@ -68,8 +71,47 @@ export interface InfluenceQuery {
   measure: "count" | "per1000";
   /** "YYYY-MM": registered up to and including this month. */
   month: string;
-  level: "state" | { h3: H3Res };
+  level: InfluenceLevel;
   bbox?: BBox;
+}
+
+export interface SummaryQuery {
+  brand: BrandId | "all";
+  audience: "businesses" | "people" | "both";
+  measure: "count" | "per1000";
+  month: string;
+  level: AreaLevel;
+  limit: number;
+}
+
+export interface AreaQuery {
+  level: AreaLevel | "h3";
+  id: string;
+  brand: BrandId | "all";
+  audience: "businesses" | "people" | "both";
+  month: string;
+  /** Brands the viewer may see in the per-brand totals. Set by the handler from the viewer's role. */
+  visibleBrands: BrandId[];
+  /** Whether the viewer may see the all-of-GOD total. */
+  showGod: boolean;
+}
+
+export interface HotspotQuery {
+  category?: string;
+  ageBand?: string;
+  month: string;
+  bbox?: BBox;
+  limit: number;
+  audienceBrand?: BrandId;
+}
+
+export interface ActivityAreaQuery {
+  level: "h3" | "sa2";
+  id: string;
+  month: string;
+  category?: string;
+  ageBand?: string;
+  audienceBrand?: BrandId;
 }
 
 export interface ActivityQuery {
@@ -78,7 +120,7 @@ export interface ActivityQuery {
   /** An age band: "13–17", "18–24", ... */
   ageBand?: string;
   month: string;
-  h3: 5 | 6 | 7 | 8;
+  h3: 5 | 6 | 7;
   bbox?: BBox;
   /** Limits the audience to people who also use this brand. Set for a brand lead. */
   audienceBrand?: BrandId;
@@ -227,17 +269,78 @@ export interface BrandRawMap {
 }
 
 export interface InfluenceRawCell {
-  /** A state code ("NSW") or an h3 index. */
+  /** A state code ("NSW"), an ABS area code, or an h3 index. */
   id: string;
-  label?: string;
+  /** A real place name. An h3 cell: the suburb at its centre. */
+  name: string;
+  /** "Greater Sydney, NSW". */
+  parent: string;
+  /** [lon, lat]: an area's label point, or the centre of an h3 cell. Never a person's point. */
+  centroid: [number, number];
   count: RawCount;
   /** Residents, for the per-1,000 measure. */
-  population?: number;
+  population: number;
+  /** The last 12 months (fewer early on) of the running total. */
+  trend: RawSeries;
+  /** Joined in the query month. */
+  newThisMonth: RawCount;
 }
 export interface InfluenceRaw {
   cells: InfluenceRawCell[];
+  /** The months `trend` covers, oldest first. */
+  trendMonths: string[];
   /** True when more than the cap of cells matched and the smallest were dropped. */
   truncated: boolean;
+}
+
+export interface SummaryRawArea {
+  id: string;
+  name: string;
+  parent: string;
+  centroid: [number, number];
+  count: RawCount;
+  population: number;
+  /** Joined in the query month. */
+  change: RawCount;
+  /** The running total a month earlier. */
+  previous: RawCount;
+  trend: RawSeries;
+}
+export interface SummaryRaw {
+  trendMonths: string[];
+  total: RawCount;
+  newThisMonth: RawCount;
+  previous: RawCount;
+  /** Residents of the whole country, for the national per-1,000 rate. */
+  nationalPopulation: number;
+  /** Every area of the level, unsorted. The presentation layer ranks and cuts them. */
+  areas: SummaryRawArea[];
+}
+
+export interface AreaRaw {
+  area: {
+    level: AreaLevel | "h3";
+    id: string;
+    name: string;
+    parent: string;
+    parents: { level: AreaLevel; id: string; name: string }[];
+    population: number;
+    centroid: [number, number];
+    areaKm2: number | null;
+    res?: number;
+  };
+  value: RawCount;
+  newThisMonth: RawCount;
+  previous: RawCount;
+  /** Residents of the whole country, and the selection's national count, for the national rate. */
+  nationalPopulation: number;
+  nationalValue: number;
+  rank: { rank: number; of: number; within: string };
+  brands: { brand: BrandId; people: RawCount; businesses: RawCount }[];
+  god: { people: RawCount; businesses: RawCount } | null;
+  seriesMonths: string[];
+  series: RawSeries;
+  ageMix: { band: string; teen: boolean; people: RawCount }[];
 }
 
 export interface ActivityRawMerchant {
@@ -251,6 +354,10 @@ export interface ActivityRawMerchant {
 export interface ActivityRawHeat {
   /** An h3 index. */
   id: string;
+  /** The suburb at the cell's centre, where it is, and its centre as [lon, lat]. */
+  name: string;
+  parent: string;
+  centroid: [number, number];
   /** People active in the area. Never a person-level point. */
   people: RawCount;
 }
@@ -258,6 +365,33 @@ export interface ActivityRaw {
   merchants: ActivityRawMerchant[];
   heat: ActivityRawHeat[];
   truncated: boolean;
+}
+
+export interface MixRaw {
+  /** A category id, or an age band name. */
+  key: string;
+  name: string;
+  sensitive: boolean;
+  teen: boolean;
+  people: RawCount;
+}
+export interface HotspotRaw {
+  id: string;
+  name: string;
+  parent: string;
+  centroid: [number, number];
+  people: RawCount;
+  mix: MixRaw[];
+}
+export interface HotspotsRaw {
+  hotspots: HotspotRaw[];
+}
+export interface ActivityAreaRaw {
+  area: { level: "h3" | "sa2"; id: string; name: string; parent: string; centroid: [number, number] };
+  total: RawCount;
+  categoryMix: MixRaw[];
+  ageMix: MixRaw[];
+  merchants: (ActivityRawMerchant & { suburb: string })[];
 }
 
 /* ---------------- brand insight and teen market ---------------- */
@@ -459,7 +593,13 @@ export interface DashboardData {
   overview(q: { period: Period }): Promise<OverviewRaw>;
   brand<B extends BrandId>(brand: B, q: { period: Period }): Promise<BrandRawMap[B]>;
   influenceMap(q: InfluenceQuery): Promise<InfluenceRaw>;
+  mapSummary(q: SummaryQuery): Promise<SummaryRaw>;
+  /** null when the area id is unknown. */
+  mapArea(q: AreaQuery): Promise<AreaRaw | null>;
   activityMap(q: ActivityQuery): Promise<ActivityRaw>;
+  activityHotspots(q: HotspotQuery): Promise<HotspotsRaw>;
+  /** null when the area id is unknown. */
+  activityArea(q: ActivityAreaQuery): Promise<ActivityAreaRaw | null>;
   insight(q: AudienceQuery): Promise<InsightRaw>;
   teens(q: { entity?: string }): Promise<TeensRaw>;
   /** Search by GOD id (or the start of one). Never by name, email or phone. */

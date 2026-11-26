@@ -1,5 +1,6 @@
 import { geoBounds, geoContains } from "d3-geo";
 import type { Feature, FeatureCollection, MultiPolygon, Polygon } from "geojson";
+import { nearestSuburb, placeAt } from "@god/geo";
 import statesJson from "./data/au-states.json";
 
 /** State order is fixed: index 0..7 is used as a key everywhere. */
@@ -322,19 +323,17 @@ export interface NearestPlace {
   name: string;
   km: number;
   suburb: boolean;
-  /** State index of the nearest city, or -1 when the nearest place is a suburb. */
+  /** State index of the place (0..7, as in STATE_CODES), or -1 when it is not known. */
   state: number;
 }
 
+/** The real suburb (ABS locality) nearest a point, within 80 km; else the nearest modelled city. */
 export function nearestPlace(lat: number, lon: number): NearestPlace {
-  let bestSub: NearestPlace | null = null;
-  for (const s of SUBURBS) {
-    const km = kmBetween(lat, lon, s[3], s[2]);
-    if (km < 14 && (!bestSub || km < bestSub.km)) {
-      bestSub = { name: s[0], km, suburb: true, state: -1 };
-    }
+  const near = nearestSuburb(lon, lat);
+  if (near) {
+    const st = (STATE_CODES as readonly string[]).indexOf(near.suburb.state);
+    return { name: near.suburb.name, km: near.distanceKm, suburb: true, state: st };
   }
-  if (bestSub) return bestSub;
   let best: NearestPlace = { name: "", km: Infinity, suburb: false, state: -1 };
   for (const c of CITIES) {
     const km = kmBetween(lat, lon, c.lat, c.lon);
@@ -343,11 +342,12 @@ export function nearestPlace(lat: number, lon: number): NearestPlace {
   return best;
 }
 
-/** A readable label for a place, such as "Around Parramatta, NSW". */
+/** A readable label for a place, such as "Around Parramatta, NSW": a real suburb name from the ABS. */
 export function placeName(lat: number, lon: number): string {
+  const place = placeAt(lon, lat);
+  const state = place.sa2?.state ?? place.suburb?.state ?? "";
+  const code = state && state !== "OT" ? state : "";
   const p = nearestPlace(lat, lon);
-  const st = stateAt(lat, lon);
-  const code = st >= 0 ? STATE_CODES[st] : p.state >= 0 ? STATE_CODES[p.state] : "";
-  if (p.suburb || p.km < 12) return `Around ${p.name}${code ? `, ${code}` : ""}`;
-  return `Remote area${code ? ` in ${code}` : ""}, near ${p.name}`;
+  if (place.suburb && p.km < 12) return `Around ${place.name}${code ? `, ${code}` : ""}`;
+  return `Remote area${code ? ` in ${code}` : ""}${p.name ? `, near ${p.name}` : ""}`;
 }

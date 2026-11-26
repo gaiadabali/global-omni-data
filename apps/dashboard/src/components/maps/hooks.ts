@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { readTokens, type MapTokens } from "./colors";
 import { MapLoader, isAbort, type Fetcher } from "./query-cache";
+import type { BoundaryCollection } from "./boundaries";
 import type { StateCollection } from "./states";
 
 /* ---------------- theme tokens ---------------- */
@@ -160,6 +161,34 @@ export function useStateOutlines(): StateCollection | null {
     };
   }, []);
   return fc;
+}
+
+const boundaryCache = new Map<string, Promise<BoundaryCollection | null>>();
+
+/**
+ * The outlines of one area level (SA4, SA3 or SA2) from the same-origin static file named in the map meta. Fetched once
+ * per page load and shared between screens (the URL carries the data version, so the browser keeps it for good).
+ */
+export function useBoundaries(url: string | null): BoundaryCollection | null {
+  const [state, setState] = useState<{ url: string; fc: BoundaryCollection } | null>(null);
+  useEffect(() => {
+    if (url === null) return;
+    let live = true;
+    let p = boundaryCache.get(url);
+    if (!p) {
+      p = fetch(url, { credentials: "same-origin" })
+        .then((r) => (r.ok ? (r.json() as Promise<BoundaryCollection>) : null))
+        .catch(() => null);
+      boundaryCache.set(url, p);
+    }
+    void p.then((fc) => {
+      if (live && fc) setState({ url, fc });
+    });
+    return () => {
+      live = false;
+    };
+  }, [url]);
+  return state !== null && state.url === url ? state.fc : null;
 }
 
 /** True once the page's own copy of a font is loaded, so a canvas text atlas draws in it. */

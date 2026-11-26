@@ -1,0 +1,5 @@
+# Generated from packages/geo/data by packages/geo/scripts/emit-public.mjs, at dev and build time
+public/geo/state.json
+public/geo/sa4.json
+public/geo/sa3.json
+public/geo/sa2.json

@@ -49,6 +49,20 @@ export function presentCount(
   return { display: `<${threshold}`, exact: null, suppressed: true };
 }
 
+/**
+ * The same number as plottable(presentCount(n, opts)), without building the display string (formatting 100,000 trend
+ * values per request is the slow part of a map response). It uses the same thresholds and the same role rule.
+ */
+export function plottableCount(
+  n: number,
+  opts: { kind: CountKind; viewer: Pick<Viewer, "role"> },
+): number {
+  if (!Number.isFinite(n) || n < 0) throw new RangeError(`plottableCount: not a count: ${n}`);
+  const value = Math.round(n);
+  if (value >= THRESHOLDS[opts.kind]) return value;
+  return opts.kind !== "teen" && seesExactSmallNumbers(opts.viewer) ? value : 0;
+}
+
 /** For charts: the number to plot. A suppressed count is plotted as 0 for roles that must not see it. */
 export function plottable(p: PresentedCount): number {
   return p.exact ?? 0;

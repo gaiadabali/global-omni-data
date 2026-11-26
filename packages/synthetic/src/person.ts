@@ -1,3 +1,4 @@
+import { findSuburbs } from "@god/geo";
 import { CITIES, STATE_CODES, SUBURBS, kmBetween, nearestPlace } from "./geo";
 import { generateMerchants, type Merchant } from "./merchants";
 import { hash01, mulberry32, type Rng } from "./rng";
@@ -120,11 +121,13 @@ function isoDay(base: Date, minusDays: number): string {
   return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`;
 }
 
-/** Where a profile's home label points: a suburb or a city, from the label ("Around X, ST" or "... near X"). */
+/** Where a profile's home label points: a real suburb or a city, from the label ("Around X, ST" or "... near X"). */
 function homeOf(area: string): { lat: number; lon: number } {
   const near = /near (.+)$/.exec(area)?.[1];
-  const around = /^Around ([^,]+)/.exec(area)?.[1];
-  const name = (near ?? around ?? "").trim();
+  const around = /^Around ([^,]+)(?:, ([A-Z]+))?/.exec(area);
+  const name = (near ?? around?.[1] ?? "").trim();
+  const real = findSuburbs(name, near ? undefined : around?.[2]);
+  if (real.length) return { lat: real[0]!.lat, lon: real[0]!.lon };
   const sub = SUBURBS.find((s) => s[0] === name);
   if (sub) return { lat: sub[3], lon: sub[2] };
   const city = CITIES.find((c) => c.name === name) ?? CITIES[0]!;

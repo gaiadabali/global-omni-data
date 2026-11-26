@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createHash } from "node:crypto";
+import { areas, findSuburbs, getSuburb, nationalPopulation, sa2IndexAt } from "@god/geo";
 import {
   AGE_BANDS,
   BRANDS,
@@ -11,13 +12,14 @@ import {
   generateProfiles,
   getWorld,
   monthIndex,
+  STATE_CODES,
   stateAt,
   type World,
 } from "./index";
 
 function digest(w: World): string {
   const h = createHash("sha256");
-  for (const a of [w.lat, w.lon, w.state, w.mask, w.isBusiness, w.weight, w.age, w.category, w.joinAny, ...w.join]) {
+  for (const a of [w.lat, w.lon, w.state, w.mask, w.isBusiness, w.weight, w.age, w.category, w.joinAny, w.sa2, ...w.join]) {
     h.update(Buffer.from(a.buffer, a.byteOffset, a.byteLength));
   }
   return h.digest("hex");
@@ -111,7 +113,7 @@ describe("shape of the world", () => {
   it("conserves totals when aggregated into h3 cells", () => {
     const f = { audience: "both", brand: "all", month: CURRENT_INDEX } as const;
     const total = w.aggregate(f, w.state, 8).reduce((a, b) => a + b, 0);
-    for (const res of [3, 6]) {
+    for (const res of [3, 6, 7]) {
       const ids = w.cells.idsAt(res);
       const sum = w.aggregate(f, w.cells.keysAt(res), ids.length).reduce((a, b) => a + b, 0);
       expect(sum).toBe(total);
@@ -139,5 +141,109 @@ describe("merchants and profiles", () => {
     expect(teens.length).toBeGreaterThan(0);
     for (const t of teens) expect(Object.keys(t).sort()).toEqual(["id", "teen"]);
     for (const p of ps) if (!p.teen) expect(AGE_BANDS as readonly string[]).toContain(p.ageBand);
+  });
+});
+
+describe("placement by real population", () => {
+  const w = getWorld();
+
+  it("keeps the national totals close to the old model (about 185k people points, about 554k registered people)", () => {
+    expect(w.n).toBe(184_820 + 13_350);
+    const people = w.peopleByMonth.god[23]!;
+    expect(people).toBeGreaterThan(530_000);
+    expect(people).toBeLessThan(580_000);
+  });
+
+  it("puts every point inside the SA2 it says it is in", () => {
+    let tried = 0;
+    let inside = 0;
+    for (let i = 0; i < w.n; i += 53) {
+      tried++;
+      if (sa2IndexAt(w.lon[i]!, w.lat[i]!) === w.sa2[i]) inside++;
+    }
+    expect(inside / tried).toBeGreaterThan(0.97);
+  });
+
+  it("follows the ABS population: states by share, and SA2s by correlation", () => {
+    const pop = new Float64Array(8);
+    let popTotal = 0;
+    for (const a of areas("state")) {
+      const i = STATE_CODES.indexOf(a.state as (typeof STATE_CODES)[number]);
+      if (i >= 0) {
+        pop[i] = a.population;
+        popTotal += a.population;
+      }
+    }
+    const counts = new Float64Array(8);
+    let total = 0;
+    const perSa2 = new Float64Array(areas("sa2").length);
+    for (let i = 0; i < w.n; i++) {
+      if (w.isBusiness[i]) continue;
+      counts[w.state[i]!] = counts[w.state[i]!]! + w.weight[i]!;
+      perSa2[w.sa2[i]!] = perSa2[w.sa2[i]!]! + w.weight[i]!;
+      total += w.weight[i]!;
+    }
+    for (let s = 0; s < 8; s++) {
+      expect(Math.abs(counts[s]! / total - pop[s]! / popTotal), STATE_CODES[s]).toBeLessThan(0.06); // the brand affinities lean towards Queensland
+    }
+    // Pearson correlation of sample weight with residents over every SA2.
+    const xs = areas("sa2").map((a) => a.population);
+    const mx = xs.reduce((a, b) => a + b, 0) / xs.length;
+    const my = perSa2.reduce((a, b) => a + b, 0) / perSa2.length;
+    let sxy = 0;
+    let sxx = 0;
+    let syy = 0;
+    xs.forEach((x, i) => {
+      sxy += (x - mx) * (perSa2[i]! - my);
+      sxx += (x - mx) ** 2;
+      syy += (perSa2[i]! - my) ** 2;
+    });
+    expect(sxy / Math.sqrt(sxx * syy)).toBeGreaterThan(0.85);
+    expect(nationalPopulation()).toBeGreaterThan(27_000_000);
+  });
+
+  it("has no h3 resolution finer than 7", () => {
+    expect(() => w.cells.idsAt(8)).toThrow(RangeError);
+    expect(w.cells.idsAt(7).length).toBeGreaterThan(1000);
+  });
+
+  it("gives teens a share that follows each SA2's age mix, and keeps the national share", () => {
+    // Teen share of people in the SA2s with the most and fewest teens (by ABS data), among SA2s with a decent sample.
+    const teens = new Float64Array(areas("sa2").length);
+    const people = new Float64Array(areas("sa2").length);
+    for (let i = 0; i < w.n; i++) {
+      if (w.isBusiness[i] || (w.mask[i]! & 4) !== 0) continue;
+      people[w.sa2[i]!] = people[w.sa2[i]!]! + w.weight[i]!;
+      if (w.age[i] === 0) teens[w.sa2[i]!] = teens[w.sa2[i]!]! + w.weight[i]!;
+    }
+    expect(Array.from(teens).reduce((a, b) => a + b, 0) / Array.from(people).reduce((a, b) => a + b, 0)).toBeGreaterThan(0.07);
+  });
+});
+
+describe("merchants sit in real suburbs", () => {
+  const ms = generateMerchants();
+
+  it("has a real ABS suburb and SA2 for every shop, and the address uses the suburb name", () => {
+    expect(ms.length).toBe(3400);
+    let inSa2 = 0;
+    for (const m of ms) {
+      const sub = getSuburb(m.suburbCode)!;
+      expect(sub.name).toBe(m.suburb);
+      expect(findSuburbs(m.suburb, STATE_CODES[m.state]).length).toBeGreaterThan(0);
+      expect(m.name.endsWith(` ${m.suburb}`)).toBe(true);
+      if (areas("sa2")[sa2IndexAt(m.lon, m.lat)]?.id === m.sa2) inSa2++;
+    }
+    expect(inSa2 / ms.length).toBeGreaterThan(0.97);
+  });
+
+  it("keeps the chains fictional and never names a person", () => {
+    for (const m of ms) expect(m.chain.length).toBeGreaterThan(3);
+  });
+
+  it("gives profiles a real suburb label", () => {
+    for (const p of generateProfiles(getWorld())) {
+      if (p.teen) continue;
+      expect(p.area).toMatch(/^(Around .+, [A-Z]+|Remote area.*)$/);
+    }
   });
 });

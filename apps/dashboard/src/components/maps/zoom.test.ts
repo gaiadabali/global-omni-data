@@ -1,66 +1,82 @@
 import { describe, expect, it } from "vitest";
 import {
   LEVEL_BREAKS,
+  MAX_ZOOM,
+  MIN_ZOOM,
   activityResolution,
   bboxContains,
   bboxParam,
   cellWidthPx,
+  finerLevel,
   inBBox,
-  influenceResolution,
+  influenceLevel,
   kmLabel,
   levelLabel,
+  levelStartZoom,
   snapBBox,
   usesBBox,
   type BBox,
 } from "./zoom";
 
-describe("zoom to resolution", () => {
+describe("zoom to level", () => {
   it.each([
-    [2, null],
-    [3.7, null],
-    [4.99, null],
-    [5.0, 4],
-    [6.39, 4],
-    [6.4, 5],
-    [7.79, 5],
+    [2, "state"],
+    [4.39, "state"],
+    [4.4, "sa4"],
+    [5.59, "sa4"],
+    [5.6, "sa3"],
+    [6.79, "sa3"],
+    [6.8, "sa2"],
+    [7.79, "sa2"],
     [7.8, 6],
     [9.19, 6],
     [9.2, 7],
-    [10.59, 7],
-    [10.6, 8],
-    [14, 8],
-  ])("zoom %s gives %s", (z, res) => {
-    expect(influenceResolution(z)).toBe(res);
+    [MAX_ZOOM, 7],
+  ])("zoom %s gives %s", (z, level) => {
+    expect(influenceLevel(z)).toBe(level);
   });
 
-  it("activity heat never goes coarser than resolution 5", () => {
+  it("has no street level: the zoom stops at suburb size, with an SA2 or a res 7 cell the finest view", () => {
+    expect(MAX_ZOOM).toBeLessThan(12);
+    expect(influenceLevel(14)).toBe(7);
+    expect(finerLevel(7)).toBe(7);
+    // A res 7 cell is about 2 km across: at the cap it is still a sensible size on screen, not a street.
+    expect(cellWidthPx(7, MAX_ZOOM)).toBeLessThan(100);
+  });
+
+  it("goes state, SA4, SA3, SA2, then H3 6 and 7", () => {
+    expect(["state", "sa4", "sa3", "sa2", 6].map((l) => finerLevel(l as never))).toEqual(["sa4", "sa3", "sa2", 6, 7]);
+    expect(levelStartZoom("sa4")).toBe(LEVEL_BREAKS[0]);
+    expect(levelStartZoom(7)).toBe(LEVEL_BREAKS[4]);
+    expect(levelStartZoom("state")).toBe(MIN_ZOOM);
+  });
+
+  it("activity heat never goes coarser than resolution 5, and never finer than 7", () => {
     expect(activityResolution(3)).toBe(5);
     expect(activityResolution(5.5)).toBe(5);
     expect(activityResolution(7)).toBe(5);
     expect(activityResolution(8)).toBe(6);
-    expect(activityResolution(12)).toBe(8);
+    expect(activityResolution(12)).toBe(7);
+    expect(activityResolution(MAX_ZOOM)).toBe(7);
   });
 
-  it("asks for a box from resolution 6", () => {
-    expect([null, 4, 5].map(usesBBox)).toEqual([false, false, false]);
-    expect([6, 7, 8].map(usesBBox)).toEqual([true, true, true]);
+  it("asks for a box from SA2 down, and for nothing finer than an H3 cell of res 7", () => {
+    expect(["state", "sa4", "sa3"].map((l) => usesBBox(l as never))).toEqual([false, false, false]);
+    expect([null, "sa2", 6, 7].map((l) => usesBBox(l as never))).toEqual([false, true, true, true]);
   });
 
-  it("keeps cells between about 18 and 52 px at every level", () => {
-    const res = [4, 5, 6, 7, 8] as const;
-    res.forEach((r, i) => {
-      const start = LEVEL_BREAKS[i]!;
-      const end = LEVEL_BREAKS[i + 1] ?? start + 1.4;
-      expect(cellWidthPx(r, start)).toBeGreaterThan(18);
-      expect(cellWidthPx(r, end)).toBeLessThan(52);
-    });
+  it("keeps H3 cells between about 18 and 52 px when their level starts and just before the next", () => {
+    expect(cellWidthPx(6, LEVEL_BREAKS[3])).toBeGreaterThan(18);
+    expect(cellWidthPx(6, LEVEL_BREAKS[4])).toBeLessThan(52);
+    expect(cellWidthPx(7, LEVEL_BREAKS[4])).toBeGreaterThan(18);
   });
 
   it("labels the level in plain words", () => {
-    expect(levelLabel(null)).toBe("States");
-    expect(levelLabel(4)).toBe("Areas about 39 km across");
+    expect(levelLabel(null)).toBe("States and territories");
+    expect(levelLabel("sa4")).toBe("SA4 regions");
+    expect(levelLabel("sa2")).toBe("SA2 areas");
     expect(levelLabel(6)).toBe("Areas about 5.6 km across");
-    expect(levelLabel(8)).toBe("Areas about 800 m across");
+    expect(levelLabel(7)).toBe("Areas about 2.1 km across");
     expect(kmLabel(2.1)).toBe("2.1 km");
   });
 });

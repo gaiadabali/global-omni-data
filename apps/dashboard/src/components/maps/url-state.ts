@@ -23,6 +23,8 @@ export interface MapMetaLike {
   ageBands: readonly string[];
   teenBand: number;
   categories: readonly { id: string; name: string; sensitive: boolean }[];
+  /** The boundary files for the SA4, SA3 and SA2 levels (same-origin, versioned URLs). */
+  geo?: { levels: Readonly<Record<"state" | "sa4" | "sa3" | "sa2", string>> };
 }
 
 /* ---------------- the view ---------------- */
