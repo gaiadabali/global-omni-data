@@ -5,14 +5,16 @@ import type { ActivityHeatCell, ActivityMerchant, PresentedActivity } from "@/se
 import { heatAlpha, withAlpha, type MapTokens, type RGB, type RGBA } from "./colors";
 import { LABEL_FONT } from "./influence-layers";
 import { CAPITALS, stateLabels, type StateCollection, type StateLabel } from "./states";
+import { HEX_WIDTH_KM } from "./zoom";
 
 export interface ActivityLayerInput {
   states: StateCollection | null;
   data: PresentedActivity | null;
   tokens: MapTokens;
-  /** Category ids switched off in the legend. */
+  /** Category ids switched off in the chips. */
   off: ReadonlySet<string>;
   heat: boolean;
+  /** The selected merchant id ("M-0012") or heat cell (an h3 index). */
   selected: string | null;
   hasBasemap: boolean;
   fontReady: boolean;
@@ -20,6 +22,8 @@ export interface ActivityLayerInput {
   labels: "states" | "capitals";
   /** Zoomed out far enough that heat cells are only a few pixels across: draw them stronger so they show. */
   lowZoom: boolean;
+  /** Merchant dots appear once the map is close enough to read them. */
+  showMerchants: boolean;
   /** Dot size multiplier by zoom band (changes a few times across the whole range, not on every frame). */
   dotScale: number;
 }
@@ -35,9 +39,27 @@ export function dotRadius(value: number): number {
   return Math.min(8, 2.6 + Math.sqrt(Math.max(0, value)) / 12);
 }
 
-/** Merchants to draw: not switched off in the legend. */
+/** Merchants to draw: not switched off in the chips. */
 export function visibleMerchants(data: PresentedActivity | null, off: ReadonlySet<string>): ActivityMerchant[] {
   return data ? data.merchants.filter((m) => !off.has(m.category)) : [];
+}
+
+/**
+ * The heat layer is built from the server's H3 aggregates and nothing else: every cell is a count of people active in
+ * about 2 to 15 km, already thresholded, so no person-level point exists to draw. Each cell becomes three soft discs of
+ * falling size and rising opacity, so neighbouring cells blend into a surface where they cluster. A cell under the
+ * threshold draws almost nothing, and one the viewer may not see (value 0) draws only its faint outer disc.
+ */
+const RINGS: readonly { m: number; a: number }[] = [
+  { m: 1.9, a: 0.18 },
+  { m: 1.15, a: 0.38 },
+  { m: 0.55, a: 0.8 },
+];
+
+interface Blob {
+  p: [number, number];
+  m: number;
+  a: number;
 }
 
 export function activityLayers(i: ActivityLayerInput): LayersList {
@@ -63,35 +85,52 @@ export function activityLayers(i: ActivityLayerInput): LayersList {
 
   if (data && i.heat) {
     const bands = data.legend.length;
-    // Cells are only a few pixels wide at the national view, so they get more opacity and an edge there.
-    const boost = (a: number) => (i.lowZoom ? Math.min(1, a * 1.7 + (a > 0.1 ? 0.12 : 0)) : a);
-    const palette: RGBA[] = data.legend.map((b) => withAlpha(tokens.heat, boost(heatAlpha(b.band, bands))));
-    const last = palette[palette.length - 1] ?? withAlpha(tokens.heat, 0.5);
+    const res = data.query.h3;
+    const base = (HEX_WIDTH_KM[res] ?? 5.6) * 1000 * 0.62;
+    const boost = (a: number) => (i.lowZoom ? Math.min(1, a * 1.5 + (a > 0.1 ? 0.1 : 0)) : a);
+    const blobs: Blob[] = [];
+    for (const h of data.heat) {
+      const a = boost(heatAlpha(h.band, bands));
+      for (const r of RINGS) blobs.push({ p: h.centroid, m: r.m, a: a * r.a });
+    }
+    layers.push(
+      new ScatterplotLayer<Blob>({
+        id: "heat-glow",
+        data: blobs,
+        pickable: false,
+        getPosition: (d) => d.p,
+        getRadius: (d) => base * d.m,
+        radiusUnits: "meters",
+        radiusMinPixels: 2,
+        stroked: false,
+        filled: true,
+        getFillColor: (d) => withAlpha(tokens.heat, d.a),
+        updateTriggers: { getRadius: [res], getFillColor: [data, tokens, i.lowZoom] },
+      }),
+    );
+    // The cells themselves are what you point at: invisible, but they pick, highlight and show the chosen one's edge.
+    const clear: RGBA = [0, 0, 0, 2];
     layers.push(
       new H3HexagonLayer<ActivityHeatCell>({
         id: "heat",
         data: data.heat,
         pickable: true,
         autoHighlight: true,
-        highlightColor: withAlpha(tokens.ink, 0.18),
+        highlightColor: withAlpha(tokens.ink, 0.12),
         getHexagon: (d) => d.id,
-        getFillColor: (d) => palette[d.band] ?? last,
-        getLineColor: (d) => (d.id === selected ? withAlpha(tokens.ink, 1) : withAlpha(tokens.heat, d.band === 0 ? 0.2 : 0.9)),
-        getLineWidth: (d) => (d.id === selected ? 3 : i.lowZoom ? 1 : 0),
+        getFillColor: clear,
+        getLineColor: (d) => (d.id === selected ? withAlpha(tokens.ink, 1) : withAlpha(tokens.heat, 0)),
+        getLineWidth: (d) => (d.id === selected ? 2.5 : 0),
         stroked: true,
         filled: true,
         extruded: false,
         lineWidthUnits: "pixels",
-        updateTriggers: {
-          getFillColor: [data, tokens, i.lowZoom],
-          getLineColor: [data, tokens, selected],
-          getLineWidth: [selected, i.lowZoom],
-        },
+        updateTriggers: { getLineColor: [data, tokens, selected], getLineWidth: [selected] },
       }),
     );
   }
 
-  if (data) {
+  if (data && i.showMerchants) {
     const dots = visibleMerchants(data, i.off);
     layers.push(
       new ScatterplotLayer<ActivityMerchant>({
@@ -109,10 +148,11 @@ export function activityLayers(i: ActivityLayerInput): LayersList {
         stroked: true,
         filled: true,
         lineWidthUnits: "pixels",
-        // Small counts are drawn as a ring, as in the approved design: the dot is there, the number is not.
+        // Small counts are drawn as a ring: the dot is there, the number is not.
         getFillColor: (d) => withAlpha(categoryRgb(tokens, d.category), d.suppressed ? 0.12 : 0.92),
-        getLineColor: (d) => (d.id === selected ? withAlpha(tokens.ink, 1) : withAlpha(categoryRgb(tokens, d.category), 1)),
-        getLineWidth: (d) => (d.id === selected ? 3 : d.suppressed ? 1.4 : 0.6),
+        getLineColor: (d) =>
+          d.id === selected ? withAlpha(tokens.ink, 1) : withAlpha(tokens.bg, d.suppressed ? 0 : 0.9),
+        getLineWidth: (d) => (d.id === selected ? 3 : d.suppressed ? 0 : 0.75),
         updateTriggers: {
           getFillColor: [data, tokens],
           getLineColor: [data, tokens, selected],

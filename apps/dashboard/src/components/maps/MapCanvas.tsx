@@ -2,7 +2,10 @@
 
 /**
  * The map surface shared by /map and /activity: MapLibre GL for the base map, deck.gl drawn into the same WebGL
- * context (MapboxOverlay, interleaved) for the data layers, and the zoom buttons, level label and hover tooltip.
+ * context (MapboxOverlay, interleaved) for the data layers, and the zoom buttons and hover tooltip. The panels that float
+ * over the map are passed in as children and positioned by CSS; elements marked data-occ-d (desktop) or data-occ-c
+ * (phone and tablet) with a side name tell the camera how much of the canvas they cover, so a "fly to" lands in the part
+ * of the map you can see.
  *
  * Under the app's CSP (no unsafe-eval, style-src 'self' + nonce, worker-src 'self' blob:):
  *  - MapLibre 6 loads its worker from a file, which the app serves at /map/maplibre-worker (same origin);
@@ -14,7 +17,15 @@ import { AttributionControl, Map as MapLibreMap, addProtocol, getVersion, setWor
 import { Protocol } from "pmtiles";
 import { MapboxOverlay } from "@deck.gl/mapbox";
 import type { LayersList, PickingInfo } from "@deck.gl/core";
-import { useEffect, useImperativeHandle, useLayoutEffect, useRef, useState, type Ref } from "react";
+import {
+  useEffect,
+  useImperativeHandle,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ReactNode,
+  type Ref,
+} from "react";
 import { BASEMAP_ATTRIBUTION, basemapPaint, buildStyle } from "./basemap";
 import type { MapTokens } from "./colors";
 import { useLatest } from "./hooks";
@@ -40,6 +51,14 @@ export interface TipContent {
   rows: [label: string, value: string][];
 }
 
+/** How many pixels of each side of the canvas the floating panels cover. */
+export interface Insets {
+  left: number;
+  right: number;
+  top: number;
+  bottom: number;
+}
+
 export interface MapCanvasProps {
   /** A same-origin PMTiles path, or null for the plain background (land is drawn by the state layer). */
   basemapUrl: string | null;
@@ -49,18 +68,18 @@ export interface MapCanvasProps {
   tokens: MapTokens;
   /** True once the first answer from the API has been given to `layers`. */
   dataReady: boolean;
-  /** "States", "Areas about 15 km across" ... */
-  levelText: string;
   busy: boolean;
   reducedMotion: boolean;
-  /** Called after the map loads and after every move. */
+  /** Called after the map loads, after every move and after the canvas changes size. */
   onView: (v: MapViewChange) => void;
   onClick: (info: PickingInfo) => void;
   /** What to show in the tooltip for a hovered object, or null for none. */
   describe: (info: PickingInfo) => TipContent | null;
   handleRef: Ref<MapHandle>;
-  /** "Fill the map with ..." hint line. */
-  hint: string;
+  /** True while a detail panel covers the right edge, so the zoom buttons step aside. */
+  detailOpen?: boolean;
+  /** The panels, legend and bars that float over the map. */
+  children?: ReactNode;
 }
 
 let initialised = false;
@@ -78,8 +97,36 @@ function currentView(map: MapLibreMap): MapViewChange {
   return { z: map.getZoom(), lat: c.lat, lon: c.lng, bbox: [b.getWest(), b.getSouth(), b.getEast(), b.getNorth()] };
 }
 
+/** The sides of the canvas covered by floating panels, read from the DOM when a camera move starts. */
+function readInsets(stage: HTMLElement): Insets {
+  const compact = window.matchMedia("(max-width: 1100px)").matches;
+  const out: Insets = { left: 0, right: 0, top: 0, bottom: 0 };
+  const box = stage.getBoundingClientRect();
+  stage.querySelectorAll<HTMLElement>(compact ? "[data-occ-c]" : "[data-occ-d]").forEach((el) => {
+    if (el.getClientRects().length === 0) return;
+    const side = (compact ? el.dataset.occC : el.dataset.occD) as keyof Insets | undefined;
+    if (!side || !(side in out)) return;
+    const r = el.getBoundingClientRect();
+    const v =
+      side === "left" ? r.right - box.left : side === "right" ? box.right - r.left : side === "top" ? r.bottom - box.top : box.bottom - r.top;
+    out[side] = Math.max(out[side], Math.max(0, Math.round(v)));
+  });
+  // Never let the panels take more than most of the canvas: the camera needs room to fit anything.
+  const maxX = Math.max(0, Math.floor(box.width * 0.7) - 32);
+  const maxY = Math.max(0, Math.floor(box.height * 0.6) - 32);
+  const sx = out.left + out.right > maxX ? maxX / (out.left + out.right) : 1;
+  const sy = out.top + out.bottom > maxY ? maxY / (out.top + out.bottom) : 1;
+  return {
+    left: Math.round(out.left * sx),
+    right: Math.round(out.right * sx),
+    top: Math.round(out.top * sy),
+    bottom: Math.round(out.bottom * sy),
+  };
+}
+
 export function MapCanvas(props: MapCanvasProps) {
-  const { basemapUrl, ariaLabel, tokens, layers, dataReady, levelText, busy, handleRef, hint } = props;
+  const { basemapUrl, ariaLabel, tokens, layers, dataReady, busy, handleRef, detailOpen, children } = props;
+  const stageRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const tipRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
@@ -100,23 +147,48 @@ export function MapCanvas(props: MapCanvasProps) {
       zoomBy(delta) {
         const map = mapRef.current;
         if (!map) return;
-        map.easeTo({ zoom: Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, map.getZoom() + delta)), duration: latest.current.reducedMotion ? 0 : 250 });
+        map.easeTo({
+          zoom: Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, map.getZoom() + delta)),
+          duration: latest.current.reducedMotion ? 0 : 250,
+        });
       },
       reset() {
-        mapRef.current?.fitBounds(AUSTRALIA_BOUNDS, { padding: 8, duration: latest.current.reducedMotion ? 0 : 400 });
+        const map = mapRef.current;
+        const stage = stageRef.current;
+        if (!map || !stage) return;
+        const i = readInsets(stage);
+        map.fitBounds(AUSTRALIA_BOUNDS, {
+          padding: { left: i.left + 16, right: i.right + 16, top: i.top + 16, bottom: i.bottom + 16 },
+          duration: latest.current.reducedMotion ? 0 : 400,
+        });
       },
       flyTo(lon, lat, zoom) {
         const map = mapRef.current;
+        const stage = stageRef.current;
         if (!map) return;
-        map.easeTo({ center: [lon, lat], zoom: zoom ?? map.getZoom(), duration: latest.current.reducedMotion ? 0 : 500 });
+        const i = stage ? readInsets(stage) : { left: 0, right: 0, top: 0, bottom: 0 };
+        map.easeTo({
+          center: [lon, lat],
+          zoom: zoom ?? map.getZoom(),
+          offset: [(i.left - i.right) / 2, (i.top - i.bottom) / 2],
+          duration: latest.current.reducedMotion ? 0 : 500,
+        });
       },
       fitBounds(b) {
-        mapRef.current?.fitBounds(
+        const map = mapRef.current;
+        const stage = stageRef.current;
+        if (!map || !stage) return;
+        const i = readInsets(stage);
+        map.fitBounds(
           [
             [b[0], b[1]],
             [b[2], b[3]],
           ],
-          { padding: 40, maxZoom: 9, duration: latest.current.reducedMotion ? 0 : 500 },
+          {
+            padding: { left: i.left + 32, right: i.right + 32, top: i.top + 32, bottom: i.bottom + 32 },
+            maxZoom: 9,
+            duration: latest.current.reducedMotion ? 0 : 500,
+          },
         );
       },
     }),
@@ -126,7 +198,8 @@ export function MapCanvas(props: MapCanvasProps) {
   // Create the map once.
   useEffect(() => {
     const container = containerRef.current;
-    if (!container) return;
+    const stage = stageRef.current;
+    if (!container || !stage) return;
     const { tokens: t0, initialView, basemapUrl: base } = latest.current;
     let map: MapLibreMap;
     try {
@@ -135,16 +208,23 @@ export function MapCanvas(props: MapCanvasProps) {
       // Only this origin: a tile URL on another host would be a third party at runtime.
       const sameOrigin = absolute !== null && new URL(absolute).origin === window.location.origin;
       const style = buildStyle(t0, sameOrigin ? absolute : null);
+      const i = readInsets(stage);
       map = new MapLibreMap({
         container,
         style: style as unknown as ConstructorParameters<typeof MapLibreMap>[0]["style"],
         ...(initialView
           ? { center: [initialView.lon, initialView.lat] as [number, number], zoom: initialView.z }
-          : { bounds: AUSTRALIA_BOUNDS as [number, number, number, number], fitBoundsOptions: { padding: 8 } }),
+          : {
+              bounds: AUSTRALIA_BOUNDS as [number, number, number, number],
+              fitBoundsOptions: {
+                padding: { left: i.left + 16, right: i.right + 16, top: i.top + 16, bottom: i.bottom + 16 },
+              },
+            }),
         minZoom: MIN_ZOOM,
         maxZoom: MAX_ZOOM,
         attributionControl: false,
-        cooperativeGestures: true,
+        // The map fills the screen and the page does not scroll, so the wheel and one finger belong to the map.
+        cooperativeGestures: false,
         dragRotate: false,
         pitchWithRotate: false,
         touchPitch: false,
@@ -182,12 +262,32 @@ export function MapCanvas(props: MapCanvasProps) {
     mapRef.current = map;
     overlayRef.current = overlay;
 
+    // Has the person moved the map themselves? Until then a change of canvas size re-fits Australia.
+    let touched = initialView !== null;
+    map.on("movestart", (e) => {
+      if ((e as unknown as { originalEvent?: unknown }).originalEvent) touched = true;
+    });
+
     map.on("load", () => {
       map.addControl(overlay as unknown as IControl);
       setLoaded(true);
       latest.current.onView(currentView(map));
     });
     map.on("moveend", () => latest.current.onView(currentView(map)));
+    // The canvas settles after the first view was reported (the layout and the fonts arrive after the map loads, so the
+    // first box can be a small one). A resize is not a move, so report the view again: the page asks for a bigger box.
+    map.on("resize", () => {
+      if (!touched) {
+        const i = readInsets(stage);
+        map.fitBounds(AUSTRALIA_BOUNDS, {
+          padding: { left: i.left + 16, right: i.right + 16, top: i.top + 16, bottom: i.bottom + 16 },
+          duration: 0,
+        });
+      }
+      latest.current.onView(currentView(map));
+    });
+    const watcher = new ResizeObserver(() => map.resize());
+    watcher.observe(container);
     map.on("error", (e) => {
       const message = (e as unknown as { error?: { message?: string } }).error?.message ?? "";
       // A tile or worker that cannot load is shown; ordinary tile misses are not worth a banner.
@@ -195,6 +295,7 @@ export function MapCanvas(props: MapCanvasProps) {
     });
 
     return () => {
+      watcher.disconnect();
       mapRef.current = null;
       overlayRef.current = null;
       setLoaded(false);
@@ -220,7 +321,8 @@ export function MapCanvas(props: MapCanvasProps) {
     const paint = basemapPaint(tokens, basemapUrl !== null);
     for (const [id, values] of Object.entries(paint)) {
       if (!map.getLayer(id)) continue;
-      for (const [prop, value] of Object.entries(values)) map.setPaintProperty(id, prop as Parameters<typeof map.setPaintProperty>[1], value);
+      for (const [prop, value] of Object.entries(values))
+        map.setPaintProperty(id, prop as Parameters<typeof map.setPaintProperty>[1], value);
     }
   }, [tokens, loaded, basemapUrl]);
 
@@ -287,8 +389,23 @@ export function MapCanvas(props: MapCanvasProps) {
     el.style.top = `${Math.round(top)}px`;
   }, [tip]);
 
+  const zoomVia = (delta: number) => {
+    const map = mapRef.current;
+    if (!map) return;
+    map.easeTo({
+      zoom: Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, map.getZoom() + delta)),
+      duration: props.reducedMotion ? 0 : 250,
+    });
+  };
+
   return (
-    <div className="gm-stage" data-map-ready={dataReady && readyMs !== null ? "true" : "false"}>
+    <div
+      ref={stageRef}
+      className="gm-stage"
+      data-map-ready={dataReady && readyMs !== null ? "true" : "false"}
+      data-detail={detailOpen ? "open" : "closed"}
+      aria-busy={busy}
+    >
       <div
         ref={containerRef}
         className="gm-canvas"
@@ -302,25 +419,43 @@ export function MapCanvas(props: MapCanvasProps) {
           <p className="small muted">{failed}</p>
         </div>
       ) : null}
-      <div className="gm-level" aria-live="polite">
-        {levelText}
-        {busy ? <span className="gm-busy"> · updating</span> : null}
-      </div>
-      <div className="gm-zoom">
-        <button type="button" aria-label="Zoom in" onClick={() => zoomVia(mapRef.current, 1, props.reducedMotion)}>
-          +
+      {children}
+      <div className="gm-zoom" role="group" aria-label="Map zoom">
+        <button type="button" aria-label="Zoom in" title="Zoom in" onClick={() => zoomVia(1)}>
+          <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
+            <path d="M8 3v10M3 8h10" />
+          </svg>
         </button>
-        <button type="button" aria-label="Zoom out" onClick={() => zoomVia(mapRef.current, -1, props.reducedMotion)}>
-          −
+        <button type="button" aria-label="Zoom out" title="Zoom out" onClick={() => zoomVia(-1)}>
+          <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
+            <path d="M3 8h10" />
+          </svg>
         </button>
-        <button type="button" aria-label="Show all of Australia" title="Show all of Australia" onClick={() => mapRef.current?.fitBounds(AUSTRALIA_BOUNDS, { padding: 8, duration: props.reducedMotion ? 0 : 400 })}>
-          ⌂
+        <button
+          type="button"
+          aria-label="Show all of Australia"
+          title="Show all of Australia"
+          onClick={() => {
+            const map = mapRef.current;
+            const stage = stageRef.current;
+            if (!map || !stage) return;
+            const i = readInsets(stage);
+            map.fitBounds(AUSTRALIA_BOUNDS, {
+              padding: { left: i.left + 16, right: i.right + 16, top: i.top + 16, bottom: i.bottom + 16 },
+              duration: props.reducedMotion ? 0 : 400,
+            });
+          }}
+        >
+          <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
+            <path d="M2.5 6V2.5H6M10 2.5h3.5V6M13.5 10v3.5H10M6 13.5H2.5V10" />
+          </svg>
         </button>
       </div>
-      <div className="gm-hint">
-        {hint}
-        {perf && readyMs !== null ? <span data-perf-ready> · first map {readyMs} ms</span> : null}
-      </div>
+      {perf && readyMs !== null ? (
+        <div className="gm-perf" data-perf-ready>
+          first map {readyMs} ms
+        </div>
+      ) : null}
       {tip ? (
         <div ref={tipRef} className="gm-tip" role="presentation">
           <b>{tip.content.title}</b>
@@ -334,9 +469,4 @@ export function MapCanvas(props: MapCanvasProps) {
       ) : null}
     </div>
   );
-}
-
-function zoomVia(map: MapLibreMap | null, delta: number, reduced: boolean): void {
-  if (!map) return;
-  map.easeTo({ zoom: Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, map.getZoom() + delta)), duration: reduced ? 0 : 250 });
 }
