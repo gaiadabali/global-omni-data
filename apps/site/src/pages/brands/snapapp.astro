@@ -316,7 +316,11 @@ const deductions = [
     grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
   }
   .shot {
-    aspect-ratio: 4 / 5;
+    aspect-ratio: 1 / 1;
+  }
+  /* Crop to the hand and terminal; the printed header of the receipt carries a payment brand. */
+  .shot :global(img) {
+    object-position: center 85%;
   }
   .tight {
     margin-top: 24px;

@@ -57,9 +57,9 @@ const page = (c) => `<!doctype html><html><head><meta charset="utf-8"><style>
 html,body{margin:0;width:1200px;height:630px;overflow:hidden}
 body{background:linear-gradient(180deg,#070a33,#0e1350);color:#f2f3fb;position:relative}
 .logo{position:absolute;left:72px;top:64px;height:56px;filter:brightness(0) invert(1)}
-.k{position:absolute;left:72px;top:250px;font:400 24px/1 M;color:#9ba1cf;display:flex;align-items:center;gap:14px}
+.k{position:absolute;margin:0;left:72px;top:236px;font:400 24px/1 M;color:#9ba1cf;display:flex;align-items:center;gap:14px}
 .k:before{content:"";width:12px;height:12px;border-radius:50%;background:#e0a14a}
-h1{position:absolute;left:72px;top:292px;width:640px;margin:0;font:420 60px/1.06 N;letter-spacing:-.015em}
+h1{position:absolute;left:72px;top:280px;width:640px;margin:0;font:420 60px/1.06 N;letter-spacing:-.015em}
 .map{position:absolute;right:40px;top:70px;width:470px}
 .map path{fill:none;stroke-linecap:round}.map .dot{stroke:#e8eaff}.map .dim{stroke:#4b54ad}
 .map .city{fill:#e0a14a}.map .halo{fill:none;stroke:#e0a14a;stroke-opacity:.55}.map .lbl{display:none}

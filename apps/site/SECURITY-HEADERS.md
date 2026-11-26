@@ -14,7 +14,7 @@ Content-Security-Policy:
   style-src 'self';
   img-src 'self';
   font-src 'self';
-  connect-src 'self' <contact endpoint origin>;
+  connect-src 'self';
   manifest-src 'self';
   base-uri 'self';
   form-action 'self';
@@ -30,9 +30,9 @@ Content-Security-Policy:
   `style=""` attributes, so no `'unsafe-inline'` and no style hashes are needed.
 - `img-src 'self'` and `font-src 'self'`: images (photos, product screens, brand marks) and the three self-hosted fonts (Newsreader, Inter, IBM Plex Mono) are files; the build never
   turns them into `data:` URIs (`vite.build.assetsInlineLimit: 0`).
-- `connect-src`: replace `<contact endpoint origin>` with the origin (scheme and host, no path) of
-  `PUBLIC_CONTACT_ENDPOINT` once it is decided, for example `https://forms.example.com`. Until the
-  variable is set the form sends nothing, so use plain `connect-src 'self'`.
+- `connect-src`: the contact form posts to `https://god.gaiada.com/api/contact` (2026-11-27), the site's own
+  origin, so `'self'` covers it. The build adds the endpoint's origin to the meta policy as well, which is the same
+  origin. If the endpoint ever moves to another host, add that origin here.
 - `frame-ancestors 'none'` only works as a header (browsers ignore it in a `<meta>` tag).
 - There is no `unsafe-inline`, `unsafe-eval`, nonce or wildcard anywhere.
 
@@ -75,9 +75,9 @@ X-Frame-Options: DENY
 
 ## Build-time switches
 
-| Variable                  | Effect                                                                                     |
-| ------------------------- | ------------------------------------------------------------------------------------------ |
-| `PUBLIC_CONTACT_ENDPOINT` | The form POSTs its JSON here. Unset: the form says it is not switched on. Build warns.     |
-| `PUBLIC_NOINDEX=1`        | `noindex, nofollow` on every page, `robots.txt` disallows everything, no sitemap. Staging. |
+| Variable                  | Effect                                                                                                                                               |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PUBLIC_CONTACT_ENDPOINT` | The form POSTs its JSON here. Live builds use `https://god.gaiada.com/api/contact`. Unset: the form says it is not switched on, and the build warns. |
+| `PUBLIC_NOINDEX=1`        | `noindex, nofollow` on every page, `robots.txt` disallows everything, no sitemap. Staging.                                                           |
 
 Both are read when the site is built, so changing one means a rebuild.

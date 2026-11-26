@@ -3,6 +3,7 @@ import Base from "../layouts/Base.astro";
 import PageHero from "../components/PageHero.astro";
 import Icon from "../components/Icon.astro";
 import { CONTACT_EMAIL } from "../lib/site";
+import { FIELD_LIMITS } from "../lib/contact";
 
 // Where the form POSTs its JSON. Unset means the form says it is not switched on yet and sends nothing.
 const endpoint = (import.meta.env.PUBLIC_CONTACT_ENDPOINT ?? "").trim();
@@ -51,6 +52,7 @@ const audience = [
               <label for="c-name">Name</label>
               <input
                 id="c-name"
+                maxlength={FIELD_LIMITS.name}
                 name="name"
                 type="text"
                 autocomplete="name"
@@ -63,6 +65,7 @@ const audience = [
               <label for="c-company">Company</label>
               <input
                 id="c-company"
+                maxlength={FIELD_LIMITS.company}
                 name="company"
                 type="text"
                 autocomplete="organization"
@@ -76,6 +79,7 @@ const audience = [
             <label for="c-email">Email</label>
             <input
               id="c-email"
+              maxlength={FIELD_LIMITS.email}
               name="email"
               type="email"
               autocomplete="email"
@@ -86,7 +90,13 @@ const audience = [
           </div>
           <div class="field">
             <label for="c-want">What do you want to know?</label>
-            <textarea id="c-want" name="want" required aria-describedby="c-want-err"></textarea>
+            <textarea
+              id="c-want"
+              name="want"
+              maxlength={FIELD_LIMITS.want}
+              required
+              aria-describedby="c-want-err"
+            ></textarea>
             <p class="field-err" id="c-want-err" hidden></p>
           </div>
           <div class="field">

@@ -36,6 +36,18 @@ const REQUIRED_MESSAGE: Record<FieldKey, string> = {
   want: "Tell us what you want to know.",
 };
 
+/**
+ * The longest value the contact endpoint accepts for each field (it rejects anything longer). The form sets the
+ * same numbers as maxlength, so a visitor can never type past them.
+ */
+export const FIELD_LIMITS = {
+  name: 100,
+  company: 120,
+  email: 254,
+  want: 4000,
+  budget: 60,
+} as const;
+
 export const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export const EMAIL_INVALID_MESSAGE = "Enter a valid email address, such as name@example.com.";
 
