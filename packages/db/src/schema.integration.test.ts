@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import pg from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { BreakGlassCliError, codeHash, issueCode, listKeys, normaliseCode, revokeKeys } from "./break-glass.ts";
 import { migrate, status } from "./runner.ts";
 
 /**
@@ -62,7 +63,7 @@ describe.skipIf(!enabled)("god_dashboard: roles, grants and the append-only audi
 
   it("the migrations are applied and recorded", async () => {
     const r = await owner.query("SELECT version, name FROM god_app.schema_migrations ORDER BY version");
-    expect(r.rows.map((x) => `${x.version}_${x.name}`)).toEqual(["1_allow_list_sessions", "2_audit_log"]);
+    expect(r.rows.map((x) => `${x.version}_${x.name}`)).toEqual(["1_allow_list_sessions", "2_audit_log", "3_break_glass"]);
   });
 
   describe("audit_log is append-only", () => {
@@ -205,6 +206,152 @@ describe.skipIf(!enabled)("god_dashboard: roles, grants and the append-only audi
       expect(r).toBe("23503");
     });
   });
+
+  describe("break-glass (0003)", () => {
+    // Active keys are counted across the whole table (at most 2), and the dashboard's store tests use the same
+    // database afterwards, so every test here starts and ends with no active key.
+    const revokeAll = () => app.query("UPDATE god_app.break_glass_credentials SET revoked_at = now() WHERE revoked_at IS NULL");
+    beforeAll(revokeAll);
+    afterAll(revokeAll);
+
+    async function person(role = "owner", status = "active"): Promise<string> {
+      const id = `u-${rand()}`;
+      await app.query(
+        "INSERT INTO god_app.allow_list (id, name, email, role, brand, agreement_signed, original_held_by, status, invited_by) VALUES ($1,'BG Test',$2,$3,$4,'2026-11-01','Safe',$5,'o')",
+        [id, `${id}@example.test`, role, role === "brand_lead" ? "ftr" : null, status],
+      );
+      return id;
+    }
+    const pk = () => randomBytes(77);
+    const credId = () => randomBytes(32).toString("base64url");
+    const addKey = (owner: string, id = credId()) =>
+      code(app, "INSERT INTO god_app.break_glass_credentials (credential_id, public_key, sign_count, owner_id) VALUES ($1,$2,0,$3)", [id, pk(), owner]);
+
+    it("god_app cannot delete keys or codes, make a code, or choose times and revocation at insert", async () => {
+      const o = await person();
+      expect(await code(app, "DELETE FROM god_app.break_glass_credentials")).toBe("42501");
+      expect(await code(app, "DELETE FROM god_app.break_glass_enrolment_codes")).toBe("42501");
+      expect(await code(app, "TRUNCATE god_app.break_glass_credentials")).toBe("42501");
+      expect(await code(app, "INSERT INTO god_app.break_glass_enrolment_codes (code_hash, owner_id) VALUES (repeat('a', 64), $1)", [o])).toBe("42501");
+      expect(
+        await code(app, "INSERT INTO god_app.break_glass_credentials (credential_id, public_key, owner_id, revoked_at) VALUES ('abc', $1, $2, now())", [pk(), o]),
+      ).toBe("42501");
+      expect(
+        await code(app, "INSERT INTO god_app.break_glass_credentials (credential_id, public_key, owner_id, created_at) VALUES ('abc', $1, $2, now())", [pk(), o]),
+      ).toBe("42501");
+      expect(await code(app, "UPDATE god_app.break_glass_credentials SET owner_id = 'x'")).toBe("42501");
+      expect(await code(app, "UPDATE god_app.break_glass_credentials SET public_key = '\\x00'")).toBe("42501");
+      expect(await code(app, "UPDATE god_app.break_glass_enrolment_codes SET expires_at = now() + interval '1 day'")).toBe("42501");
+      expect(await code(app, "UPDATE god_app.break_glass_enrolment_codes SET owner_id = 'x'")).toBe("42501");
+    });
+
+    it("one active key per Owner, two in total, Owners only; revoking frees the place", async () => {
+      const a = await person();
+      const b = await person();
+      const c = await person();
+      expect(await addKey(a)).toBe("ok");
+      expect(await addKey(a)).toBe("23505"); // a second active key for the same Owner
+      expect(await addKey(await person("data"))).toBe("23514");
+      expect(await addKey(await person("brand_lead"))).toBe("23514");
+      expect(await addKey(await person("owner", "suspended"))).toBe("23514");
+      expect(await addKey(await person("owner", "invited"))).toBe("23514");
+      expect(await addKey(b)).toBe("ok");
+      expect(await addKey(c)).toBe("23514"); // a third active key
+      await app.query("UPDATE god_app.break_glass_credentials SET revoked_at = now() WHERE owner_id = $1", [a]);
+      expect(await addKey(c)).toBe("ok");
+      expect(await addKey(a)).toBe("23514"); // a's place went to c
+      await revokeAll();
+    });
+
+    it("a revoked key is final, and the counter never goes back", async () => {
+      const o = await person();
+      const id = credId();
+      expect(await addKey(o, id)).toBe("ok");
+      expect(await code(app, "UPDATE god_app.break_glass_credentials SET sign_count = 5, last_used_at = now() WHERE credential_id = $1", [id])).toBe("ok");
+      expect(await code(app, "UPDATE god_app.break_glass_credentials SET sign_count = 4 WHERE credential_id = $1", [id])).toBe("23001");
+      expect(await code(app, "UPDATE god_app.break_glass_credentials SET revoked_at = now() WHERE credential_id = $1", [id])).toBe("ok");
+      expect(await code(app, "UPDATE god_app.break_glass_credentials SET revoked_at = NULL WHERE credential_id = $1", [id])).toBe("23001");
+      expect(await code(app, "UPDATE god_app.break_glass_credentials SET sign_count = 9 WHERE credential_id = $1", [id])).toBe("23001");
+    });
+
+    it("enrolment codes: 15 minutes at most, hex hash, used once", async () => {
+      const o = await person();
+      const ins = (h: string, minutes: number) =>
+        code(owner, "INSERT INTO god_app.break_glass_enrolment_codes (code_hash, owner_id, expires_at) VALUES ($1, $2, now() + make_interval(mins => $3))", [h, o, minutes]);
+      const h = randomBytes(32).toString("hex");
+      expect(await ins(randomBytes(32).toString("hex"), 16)).toBe("23514");
+      expect(await ins("not-a-hash", 15)).toBe("23514");
+      expect(await ins(h, 15)).toBe("ok");
+      expect(await code(app, "UPDATE god_app.break_glass_enrolment_codes SET used_at = now() WHERE code_hash = $1", [h])).toBe("ok");
+      expect(await code(app, "UPDATE god_app.break_glass_enrolment_codes SET used_at = now() + interval '1 second' WHERE code_hash = $1", [h])).toBe("23001");
+      expect(await code(app, "UPDATE god_app.break_glass_enrolment_codes SET used_at = NULL WHERE code_hash = $1", [h])).toBe("23001");
+    });
+
+    it("an emergency session lasts an hour at most and stays an emergency session", async () => {
+      const o = await person();
+      const ins = (hours: number, amr: string) =>
+        code(
+          app,
+          "INSERT INTO god_app.sessions (token_hash, user_id, created_at, last_seen_at, absolute_expires_at, auth_time, amr) VALUES ($1, $2, now(), now(), now() + make_interval(hours => $3), now(), $4::text[])",
+          [randomBytes(32).toString("hex"), o, hours, amr],
+        );
+      expect(await ins(2, "{hwk,break-glass}")).toBe("23514");
+      expect(await ins(1, "{hwk,break-glass}")).toBe("ok");
+      expect(await ins(8, "{hwk}")).toBe("ok");
+      expect(await code(app, "UPDATE god_app.sessions SET amr = '{hwk}' WHERE user_id = $1 AND 'break-glass' = ANY (amr)", [o])).toBe("23001");
+      // Making an 8-hour session an emergency one breaks the one-hour rule.
+      expect(await code(app, "UPDATE god_app.sessions SET amr = '{hwk,break-glass}' WHERE user_id = $1 AND NOT ('break-glass' = ANY (amr))", [o])).toBe("23514");
+    });
+
+    it("the audit log takes the new actions, and the sign-in actions 0002 left out", async () => {
+      for (const a of ["signin.ok", "signin.fresh", "signout", "breakglass.code", "breakglass.enrol", "breakglass.revoke", "breakglass.signin", "breakglass.refused"]) {
+        expect(await code(app, "INSERT INTO god_app.audit_log (who, action, target) VALUES ('t', $1, 'x')", [a])).toBe("ok");
+      }
+      expect(await code(app, "INSERT INTO god_app.audit_log (who, action, target) VALUES ('t', 'breakglass.nope', 'x')")).toBe("23514");
+    });
+
+    it("the CLI: a code for an active Owner only, only its hash stored, an older code stops, audited", async () => {
+      const o = await person();
+      await expect(issueCode(MIGRATOR!, await person("data"))).rejects.toThrow(BreakGlassCliError);
+      await expect(issueCode(MIGRATOR!, await person("owner", "invited"))).rejects.toThrow(/invited/);
+      await expect(issueCode(MIGRATOR!, "no-such-entry")).rejects.toThrow(/no allow-list entry/);
+      await expect(issueCode(MIGRATOR!, "bad id; drop")).rejects.toThrow(BreakGlassCliError);
+      const first = await issueCode(MIGRATOR!, o);
+      const second = await issueCode(MIGRATOR!, o);
+      expect(first.code).not.toBe(second.code);
+      const rows = await app.query<{ code_hash: string; live: boolean; minutes: number }>(
+        "SELECT code_hash, expires_at > now() AS live, round(extract(epoch FROM expires_at - created_at) / 60)::int AS minutes FROM god_app.break_glass_enrolment_codes WHERE owner_id = $1 ORDER BY id",
+        [o],
+      );
+      expect(rows.rows.map((r) => r.code_hash)).toEqual([codeHash(normaliseCode(first.code)!), codeHash(normaliseCode(second.code)!)]);
+      expect(rows.rows.map((r) => r.live)).toEqual([false, true]);
+      expect(rows.rows[1]!.minutes).toBe(15);
+      const plain = await app.query("SELECT count(*)::int AS n FROM god_app.break_glass_enrolment_codes WHERE code_hash = $1 OR code_hash = $2", [first.code, second.code]);
+      expect(plain.rows[0].n).toBe(0);
+      const audit = await app.query("SELECT who, action FROM god_app.audit_log WHERE target = $1 ORDER BY seq", [o]);
+      expect(audit.rows).toEqual([
+        { who: "server", action: "breakglass.code" },
+        { who: "server", action: "breakglass.code" },
+      ]);
+    });
+
+    it("the CLI: revoke ends the Owner's key and emergency sessions, and lists keys", async () => {
+      const o = await person();
+      const id = credId();
+      expect(await addKey(o, id)).toBe("ok");
+      await app.query(
+        "INSERT INTO god_app.sessions (token_hash, user_id, created_at, last_seen_at, absolute_expires_at, auth_time, amr) VALUES ($1, $2, now(), now(), now() + interval '1 hour', now(), '{hwk,break-glass}')",
+        [randomBytes(32).toString("hex"), o],
+      );
+      expect((await listKeys(MIGRATOR!)).some((k) => k.owner === o && k.revoked === null)).toBe(true);
+      expect(await revokeKeys(MIGRATOR!, { ownerId: o })).toEqual({ keys: 1, sessions: 1 });
+      expect(await revokeKeys(MIGRATOR!, { ownerId: o })).toEqual({ keys: 0, sessions: 0 });
+      const live = await app.query("SELECT count(*)::int AS n FROM god_app.sessions WHERE user_id = $1 AND revoked_at IS NULL", [o]);
+      expect(live.rows[0].n).toBe(0);
+      const audit = await app.query("SELECT who, action FROM god_app.audit_log WHERE action = 'breakglass.revoke' AND target = $1", [o]);
+      expect(audit.rows).toHaveLength(2);
+    });
+  });
 });
 
 describe.skipIf(!enabled)("the migration runner against scratch databases", () => {
@@ -237,10 +384,38 @@ describe.skipIf(!enabled)("the migration runner against scratch databases", () =
   it("applies everything once, then does nothing", async () => {
     const url = await scratch();
     const first = await migrate(url, { dir: MIGRATIONS });
-    expect(first.applied).toEqual(["0001_allow_list_sessions", "0002_audit_log"]);
+    expect(first.applied).toEqual(["0001_allow_list_sessions", "0002_audit_log", "0003_break_glass"]);
     const second = await migrate(url, { dir: MIGRATIONS });
-    expect(second).toEqual({ applied: [], upToDate: 2 });
-    expect((await status(url, { dir: MIGRATIONS })).map((r) => r.state)).toEqual(["applied", "applied"]);
+    expect(second).toEqual({ applied: [], upToDate: 3 });
+    expect((await status(url, { dir: MIGRATIONS })).map((r) => r.state)).toEqual(["applied", "applied", "applied"]);
+  });
+
+  it("0003 applies on top of a database already at 0002 that holds data, and keeps it", async () => {
+    const url = await scratch();
+    const dir = copyMigrations();
+    const third = readFileSync(join(dir, "0003_break_glass.sql"), "utf8");
+    rmSync(join(dir, "0003_break_glass.sql"));
+    expect((await migrate(url, { dir })).applied).toEqual(["0001_allow_list_sessions", "0002_audit_log"]);
+    const c = await connect(url);
+    try {
+      await c.query(
+        "INSERT INTO god_app.allow_list (id, name, email, role, agreement_signed, original_held_by, status, invited_by) VALUES ('u-o', 'Owner', 'o@example.test', 'owner', '2026-11-01', 'Safe', 'active', 'bootstrap')",
+      );
+      await c.query(
+        "INSERT INTO god_app.sessions (token_hash, user_id, created_at, last_seen_at, absolute_expires_at, auth_time, amr) VALUES (repeat('d', 64), 'u-o', now(), now(), now() + interval '8 hours', now(), '{hwk}')",
+      );
+      await c.query("INSERT INTO god_app.audit_log (who, action, target) VALUES ('u-o', 'session.revoke', 'x'), ('sign-in', 'signin.refused', 'sub#1')");
+      writeFileSync(join(dir, "0003_break_glass.sql"), third);
+      expect(await migrate(url, { dir })).toEqual({ applied: ["0003_break_glass"], upToDate: 2 });
+      const counts = await c.query(
+        "SELECT (SELECT count(*) FROM god_app.allow_list)::int AS a, (SELECT count(*) FROM god_app.sessions)::int AS s, (SELECT count(*) FROM god_app.audit_log)::int AS l",
+      );
+      expect(counts.rows[0]).toEqual({ a: 1, s: 1, l: 2 });
+      // The widened CHECK now takes what the sign-in code writes.
+      await c.query("INSERT INTO god_app.audit_log (who, action, target) VALUES ('u-o', 'signin.ok', 'session:x')");
+    } finally {
+      await c.end();
+    }
   });
 
   it("refuses an applied migration that was edited", async () => {
@@ -250,21 +425,21 @@ describe.skipIf(!enabled)("the migration runner against scratch databases", () =
     const f = join(dir, "0002_audit_log.sql");
     writeFileSync(f, readFileSync(f, "utf8") + "\n-- sneaky edit\n");
     await expect(migrate(url, { dir })).rejects.toThrow(/edited after it was applied/);
-    expect((await status(url, { dir })).map((r) => r.state)).toEqual(["applied", "changed"]);
+    expect((await status(url, { dir })).map((r) => r.state)).toEqual(["applied", "changed", "applied"]);
   });
 
   it("refuses when an applied migration's file is gone", async () => {
     const url = await scratch();
     const dir = copyMigrations();
     await migrate(url, { dir });
-    rmSync(join(dir, "0002_audit_log.sql"));
+    rmSync(join(dir, "0003_break_glass.sql"));
     await expect(migrate(url, { dir })).rejects.toThrow(/missing or out of order/);
   });
 
   it("a failing migration rolls back completely and is not recorded", async () => {
     const url = await scratch();
     const dir = copyMigrations();
-    for (const f of readdirSync(dir)) if (f.startsWith("0002")) rmSync(join(dir, f));
+    for (const f of readdirSync(dir)) if (!f.startsWith("0001")) rmSync(join(dir, f));
     writeFileSync(join(dir, "0002_bad.sql"), "CREATE TABLE god_app.half_done (id int);\nSELECT 1/0;\n");
     await expect(migrate(url, { dir })).rejects.toThrow(/0002_bad.sql failed and was rolled back/);
     const c = await connect(url);
@@ -281,7 +456,7 @@ describe.skipIf(!enabled)("the migration runner against scratch databases", () =
   it("two runners at once: one applies, the other waits and finds nothing to do", async () => {
     const url = await scratch();
     const [a, b] = await Promise.all([migrate(url, { dir: MIGRATIONS }), migrate(url, { dir: MIGRATIONS })]);
-    expect(a.applied.length + b.applied.length).toBe(2);
+    expect(a.applied.length + b.applied.length).toBe(3);
     expect(Math.min(a.applied.length, b.applied.length)).toBe(0);
   });
 });
