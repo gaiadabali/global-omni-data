@@ -619,6 +619,9 @@ h3 {
     grid-template-columns: minmax(0, 1fr);
     gap: 12px;
   }
+  .go {
+    justify-self: start;
+  }
 }
 
 /* How the group connects */
@@ -699,6 +702,7 @@ h3 {
   }
   .cta-panel .row {
     justify-content: flex-start;
+    flex-wrap: wrap;
   }
 }
 
