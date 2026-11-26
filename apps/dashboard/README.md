@@ -18,7 +18,12 @@ src/
   app/                      routes. (shell)/ pages share the signed-in shell; signin/ and dev-role/ do not
     (shell)/page.tsx          /            group overview
     (shell)/brands/[brand]/   /brands/yourtal | snapapp | ftr
-    (shell)/map|activity|insight|teens|person|quality|admin/   stubs: "Built in the next step"
+    (shell)/map/ and activity/   the two Australia maps (client components in components/maps, loaded with
+                                 next/dynamic, ssr: false). map/maplibre-worker/route.ts serves MapLibre's worker
+                                 file from this origin (CSP worker-src 'self'). GOD_BASEMAP_PMTILES, a same-origin
+                                 .pmtiles path, switches on the self-hosted base map; unset = land from au-states.json
+    (shell)/insight|teens|person|quality|admin/   Brand insight (with ?print=1), Teen market, Person 360,
+                                 Data quality, Admin. Actions write to the audit seam (server/audit)
     (shell)/forbidden.tsx     the 403 screen (a real 403, via forbidden())
     api/map/influence|activity/route.ts   GET handlers, thin wrappers over src/server/map-api.ts
   proxy.ts                  Next 16 "middleware": per-request nonce CSP

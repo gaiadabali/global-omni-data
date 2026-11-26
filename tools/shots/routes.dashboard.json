@@ -370,97 +370,6 @@
     "delayMs": 500
   },
   {
-    "name": "stub-map",
-    "path": "/map",
-    "role": "owner",
-    "themes": [
-      "light",
-      "dark"
-    ],
-    "widths": [
-      1440,
-      390
-    ]
-  },
-  {
-    "name": "stub-activity",
-    "path": "/activity",
-    "role": "owner",
-    "themes": [
-      "light",
-      "dark"
-    ],
-    "widths": [
-      1440,
-      390
-    ]
-  },
-  {
-    "name": "stub-insight",
-    "path": "/insight",
-    "role": "owner",
-    "themes": [
-      "light",
-      "dark"
-    ],
-    "widths": [
-      1440,
-      390
-    ]
-  },
-  {
-    "name": "stub-teens",
-    "path": "/teens",
-    "role": "owner",
-    "themes": [
-      "light",
-      "dark"
-    ],
-    "widths": [
-      1440,
-      390
-    ]
-  },
-  {
-    "name": "stub-person",
-    "path": "/person",
-    "role": "owner",
-    "themes": [
-      "light",
-      "dark"
-    ],
-    "widths": [
-      1440,
-      390
-    ]
-  },
-  {
-    "name": "stub-quality",
-    "path": "/quality",
-    "role": "owner",
-    "themes": [
-      "light",
-      "dark"
-    ],
-    "widths": [
-      1440,
-      390
-    ]
-  },
-  {
-    "name": "stub-admin",
-    "path": "/admin",
-    "role": "owner",
-    "themes": [
-      "light",
-      "dark"
-    ],
-    "widths": [
-      1440,
-      390
-    ]
-  },
-  {
     "name": "lead-yourtal-home",
     "path": "/",
     "role": "brand_lead_yourtal",
@@ -591,35 +500,425 @@
       390
     ]
   },
-  {"name": "insight-owner", "path": "/insight", "role": "owner", "themes": ["light", "dark"], "widths": [1440, 390], "waitFor": "[data-chart][data-ready=\"1\"]", "delayMs": 900},
-  {"name": "insight-exec", "path": "/insight", "role": "executive", "themes": ["light", "dark"], "widths": [1440, 390], "waitFor": "[data-chart][data-ready=\"1\"]", "delayMs": 900},
-  {"name": "insight-data", "path": "/insight", "role": "data", "themes": ["light", "dark"], "widths": [1440, 390], "waitFor": "[data-chart][data-ready=\"1\"]", "delayMs": 900},
-  {"name": "teens-owner", "path": "/teens", "role": "owner", "themes": ["light", "dark"], "widths": [1440, 390], "waitFor": "[data-chart][data-ready=\"1\"]", "delayMs": 900},
-  {"name": "teens-exec", "path": "/teens", "role": "executive", "themes": ["light", "dark"], "widths": [1440, 390], "waitFor": "[data-chart][data-ready=\"1\"]", "delayMs": 900},
-  {"name": "teens-data", "path": "/teens", "role": "data", "themes": ["light", "dark"], "widths": [1440, 390], "waitFor": "[data-chart][data-ready=\"1\"]", "delayMs": 900},
-  {"name": "person-owner", "path": "/person", "role": "owner", "themes": ["light", "dark"], "widths": [1440, 390]},
-  {"name": "person-data", "path": "/person", "role": "data", "themes": ["light", "dark"], "widths": [1440, 390]},
-  {"name": "quality-owner", "path": "/quality", "role": "owner", "themes": ["light", "dark"], "widths": [1440, 390], "waitFor": "[data-chart][data-ready=\"1\"]", "delayMs": 500},
-  {"name": "quality-data", "path": "/quality", "role": "data", "themes": ["light", "dark"], "widths": [1440, 390], "waitFor": "[data-chart][data-ready=\"1\"]", "delayMs": 500},
-  {"name": "admin-owner-invite-disabled", "path": "/admin", "role": "owner", "themes": ["light", "dark"], "widths": [1440, 390], "waitFor": "button[disabled]", "delayMs": 300},
-  {"name": "person-reason-modal", "path": "/person?id=G-YARN-DJWV", "role": "owner", "themes": ["light", "dark"], "widths": [1440, 390], "waitFor": "dialog[open]", "delayMs": 300},
-  {"name": "person-reason-modal-data", "path": "/person?id=G-YARN-DJWV", "role": "data", "themes": ["light"], "widths": [1440], "waitFor": "dialog[open]", "delayMs": 300},
-  {"name": "person-opened-owner", "path": "/person?id=G-PHBU-UJDH", "role": "owner", "themes": ["light", "dark"], "widths": [1440, 390], "delayMs": 600},
-  {"name": "person-opened-data", "path": "/person?id=G-PHBU-UJDH", "role": "data", "themes": ["light"], "widths": [1440], "delayMs": 600},
-  {"name": "person-teen-refusal", "path": "/person?id=G-5RJD-68WR", "role": "owner", "themes": ["light", "dark"], "widths": [1440, 390], "delayMs": 300},
-  {"name": "person-search", "path": "/person?q=G-P", "role": "data", "themes": ["light"], "widths": [1440, 390], "delayMs": 300},
-  {"name": "person-search-not-an-id", "path": "/person?q=jane%40example.com", "role": "owner", "themes": ["light"], "widths": [1440], "delayMs": 300},
-  {"name": "insight-print", "path": "/insight?entity=southern&print=1", "role": "owner", "themes": ["light", "dark"], "widths": [1440, 390], "waitFor": "[data-chart][data-ready=\"1\"]", "delayMs": 900},
-  {"name": "insight-sensitive", "path": "/insight?entity=cat-pharm", "role": "owner", "themes": ["light"], "widths": [1440], "waitFor": "[data-chart][data-ready=\"1\"]", "delayMs": 900},
-  {"name": "insight-harbour-exec", "path": "/insight?entity=harbour", "role": "executive", "themes": ["light"], "widths": [1440], "waitFor": "[data-chart][data-ready=\"1\"]", "delayMs": 900},
-  {"name": "teens-print", "path": "/teens?entity=kidzone&print=1", "role": "owner", "themes": ["light"], "widths": [1440, 390], "waitFor": "[data-chart][data-ready=\"1\"]", "delayMs": 900},
-  {"name": "teens-southern", "path": "/teens?entity=southern", "role": "owner", "themes": ["light"], "widths": [1440], "waitFor": "[data-chart][data-ready=\"1\"]", "delayMs": 900},
-  {"name": "admin-audit", "path": "/admin?tab=audit", "role": "owner", "themes": ["light", "dark"], "widths": [1440, 390], "delayMs": 300},
-  {"name": "admin-audit-filtered", "path": "/admin?tab=audit&action=person.open", "role": "owner", "themes": ["light"], "widths": [1440], "delayMs": 300},
-  {"name": "admin-sessions", "path": "/admin?tab=sessions", "role": "owner", "themes": ["light"], "widths": [1440, 390], "delayMs": 300},
-  {"name": "refused-insight-brand_lead_yourtal", "path": "/insight", "role": "brand_lead_yourtal", "themes": ["light"], "widths": [1440, 390]},
-  {"name": "refused-teens-brand_lead_yourtal", "path": "/teens", "role": "brand_lead_yourtal", "themes": ["light"], "widths": [1440, 390]},
-  {"name": "refused-person-executive", "path": "/person", "role": "executive", "themes": ["light"], "widths": [1440, 390]},
-  {"name": "refused-quality-executive", "path": "/quality", "role": "executive", "themes": ["light"], "widths": [1440, 390]},
-  {"name": "refused-admin-data", "path": "/admin", "role": "data", "themes": ["light"], "widths": [1440, 390]}
+  {
+    "name": "insight-owner",
+    "path": "/insight",
+    "role": "owner",
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "widths": [
+      1440,
+      390
+    ],
+    "waitFor": "[data-chart][data-ready=\"1\"]",
+    "delayMs": 900
+  },
+  {
+    "name": "insight-exec",
+    "path": "/insight",
+    "role": "executive",
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "widths": [
+      1440,
+      390
+    ],
+    "waitFor": "[data-chart][data-ready=\"1\"]",
+    "delayMs": 900
+  },
+  {
+    "name": "insight-data",
+    "path": "/insight",
+    "role": "data",
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "widths": [
+      1440,
+      390
+    ],
+    "waitFor": "[data-chart][data-ready=\"1\"]",
+    "delayMs": 900
+  },
+  {
+    "name": "teens-owner",
+    "path": "/teens",
+    "role": "owner",
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "widths": [
+      1440,
+      390
+    ],
+    "waitFor": "[data-chart][data-ready=\"1\"]",
+    "delayMs": 900
+  },
+  {
+    "name": "teens-exec",
+    "path": "/teens",
+    "role": "executive",
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "widths": [
+      1440,
+      390
+    ],
+    "waitFor": "[data-chart][data-ready=\"1\"]",
+    "delayMs": 900
+  },
+  {
+    "name": "teens-data",
+    "path": "/teens",
+    "role": "data",
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "widths": [
+      1440,
+      390
+    ],
+    "waitFor": "[data-chart][data-ready=\"1\"]",
+    "delayMs": 900
+  },
+  {
+    "name": "person-owner",
+    "path": "/person",
+    "role": "owner",
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "widths": [
+      1440,
+      390
+    ]
+  },
+  {
+    "name": "person-data",
+    "path": "/person",
+    "role": "data",
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "widths": [
+      1440,
+      390
+    ]
+  },
+  {
+    "name": "quality-owner",
+    "path": "/quality",
+    "role": "owner",
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "widths": [
+      1440,
+      390
+    ],
+    "waitFor": "[data-chart][data-ready=\"1\"]",
+    "delayMs": 500
+  },
+  {
+    "name": "quality-data",
+    "path": "/quality",
+    "role": "data",
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "widths": [
+      1440,
+      390
+    ],
+    "waitFor": "[data-chart][data-ready=\"1\"]",
+    "delayMs": 500
+  },
+  {
+    "name": "admin-owner-invite-disabled",
+    "path": "/admin",
+    "role": "owner",
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "widths": [
+      1440,
+      390
+    ],
+    "waitFor": "button[disabled]",
+    "delayMs": 300
+  },
+  {
+    "name": "person-reason-modal",
+    "path": "/person?id=G-YARN-DJWV",
+    "role": "owner",
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "widths": [
+      1440,
+      390
+    ],
+    "waitFor": "dialog[open]",
+    "delayMs": 300
+  },
+  {
+    "name": "person-reason-modal-data",
+    "path": "/person?id=G-YARN-DJWV",
+    "role": "data",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440
+    ],
+    "waitFor": "dialog[open]",
+    "delayMs": 300
+  },
+  {
+    "name": "person-opened-owner",
+    "path": "/person?id=G-PHBU-UJDH",
+    "role": "owner",
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "widths": [
+      1440,
+      390
+    ],
+    "delayMs": 600
+  },
+  {
+    "name": "person-opened-data",
+    "path": "/person?id=G-PHBU-UJDH",
+    "role": "data",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440
+    ],
+    "delayMs": 600
+  },
+  {
+    "name": "person-teen-refusal",
+    "path": "/person?id=G-5RJD-68WR",
+    "role": "owner",
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "widths": [
+      1440,
+      390
+    ],
+    "delayMs": 300
+  },
+  {
+    "name": "person-search",
+    "path": "/person?q=G-P",
+    "role": "data",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440,
+      390
+    ],
+    "delayMs": 300
+  },
+  {
+    "name": "person-search-not-an-id",
+    "path": "/person?q=jane%40example.com",
+    "role": "owner",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440
+    ],
+    "delayMs": 300
+  },
+  {
+    "name": "insight-print",
+    "path": "/insight?entity=southern&print=1",
+    "role": "owner",
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "widths": [
+      1440,
+      390
+    ],
+    "waitFor": "[data-chart][data-ready=\"1\"]",
+    "delayMs": 900
+  },
+  {
+    "name": "insight-sensitive",
+    "path": "/insight?entity=cat-pharm",
+    "role": "owner",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440
+    ],
+    "waitFor": "[data-chart][data-ready=\"1\"]",
+    "delayMs": 900
+  },
+  {
+    "name": "insight-harbour-exec",
+    "path": "/insight?entity=harbour",
+    "role": "executive",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440
+    ],
+    "waitFor": "[data-chart][data-ready=\"1\"]",
+    "delayMs": 900
+  },
+  {
+    "name": "teens-print",
+    "path": "/teens?entity=kidzone&print=1",
+    "role": "owner",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440,
+      390
+    ],
+    "waitFor": "[data-chart][data-ready=\"1\"]",
+    "delayMs": 900
+  },
+  {
+    "name": "teens-southern",
+    "path": "/teens?entity=southern",
+    "role": "owner",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440
+    ],
+    "waitFor": "[data-chart][data-ready=\"1\"]",
+    "delayMs": 900
+  },
+  {
+    "name": "admin-audit",
+    "path": "/admin?tab=audit",
+    "role": "owner",
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "widths": [
+      1440,
+      390
+    ],
+    "delayMs": 300
+  },
+  {
+    "name": "admin-audit-filtered",
+    "path": "/admin?tab=audit&action=person.open",
+    "role": "owner",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440
+    ],
+    "delayMs": 300
+  },
+  {
+    "name": "admin-sessions",
+    "path": "/admin?tab=sessions",
+    "role": "owner",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440,
+      390
+    ],
+    "delayMs": 300
+  },
+  {
+    "name": "refused-insight-brand_lead_yourtal",
+    "path": "/insight",
+    "role": "brand_lead_yourtal",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440,
+      390
+    ]
+  },
+  {
+    "name": "refused-teens-brand_lead_yourtal",
+    "path": "/teens",
+    "role": "brand_lead_yourtal",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440,
+      390
+    ]
+  },
+  {
+    "name": "refused-person-executive",
+    "path": "/person",
+    "role": "executive",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440,
+      390
+    ]
+  },
+  {
+    "name": "refused-quality-executive",
+    "path": "/quality",
+    "role": "executive",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440,
+      390
+    ]
+  },
+  {
+    "name": "refused-admin-data",
+    "path": "/admin",
+    "role": "data",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440,
+      390
+    ]
+  }
 ]
