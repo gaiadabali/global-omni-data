@@ -383,7 +383,7 @@ export default function ActivityMap({ initial, meta, basemapUrl, lockedBrandName
     },
     {
       key: "areas",
-      label: "Activity areas on screen",
+      label: "Areas on screen",
       value: shown && ui.heat ? fmtInt(heatOnScreen) : "–",
       sub: res ? `about ${kmLabel(HEX_WIDTH_KM[res] ?? 5.6)} across` : undefined,
     },
@@ -395,7 +395,7 @@ export default function ActivityMap({ initial, meta, basemapUrl, lockedBrandName
     },
     {
       key: "lead",
-      label: "Leading category there",
+      label: "Top category there",
       value: lead ? lead.name : "–",
       sub: lead ? `${shareText(lead.share) ?? ""} of people active` : undefined,
     },

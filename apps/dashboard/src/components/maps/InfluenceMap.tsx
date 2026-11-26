@@ -76,6 +76,8 @@ const AUDIENCE_NAMES: Record<Audience, string> = {
   businesses: "Registered businesses",
   people: "Registered people",
 };
+/** The same choices in the audience menu, short enough for a narrow select. */
+const AUDIENCE_SHORT: Record<Audience, string> = { both: "Both", businesses: "Businesses", people: "People" };
 const WHO: Record<Audience, string> = {
   both: "people and businesses",
   businesses: "businesses",
@@ -607,7 +609,7 @@ export default function InfluenceMap({ initial, meta, basemapUrl, lockedBrand, s
                     value={ui.audience}
                     options={(["both", "people", "businesses"] as Audience[]).map((a) => ({
                       value: a,
-                      label: AUDIENCE_NAMES[a],
+                      label: AUDIENCE_SHORT[a],
                     }))}
                     onChange={(v) => change({ audience: v as Audience })}
                   />
