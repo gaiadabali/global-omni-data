@@ -8,7 +8,7 @@ import type { ActivityMapProps } from "./ActivityMap";
 const ActivityMap = dynamic(() => import("./ActivityMap"), {
   ssr: false,
   loading: () => (
-    <div className="gm-skeleton">
+    <div className="pd-skel">
       <Loading>Loading the map</Loading>
     </div>
   ),

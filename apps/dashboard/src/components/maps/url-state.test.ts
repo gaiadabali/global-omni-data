@@ -50,6 +50,7 @@ describe("influence state", () => {
       audience: "both",
       measure: "count",
       month: "2026-11",
+      mode: "bubbles",
       view: null,
       sel: null,
     });
@@ -57,7 +58,7 @@ describe("influence state", () => {
 
   it("reads every parameter", () => {
     const s = parseInfluenceState(
-      sp("brand=snapapp&audience=people&measure=per1000&month=2026-05&z=6.5&lat=-33&lon=148&sel=NSW"),
+      sp("brand=snapapp&audience=people&measure=per1000&month=2026-05&mode=hex&z=6.5&lat=-33&lon=148&sel=NSW"),
       meta,
     );
     expect(s).toEqual({
@@ -65,9 +66,15 @@ describe("influence state", () => {
       audience: "people",
       measure: "per1000",
       month: "2026-05",
+      mode: "hex",
       view: { z: 6.5, lat: -33, lon: 148 },
       sel: "NSW",
     });
+  });
+
+  it("opens on bubbles when the mode is not one of the three", () => {
+    expect(parseInfluenceState(sp("mode=shaded"), meta).mode).toBe("shaded");
+    expect(parseInfluenceState(sp("mode=3d"), meta).mode).toBe("bubbles");
   });
 
   it("falls back on bad values and a month outside the 24", () => {
@@ -85,9 +92,9 @@ describe("influence state", () => {
   });
 
   it("round-trips and leaves out defaults", () => {
-    const s = parseInfluenceState(sp("brand=ftr&measure=per1000&month=2025-03&z=7&lat=-30&lon=150"), meta);
+    const s = parseInfluenceState(sp("brand=ftr&measure=per1000&month=2025-03&mode=shaded&z=7&lat=-30&lon=150"), meta);
     const qs = serialiseInfluenceState(s, meta);
-    expect(qs).toBe("brand=ftr&measure=per1000&month=2025-03&z=7&lat=-30&lon=150");
+    expect(qs).toBe("brand=ftr&measure=per1000&month=2025-03&mode=shaded&z=7&lat=-30&lon=150");
     expect(parseInfluenceState(sp(qs), meta)).toEqual(s);
     expect(serialiseInfluenceState(parseInfluenceState(sp(""), meta), meta)).toBe("");
   });

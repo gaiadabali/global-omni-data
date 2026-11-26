@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { PageHeader } from "@/components/ui";
 import { InfluenceMapLoader } from "@/components/maps/InfluenceMapLoader";
 import { sanitizeBasemapUrl } from "@/components/maps/basemap";
 import { parseInfluenceState } from "@/components/maps/url-state";
@@ -21,8 +20,7 @@ export default async function MapPage({ searchParams }: { searchParams: SearchPa
   const lockedBrand = viewer.role === "brand_lead" && viewer.brand ? viewer.brand : null;
   const initial = parseInfluenceState(await searchParams, meta, lockedBrand ?? undefined);
   return (
-    <div className="page-body">
-      <PageHeader title={PAGES.map.title} sub={PAGES.map.sub} />
+    <div className="pd-page">
       <InfluenceMapLoader
         initial={initial}
         meta={meta}

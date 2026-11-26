@@ -32,6 +32,15 @@ export function influenceLevel(zoom: number): InfluenceLevel {
   return out;
 }
 
+/** In hexagon mode the H3 cells start earlier than the area levels would reach them: resolution 6 from here. */
+export const HEX_MODE_START = 6;
+
+/** The level for a view. Hexagon mode asks for H3 cells from `HEX_MODE_START`; below that it shows the area levels. */
+export function levelForView(zoom: number, hexMode: boolean): InfluenceLevel {
+  if (hexMode && zoom >= HEX_MODE_START) return zoom >= LEVEL_BREAKS[4] ? 7 : 6;
+  return influenceLevel(zoom);
+}
+
 /** The zoom at which a level starts (a state starts at the minimum zoom). */
 export function levelStartZoom(level: InfluenceLevel): number {
   const i = LEVELS.indexOf(level);

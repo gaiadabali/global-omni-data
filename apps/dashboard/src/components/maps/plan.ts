@@ -7,7 +7,7 @@ import {
   activityResolution,
   bboxContains,
   bboxParam,
-  influenceLevel,
+  levelForView,
   snapBBox,
   usesBBox,
   type BBox,
@@ -64,8 +64,10 @@ export function planInfluence(
   c: InfluenceControls,
   view: ViewBox,
   shown: { url: string; query: ShownInfluence } | null,
+  /** Hexagon mode: H3 cells from a lower zoom than the area levels reach them. */
+  hexMode = false,
 ): string {
-  const level = influenceLevel(view.z);
+  const level = levelForView(view.z, hexMode);
   if (!usesBBox(level)) return influenceUrl(c, level);
   if (
     shown &&
@@ -126,4 +128,55 @@ export function planActivity(
     return shown.url;
   }
   return activityUrl(c, res, snapBBox(view.bbox, view.z));
+}
+
+/* ---------------- the panels' own requests ---------------- */
+
+/** The levels the summary endpoint ranks (no box, no H3). */
+export type SummaryLevel = "state" | "sa4" | "sa3" | "sa2";
+
+/** The headline numbers, the ranked list and the movers for a level. The same controls as the map, no box. */
+export function summaryUrl(
+  c: { brand: string; audience: string; measure: string },
+  month: string,
+  level: SummaryLevel,
+  limit = 5,
+): string {
+  const p = new URLSearchParams({
+    brand: c.brand,
+    audience: c.audience,
+    measure: c.measure,
+    month,
+    level,
+    limit: String(limit),
+  });
+  return `/api/map/summary?${p.toString()}`;
+}
+
+/** One area in detail. `level` is "h3" for a hexagon, whatever its resolution. */
+export function areaUrl(
+  c: { brand: string; audience: string },
+  month: string,
+  level: "state" | "sa4" | "sa3" | "sa2" | "h3",
+  id: string,
+): string {
+  const p = new URLSearchParams({ level, id, brand: c.brand, audience: c.audience, month });
+  return `/api/map/area?${p.toString()}`;
+}
+
+/** The busiest activity areas. With a box, those in it; without, the whole country. */
+export function hotspotsUrl(c: ActivityControls, bbox: BBox | undefined, limit = 20): string {
+  const p = new URLSearchParams({ month: c.month, limit: String(limit) });
+  if (c.category !== "all") p.set("category", c.category);
+  if (c.ageBand !== "all") p.set("ageBand", c.ageBand);
+  if (bbox) p.set("bbox", bboxParam(bbox));
+  return `/api/map/hotspots?${p.toString()}`;
+}
+
+/** One activity area (an H3 cell) in detail. */
+export function activityAreaUrl(c: ActivityControls, id: string): string {
+  const p = new URLSearchParams({ level: "h3", id, month: c.month });
+  if (c.category !== "all") p.set("category", c.category);
+  if (c.ageBand !== "all") p.set("ageBand", c.ageBand);
+  return `/api/map/activity-area?${p.toString()}`;
 }

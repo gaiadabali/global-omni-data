@@ -11,7 +11,7 @@ import type { InfluenceMapProps } from "./InfluenceMap";
 const InfluenceMap = dynamic(() => import("./InfluenceMap"), {
   ssr: false,
   loading: () => (
-    <div className="gm-skeleton">
+    <div className="pd-skel">
       <Loading>Loading the map</Loading>
     </div>
   ),

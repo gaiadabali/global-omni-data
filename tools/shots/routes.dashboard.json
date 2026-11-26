@@ -13,6 +13,20 @@
     "delayMs": 1500
   },
   {
+    "name": "perf-map-selected",
+    "path": "/map?perf=1&sel=NSW",
+    "role": "owner",
+    "themes": [
+      "dark"
+    ],
+    "widths": [
+      1440,
+      390
+    ],
+    "waitFor": "[data-map-ready=\"true\"]",
+    "delayMs": 1500
+  },
+  {
     "name": "perf-map-pan-res7",
     "path": "/map?perf=pan&z=9.6&lat=-33.87&lon=151.2",
     "role": "owner",
@@ -52,25 +66,12 @@
     "delayMs": 8500
   },
   {
-    "name": "activity-selected",
-    "path": "/activity?sel=M-0100",
-    "role": "owner",
-    "themes": [
-      "light"
-    ],
-    "widths": [
-      1440
-    ],
-    "waitFor": "[data-map-ready=\"true\"]",
-    "delayMs": 1500
-  },
-  {
     "name": "map-state",
     "path": "/map",
     "role": "owner",
     "themes": [
-      "light",
-      "dark"
+      "dark",
+      "light"
     ],
     "widths": [
       1440,
@@ -80,66 +81,98 @@
     "delayMs": 1500
   },
   {
-    "name": "map-sydney-res6",
-    "path": "/map?z=8.4&lat=-33.87&lon=151.2",
+    "name": "map-shaded",
+    "path": "/map?mode=shaded",
     "role": "owner",
     "themes": [
+      "dark",
       "light"
     ],
     "widths": [
       1440
+    ],
+    "waitFor": "[data-map-ready=\"true\"]",
+    "delayMs": 1500
+  },
+  {
+    "name": "map-sydney-bubbles",
+    "path": "/map?z=8.4&lat=-33.87&lon=151.2",
+    "role": "owner",
+    "themes": [
+      "dark"
+    ],
+    "widths": [
+      1440,
+      390
     ],
     "waitFor": "[data-map-ready=\"true\"]",
     "delayMs": 1500
   },
   {
     "name": "map-sydney-hex",
-    "path": "/map?z=9.6&lat=-33.87&lon=151.2",
+    "path": "/map?mode=hex&z=7.6&lat=-33.87&lon=151.0",
     "role": "owner",
     "themes": [
-      "light",
+      "dark",
+      "light"
+    ],
+    "widths": [
+      1440,
+      390
+    ],
+    "waitFor": "[data-map-ready=\"true\"]",
+    "delayMs": 1500
+  },
+  {
+    "name": "map-selected",
+    "path": "/map?sel=NSW",
+    "role": "owner",
+    "themes": [
+      "dark",
+      "light"
+    ],
+    "widths": [
+      1440,
+      390
+    ],
+    "waitFor": "[data-map-ready=\"true\"]",
+    "delayMs": 1500
+  },
+  {
+    "name": "map-sa2-sydney",
+    "path": "/map?z=7.4&lat=-33.87&lon=151.0&sel=125041717&mode=shaded",
+    "role": "owner",
+    "themes": [
+      "dark",
+      "light"
+    ],
+    "widths": [
+      1440,
+      390
+    ],
+    "waitFor": "[data-map-ready=\"true\"]",
+    "delayMs": 1500
+  },
+  {
+    "name": "map-sheet-areas",
+    "path": "/map?panel=areas",
+    "role": "owner",
+    "themes": [
+      "dark",
+      "light"
+    ],
+    "widths": [
+      390
+    ],
+    "waitFor": "[data-map-ready=\"true\"]",
+    "delayMs": 1500
+  },
+  {
+    "name": "map-sa4-per1000",
+    "path": "/map?z=5&lat=-31&lon=146&measure=per1000&mode=shaded&sel=125",
+    "role": "owner",
+    "themes": [
       "dark"
-    ],
-    "widths": [
-      1440,
-      390
-    ],
-    "waitFor": "[data-map-ready=\"true\"]",
-    "delayMs": 1500
-  },
-  {
-    "name": "map-east-sa3",
-    "path": "/map?z=6.6&lat=-33&lon=148.5&brand=yourtal&audience=people",
-    "role": "owner",
-    "themes": [
-      "light"
-    ],
-    "widths": [
-      1440
-    ],
-    "waitFor": "[data-map-ready=\"true\"]",
-    "delayMs": 1500
-  },
-  {
-    "name": "map-per1000",
-    "path": "/map?measure=per1000",
-    "role": "owner",
-    "themes": [
-      "light"
-    ],
-    "widths": [
-      1440,
-      390
-    ],
-    "waitFor": "[data-map-ready=\"true\"]",
-    "delayMs": 1500
-  },
-  {
-    "name": "map-per1000-hex",
-    "path": "/map?measure=per1000&z=8.4&lat=-33.87&lon=151.2",
-    "role": "owner",
-    "themes": [
-      "light"
     ],
     "widths": [
       1440
@@ -152,7 +185,7 @@
     "path": "/map?month=2025-06&brand=snapapp",
     "role": "owner",
     "themes": [
-      "light"
+      "dark"
     ],
     "widths": [
       1440
@@ -165,7 +198,8 @@
     "path": "/map",
     "role": "brand_lead_yourtal",
     "themes": [
-      "light"
+      "light",
+      "dark"
     ],
     "widths": [
       1440,
@@ -176,7 +210,7 @@
   },
   {
     "name": "map-lead-yourtal-hex",
-    "path": "/map?z=9.6&lat=-33.87&lon=151.2",
+    "path": "/map?mode=hex&z=7.6&lat=-33.87&lon=151.0",
     "role": "brand_lead_yourtal",
     "themes": [
       "light"
@@ -188,8 +222,8 @@
     "delayMs": 1500
   },
   {
-    "name": "map-selected",
-    "path": "/map?sel=NSW",
+    "name": "map-suburb-cap",
+    "path": "/map?z=14&lat=-33.87&lon=151.2",
     "role": "owner",
     "themes": [
       "light"
@@ -205,21 +239,7 @@
     "path": "/activity",
     "role": "owner",
     "themes": [
-      "light",
-      "dark"
-    ],
-    "widths": [
-      1440,
-      390
-    ],
-    "waitFor": "[data-map-ready=\"true\"]",
-    "delayMs": 1500
-  },
-  {
-    "name": "activity-teen",
-    "path": "/activity?ageBand=13-17",
-    "role": "owner",
-    "themes": [
+      "dark",
       "light"
     ],
     "widths": [
@@ -234,12 +254,54 @@
     "path": "/activity?z=9.6&lat=-37.81&lon=144.96",
     "role": "owner",
     "themes": [
-      "light",
-      "dark"
+      "dark",
+      "light"
     ],
     "widths": [
       1440,
       390
+    ],
+    "waitFor": "[data-map-ready=\"true\"]",
+    "delayMs": 1500
+  },
+  {
+    "name": "activity-selected",
+    "path": "/activity?z=9.2&lat=-33.87&lon=151.2&sel=top",
+    "role": "owner",
+    "themes": [
+      "dark",
+      "light"
+    ],
+    "widths": [
+      1440,
+      390
+    ],
+    "waitFor": "[data-map-ready=\"true\"]",
+    "delayMs": 1500
+  },
+  {
+    "name": "activity-sheet-areas",
+    "path": "/activity?panel=areas&z=9.6&lat=-37.81&lon=144.96",
+    "role": "owner",
+    "themes": [
+      "dark",
+      "light"
+    ],
+    "widths": [
+      390
+    ],
+    "waitFor": "[data-map-ready=\"true\"]",
+    "delayMs": 1500
+  },
+  {
+    "name": "activity-merchant",
+    "path": "/activity?sel=M-0100&z=11&lat=-33.87&lon=151.2",
+    "role": "owner",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440
     ],
     "waitFor": "[data-map-ready=\"true\"]",
     "delayMs": 1500
@@ -249,10 +311,25 @@
     "path": "/activity?category=cafe&z=8.4&lat=-33.87&lon=151.2",
     "role": "owner",
     "themes": [
-      "light"
+      "dark"
     ],
     "widths": [
       1440
+    ],
+    "waitFor": "[data-map-ready=\"true\"]",
+    "delayMs": 1500
+  },
+  {
+    "name": "activity-teen",
+    "path": "/activity?ageBand=13-17&sel=top",
+    "role": "owner",
+    "themes": [
+      "dark",
+      "light"
+    ],
+    "widths": [
+      1440,
+      390
     ],
     "waitFor": "[data-map-ready=\"true\"]",
     "delayMs": 1500
@@ -261,101 +338,6 @@
     "name": "activity-lead-yourtal",
     "path": "/activity",
     "role": "brand_lead_yourtal",
-    "themes": [
-      "light"
-    ],
-    "widths": [
-      1440
-    ],
-    "waitFor": "[data-map-ready=\"true\"]",
-    "delayMs": 1500
-  },
-  {
-    "name": "map-sa4",
-    "path": "/map?z=5&lat=-31&lon=146&sel=125",
-    "role": "owner",
-    "themes": [
-      "light",
-      "dark"
-    ],
-    "widths": [
-      1440,
-      390
-    ],
-    "waitFor": "[data-map-ready=\"true\"]",
-    "delayMs": 1500
-  },
-  {
-    "name": "map-sa4-per1000",
-    "path": "/map?z=5&lat=-31&lon=146&measure=per1000",
-    "role": "owner",
-    "themes": [
-      "light"
-    ],
-    "widths": [
-      1440
-    ],
-    "waitFor": "[data-map-ready=\"true\"]",
-    "delayMs": 1500
-  },
-  {
-    "name": "map-sa3-east",
-    "path": "/map?z=6.2&lat=-33.4&lon=150.2&brand=yourtal&audience=people",
-    "role": "owner",
-    "themes": [
-      "light"
-    ],
-    "widths": [
-      1440
-    ],
-    "waitFor": "[data-map-ready=\"true\"]",
-    "delayMs": 1500
-  },
-  {
-    "name": "map-sa2-sydney",
-    "path": "/map?z=7.4&lat=-33.87&lon=151.0&sel=125041717",
-    "role": "owner",
-    "themes": [
-      "light",
-      "dark"
-    ],
-    "widths": [
-      1440,
-      390
-    ],
-    "waitFor": "[data-map-ready=\"true\"]",
-    "delayMs": 1500
-  },
-  {
-    "name": "map-sa2-melbourne",
-    "path": "/map?z=7.4&lat=-37.81&lon=144.96",
-    "role": "owner",
-    "themes": [
-      "light"
-    ],
-    "widths": [
-      1440
-    ],
-    "waitFor": "[data-map-ready=\"true\"]",
-    "delayMs": 1500
-  },
-  {
-    "name": "map-sa2-lead-yourtal",
-    "path": "/map?z=7.4&lat=-33.87&lon=151.0",
-    "role": "brand_lead_yourtal",
-    "themes": [
-      "light"
-    ],
-    "widths": [
-      1440
-    ],
-    "waitFor": "[data-map-ready=\"true\"]",
-    "delayMs": 1500
-  },
-  {
-    "name": "map-suburb-cap",
-    "path": "/map?z=14&lat=-33.87&lon=151.2",
-    "role": "owner",
     "themes": [
       "light"
     ],

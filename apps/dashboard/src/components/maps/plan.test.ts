@@ -1,9 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
+  activityAreaUrl,
   activityUrl,
+  areaUrl,
+  hotspotsUrl,
   influenceUrl,
   planActivity,
   planInfluence,
+  summaryUrl,
   type InfluenceControls,
   type ShownInfluence,
 } from "./plan";
@@ -118,5 +122,37 @@ describe("activity requests", () => {
     const panned: BBox = [sydney[0] + 0.1, sydney[1], sydney[2] + 0.1, sydney[3]];
     expect(planActivity(filters, { z: 9.6, bbox: panned }, { url, query })).toBe(url);
     expect(planActivity({ ...filters, ageBand: "13–17" }, { z: 9.6, bbox: sydney }, { url, query })).not.toBe(url);
+  });
+});
+
+describe("hexagon mode", () => {
+  it("asks for H3 cells from zoom 6, where the area levels would still be SA3", () => {
+    const area = planInfluence(controls, { z: 6.3, bbox: sydney }, null);
+    expect(area).toContain("level=sa3");
+    const hex = planInfluence(controls, { z: 6.3, bbox: sydney }, null, true);
+    expect(hex).toContain("level=h3&res=6");
+    expect(hex).toContain("bbox=");
+  });
+  it("keeps the area levels below zoom 6, and res 7 from 9.2", () => {
+    expect(planInfluence(controls, { z: 5, bbox: australia }, null, true)).toContain("level=sa4");
+    expect(planInfluence(controls, { z: 9.6, bbox: sydney }, null, true)).toContain("res=7");
+  });
+});
+
+describe("the panels' requests", () => {
+  it("builds the summary, area, hotspots and activity-area queries", () => {
+    expect(summaryUrl(controls, "2026-11", "sa3")).toBe(
+      "/api/map/summary?brand=all&audience=both&measure=count&month=2026-11&level=sa3&limit=5",
+    );
+    expect(areaUrl(controls, "2026-11", "h3", "87be0e9a4ffffff")).toBe(
+      "/api/map/area?level=h3&id=87be0e9a4ffffff&brand=all&audience=both&month=2026-11",
+    );
+    const act = { category: "cafe", ageBand: "25–34", month: "2026-11" };
+    expect(hotspotsUrl(act, undefined)).toContain("category=cafe");
+    expect(hotspotsUrl(act, undefined)).not.toContain("bbox");
+    expect(hotspotsUrl({ category: "all", ageBand: "all", month: "2026-11" }, sydney, 10)).toBe(
+      "/api/map/hotspots?month=2026-11&limit=10&bbox=150.9%2C-34%2C151.4%2C-33.7",
+    );
+    expect(activityAreaUrl({ category: "all", ageBand: "13–17", month: "2026-11" }, "abc")).toContain("ageBand=13%E2%80%9317");
   });
 });
