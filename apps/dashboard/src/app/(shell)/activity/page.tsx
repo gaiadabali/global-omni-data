@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { PageHeader } from "@/components/ui";
 import { ActivityMapLoader } from "@/components/maps/ActivityMapLoader";
 import { sanitizeBasemapUrl } from "@/components/maps/basemap";
 import { parseActivityState } from "@/components/maps/url-state";
@@ -20,8 +19,7 @@ export default async function ActivityPage({ searchParams }: { searchParams: Sea
   const meta = mapMeta();
   const initial = parseActivityState(await searchParams, meta);
   return (
-    <div className="page-body">
-      <PageHeader title={PAGES.activity.title} sub={PAGES.activity.sub} />
+    <div className="pd-page">
       <ActivityMapLoader
         initial={initial}
         meta={meta}
