@@ -1,0 +1,9 @@
+# Authored on Windows, built and run on Linux: keep LF everywhere, in the repo and the working tree.
+* text=auto eol=lf
+*.sh   text eol=lf
+*.mjs  text eol=lf
+*.png   binary
+*.jpg   binary
+*.webp  binary
+*.woff2 binary
+*.pmtiles binary
