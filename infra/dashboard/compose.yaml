@@ -26,6 +26,12 @@ services:
       HOSTNAME: 127.0.0.1
       PORT: "${GOD_PORT:-3125}"
       NODE_OPTIONS: --max-old-space-size=384
+      # Sign in with YourTal authenticates with private_key_jwt: the private JWK is mounted read-only below.
+      GOD_OIDC_KEY_FILE: /run/secrets/god-oidc-key.jwk.json
+    volumes:
+      # On Helios: owned by uid 1000 (the container's user), mode 0400, made with the one-liner in
+      # apps/dashboard/README.md. Its public half sits with YourTal (god-dashboard.jwks.json).
+      - /etc/god-dashboard/oidc-key.jwk.json:/run/secrets/god-oidc-key.jwk.json:ro
     read_only: true
     tmpfs:
       - /tmp

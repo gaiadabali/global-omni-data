@@ -95,7 +95,7 @@ Docker reads the files as root; the container only sees the variables. The deplo
 | `GOD_PUBLIC_URL` | `https://dashboard.god.gaiada.com` (the sign-in redirect URI is built from it) |
 | `YOURTAL_ISSUER` | the Sign in with YourTal issuer URL |
 | `GOD_OIDC_CLIENT_ID` | this dashboard's client id at YourTal |
-| `GOD_OIDC_CLIENT_SECRET` | its client secret. **[UNVERIFIED]**: the sign-in branch (`fe/auth`) owns the exact name; match its `.env.example` |
+| (no client secret) | The dashboard authenticates to YourTal with `private_key_jwt`. The private JWK lives at `/etc/god-dashboard/oidc-key.jwk.json` (owner uid 1000, mode 0400; make it with the one-liner in `apps/dashboard/README.md`), and `compose.yaml` mounts it read-only and sets `GOD_OIDC_KEY_FILE`. Its public JWKS goes to YourTal as `god-dashboard.jwks.json` |
 | `GOD_SESSION_SECRET` | `openssl rand -base64 48` |
 | `GOD_BASEMAP_PMTILES` | optional: a same-origin `.pmtiles` path to switch on the self-hosted base map |
 
