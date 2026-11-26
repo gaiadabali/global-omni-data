@@ -1,7 +1,7 @@
 /**
  * THE AUDIT SEAM, contract side. An AuditLog is append-only: the only way to add an event is `append`, and there
  * is no update, delete or clear. The Postgres audit_log holds the same list of actions as a CHECK
- * (packages/db/migrations, latest in 0003); actions-check.test.ts keeps the two equal, so a new action needs a new
+ * (packages/db/migrations, latest in 0004); actions-check.test.ts keeps the two equal, so a new action needs a new
  * migration first.
  */
 export const AUDIT_ACTIONS = [
@@ -19,6 +19,7 @@ export const AUDIT_ACTIONS = [
   "breakglass.revoke",
   "breakglass.signin",
   "breakglass.refused",
+  "enquiry.update",
 ] as const;
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];
 
@@ -37,6 +38,7 @@ export const AUDIT_ACTION_LABELS: Record<AuditAction, string> = {
   "breakglass.revoke": "Emergency key revoked",
   "breakglass.signin": "Emergency sign-in",
   "breakglass.refused": "Emergency access refused",
+  "enquiry.update": "Enquiry updated",
 };
 
 export function isAuditAction(v: string): v is AuditAction {

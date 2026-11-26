@@ -21,7 +21,9 @@ again at any time (every statement is idempotent). It holds no password: set the
 
 `god_app` today: `SELECT, INSERT` on `allow_list` and `sessions` plus `UPDATE` on only the columns that change
 (`allow_list`: `yourtal_sub, status, last_sign_in`; `sessions`: `last_seen_at, auth_time, amr, revoked_at, revoked_by`),
-no `DELETE` anywhere, and on `audit_log` `SELECT` plus `INSERT (who, action, target, reason, outcome)`.
+no `DELETE` anywhere, and on `audit_log` `SELECT` plus `INSERT (who, action, target, reason, outcome)`. On `enquiries`
+(0004) `SELECT`, `INSERT (name, company, email, want, budget, ip_prefix)` (the database sets the id, the time and the
+status) and `UPDATE (status, handled_by, handled_at)`.
 
 ## Tables (schema `god_app`)
 
@@ -35,6 +37,11 @@ no `DELETE` anywhere, and on `audit_log` `SELECT` plus `INSERT (who, action, tar
   (`occurred_at`, the event's `when`) is set by the database: `god_app` has no INSERT on those two columns. The owner can still
   `DISABLE TRIGGER` or drop the table, which is why the migrator's password is not in the app's environment, and why the
   off-box archive (later) matters.
+- `enquiries` (0004): what the public contact form sends. Stored before anyone is emailed. Length and shape CHECKs on every
+  field (single-line fields take no control character; the email takes nothing that can add a second address to a mail
+  header), a status of `new`, `read` or `archived` kept in step with who and when (CHECK), and a trigger that keeps what
+  the visitor sent final for every role. **Retention is a TODO for the founder** (suggested: 24 months, by a job as
+  `god_migrator`; `god_app` has no DELETE and must not get one).
 - `schema_migrations`: the runner's own table. `god_app` cannot read it.
 
 ## Migrations
