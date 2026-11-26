@@ -137,7 +137,7 @@ export function LineChart({
           ))}
           {labels.map((l, i) =>
             (n - 1 - i) % step === 0 ? (
-              <text key={i} x={x(i)} y={H - 7} textAnchor="middle">
+              <text key={i} x={x(i)} y={H - 7} textAnchor={x(i) + 24 > W ? "end" : "middle"}>
                 {l}
               </text>
             ) : null,
