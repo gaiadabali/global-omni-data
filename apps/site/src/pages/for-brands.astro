@@ -1,0 +1,163 @@
+---
+import Base from "../layouts/Base.astro";
+import PageHead from "../components/PageHead.astro";
+import Bar from "../components/Bar.astro";
+
+const gets = [
+  {
+    b: "Catchments",
+    s: "The postcodes and suburbs your customers come from, ranked by share.",
+  },
+  {
+    b: "Audience age",
+    s: "Age bands from 13 up, so you can see who is growing and who has gone quiet.",
+  },
+  {
+    b: "Occupation and income mix",
+    s: "Who your customers are by job and income bracket, from tax-return data.",
+  },
+  {
+    b: "Segments with affinity",
+    s: 'Groups such as "weekday commuters" scored by how much more likely they are to buy from you than the average.',
+  },
+  {
+    b: "Visit frequency",
+    s: "How often customers return, and how that differs between locations.",
+  },
+  { b: "Also shops at", s: "The other merchants and categories your customers spend with." },
+  {
+    b: "Teen market reports",
+    s: "For youth and kids' brands: the same catchments, interests, spending and loyalty views, built from teens' real activity. Guardians accept for them, and every figure covers 20 or more teens.",
+  },
+];
+
+// Sample data only. Harbour & Bean is fictional and the report says so on the page.
+const where = [
+  { label: "2000", width: 82, value: "18%", hot: true },
+  { label: "2026", width: 56, value: "12%" },
+  { label: "2041", width: 41, value: "9%" },
+  { label: "2060", width: 29, value: "6%" },
+  { label: "2289", width: 6, value: "<10" },
+];
+const age = [
+  { label: "13 to 17", width: 8, value: "3%" },
+  { label: "18 to 24", width: 44, value: "19%" },
+  { label: "25 to 34", width: 78, value: "34%", hot: true },
+  { label: "35 to 49", width: 52, value: "23%" },
+  { label: "50+", width: 49, value: "21%" },
+];
+const also = [
+  { label: "Bakeries", width: 71, value: "2.1x", hot: true },
+  { label: "Gyms", width: 58, value: "1.7x" },
+  { label: "Bookshops", width: 46, value: "1.4x" },
+  { label: "Florists", width: 33, value: "1.1x" },
+];
+
+const rules = [
+  {
+    b: "Aggregates only",
+    s: "Reports show counts and shares for groups of people. A report never describes one person.",
+  },
+  {
+    b: '"<10" for small groups',
+    s: 'A group with fewer than 10 people is shown as "<10". Sensitive categories use a higher threshold.',
+  },
+  {
+    b: "No person-level data",
+    s: "No names, emails, phone numbers or device IDs leave GOD.",
+  },
+  { b: "No lists", s: "GOD does not sell, rent or hand over audience lists." },
+];
+---
+
+<Base
+  title="For brands: see your market, never the people in it | GOD (Global Omni Data)"
+  description="GOD reports what Australians do in the real world: where they live, where they shop and what else they buy. Every figure is an aggregate."
+>
+  <PageHead
+    eyebrow="For brands"
+    title="See your market, never the people in it"
+    lede="GOD reports what Australians do in the real world: where they live, where they shop and what else they buy. Every figure is an aggregate."
+  />
+
+  <section class="block">
+    <div class="wrap">
+      <div class="sechead">
+        <p class="eyebrow">What a brand gets</p>
+        <h2>Seven views of your customers</h2>
+      </div>
+      <ul class="gets">
+        {gets.map((g) => (
+          <li>
+            <b>{g.b}</b>
+            <span>{g.s}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="wrap">
+      <div class="sechead">
+        <p class="eyebrow">Sample report</p>
+        <h2>What a catchment report looks like</h2>
+        <p class="lede">
+          Harbour &amp; Bean is a fictional café group. The figures are made up to show the layout.
+        </p>
+      </div>
+      <article class="rep" aria-label="Sample report for Harbour and Bean">
+        <div class="rep-h">
+          <h3>Harbour &amp; Bean</h3>
+          <span>Catchment report, last 90 days. Sample data.</span>
+        </div>
+        <div class="repgrid">
+          <div>
+            <h4>Where customers live</h4>
+            {where.map((r) => (
+              <Bar {...r} />
+            ))}
+          </div>
+          <div>
+            <h4>Age mix</h4>
+            {age.map((r) => (
+              <Bar {...r} />
+            ))}
+          </div>
+          <div>
+            <h4>Also shops at</h4>
+            {also.map((r) => (
+              <Bar {...r} />
+            ))}
+            <p class="small repnote">Affinity against the Australian average.</p>
+          </div>
+        </div>
+        <p class="repfoot">
+          Groups under 10 people show as "&lt;10". No person-level data is in this report.
+        </p>
+      </article>
+    </div>
+  </section>
+
+  <section class="block on-brand">
+    <div class="wrap">
+      <div class="sechead">
+        <p class="eyebrow">The rules</p>
+        <h2>What every brand agrees to</h2>
+      </div>
+      <ul class="rules">
+        {rules.map((r) => (
+          <li>
+            <b>{r.b}</b>
+            <span>{r.s}</span>
+          </li>
+        ))}
+      </ul>
+      <div class="row rules-cta">
+        <a class="btn btn-primary" href="/contact/">
+          Ask for a sample for your category
+        </a>
+      </div>
+    </div>
+  </section>
+</Base>

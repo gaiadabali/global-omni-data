@@ -1,0 +1,114 @@
+---
+import Base from "../layouts/Base.astro";
+import PageHead from "../components/PageHead.astro";
+import { CONTACT_EMAIL } from "../lib/site";
+
+// Where the form POSTs its JSON. Unset means the form says it is not switched on yet and sends nothing.
+const endpoint = (import.meta.env.PUBLIC_CONTACT_ENDPOINT ?? "").trim();
+---
+
+<Base
+  title="Contact: tell us what you want to know | GOD (Global Omni Data)"
+  description="For brands and partners. Describe your customers or your question, and we reply with what we can answer."
+>
+  <PageHead
+    eyebrow="Contact"
+    title="Tell us what you want to know"
+    lede="For brands and partners. Describe your customers or your question, and we reply with what we can answer."
+  />
+
+  <section class="block">
+    <div class="wrap contact">
+      <div>
+        <p class="nojs-note">
+          This form needs JavaScript. Without it, please email
+          <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
+        </p>
+        <form id="cform" class="needs-js" novalidate data-endpoint={endpoint || undefined}>
+          <div class="two">
+            <div class="field">
+              <label for="c-name">Name</label>
+              <input
+                id="c-name"
+                name="name"
+                type="text"
+                autocomplete="name"
+                required
+                aria-describedby="c-name-err"
+              />
+              <p class="field-err" id="c-name-err" hidden></p>
+            </div>
+            <div class="field">
+              <label for="c-company">Company</label>
+              <input
+                id="c-company"
+                name="company"
+                type="text"
+                autocomplete="organization"
+                required
+                aria-describedby="c-company-err"
+              />
+              <p class="field-err" id="c-company-err" hidden></p>
+            </div>
+          </div>
+          <div class="field">
+            <label for="c-email">Email</label>
+            <input
+              id="c-email"
+              name="email"
+              type="email"
+              autocomplete="email"
+              required
+              aria-describedby="c-email-err"
+            />
+            <p class="field-err" id="c-email-err" hidden></p>
+          </div>
+          <div class="field">
+            <label for="c-want">What do you want to know?</label>
+            <textarea id="c-want" name="want" required aria-describedby="c-want-err"></textarea>
+            <p class="field-err" id="c-want-err" hidden></p>
+          </div>
+          <div class="field">
+            <label for="c-budget">
+              Budget range <small>optional</small>
+            </label>
+            <select id="c-budget" name="budget">
+              <option value="">Prefer not to say</option>
+              <option>Under $10,000</option>
+              <option>$10,000 to $50,000</option>
+              <option>$50,000 to $150,000</option>
+              <option>Over $150,000</option>
+            </select>
+          </div>
+          <!-- Honeypot: people never see or reach it. A bot that fills it gets dropped on the receiving end. -->
+          <div class="hp" aria-hidden="true">
+            <label for="c-website">Leave this empty</label>
+            <input id="c-website" name="website" type="text" tabindex="-1" autocomplete="off" />
+          </div>
+          <p id="c-err" class="small formerr" role="alert"></p>
+          <div class="row">
+            <button class="btn btn-primary" type="submit">
+              Send enquiry
+            </button>
+          </div>
+        </form>
+        <div class="thanks" id="thanks" role="status" tabindex="-1">
+          <h2>Thanks, we'll reply within two business days</h2>
+          <p>We have your enquiry. If it is urgent, email the address on this page.</p>
+        </div>
+      </div>
+      <div class="aside">
+        <h2>Prefer email?</h2>
+        <span class="mail">{CONTACT_EMAIL}</span>
+        <p class="small">
+          Placeholder address for this prototype. We read every message and reply within two
+          business days.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    import "../scripts/contact";
+  </script>
+</Base>

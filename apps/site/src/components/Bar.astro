@@ -1,0 +1,21 @@
+---
+interface Props {
+  label: string;
+  /** Bar length as a percentage of the track. */
+  width: number;
+  /** The figure shown at the right, as text. */
+  value: string;
+  hot?: boolean;
+}
+
+const { label, width, value, hot = false } = Astro.props;
+---
+
+<div class:list={["br", { hot }]}>
+  <span>{label}</span>
+  <svg class="bar" aria-hidden="true" focusable="false">
+    <rect class="bar-bg" width="100%" height="10" rx="2"></rect>
+    <rect class="bar-fg" width={`${width}%`} height="10" rx="2"></rect>
+  </svg>
+  <em>{value}</em>
+</div>

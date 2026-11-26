@@ -1,0 +1,73 @@
+---
+import Base from "../layouts/Base.astro";
+import PageHead from "../components/PageHead.astro";
+
+const promises = [
+  {
+    h: "One notice, accepted at sign-up",
+    p: "Every GOD brand shows the same group privacy notice when you register. Nothing flows to GOD until you accept it. Existing users accept it the next time they sign in.",
+  },
+  {
+    h: "Guardians accept for teens",
+    p: "A teen takes part only after a guardian accepts for them. Teen activity is turned into results for groups of 20 or more. GOD keeps no profile of an individual teen, never uses alcohol, vape, gambling or health purchases for teens, and nobody uses GOD data to pick the ads a teen sees.",
+  },
+  {
+    h: "Brands see aggregates only",
+    p: 'A brand receives totals and shares for groups. Any group under 10 shows as "<10". Brands do not get names, contact details or lists.',
+  },
+  {
+    h: "A shop's location comes from the receipt",
+    p: "When SnapApp reads a receipt, the shop's address comes from the receipt itself. GOD does not use a person's phone location to learn where they shop.",
+  },
+  {
+    h: "Delete in any app and you are out of GOD",
+    p: "Delete your account in YourTal, SnapApp or Free Tax Returns and GOD removes you at the next sync.",
+  },
+  {
+    h: "Staff access is invitation-only and logged",
+    p: "Only invited GOD staff can see individual records, and only to check that the processing is correct. They sign in with a passkey, and every look is logged.",
+  },
+  {
+    h: "What never leaves Free Tax Returns",
+    p: "Tax file numbers, bank details, identity documents and the lines of a return stay in Free Tax Returns. GOD receives occupation, income bracket and return status.",
+  },
+];
+---
+
+<Base
+  title="Trust & privacy: how GOD handles data | GOD (Global Omni Data)"
+  description="People choose to take part. Brands get totals. Staff access is narrow and recorded. How GOD handles data, in plain words."
+>
+  <PageHead
+    eyebrow="Trust & privacy"
+    title="How GOD handles data, in plain words"
+    lede="People choose to take part. Brands get totals. Staff access is narrow and recorded."
+  />
+
+  <section class="block">
+    <div class="wrap">
+      <div class="promises">
+        {promises.map((x) => (
+          <div class="promise">
+            <h2>{x.h}</h2>
+            <p>{x.p}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="notice">
+    <div class="wrap">
+      <div class="notice">
+        <p class="eyebrow">Document</p>
+        <h2>GOD Group Privacy Notice</h2>
+        <p class="small">
+          The notice covers YourTal, SnapApp and Free Tax Returns. It says what GOD holds, why, who
+          sees it and how to delete it.
+        </p>
+        <p class="ph">Full notice published at launch.</p>
+      </div>
+    </div>
+  </section>
+</Base>

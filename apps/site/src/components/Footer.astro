@@ -1,0 +1,49 @@
+---
+import Logo from "./Logo.astro";
+import { BRAND_LINKS } from "../lib/site";
+---
+
+<footer class="ftr">
+  <div class="wrap">
+    <div class="cols">
+      <div>
+        <Logo height={44} />
+        <p>The Australian holding company behind YourTal, SnapApp and Free Tax Returns.</p>
+      </div>
+      <div>
+        <h2>Brands</h2>
+        <ul>
+          {BRAND_LINKS.map((b) => (
+            <li>
+              <a href={b.href} target="_blank" rel="noopener">
+                {b.name}
+                <span class="visually-hidden"> (opens in a new tab)</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div>
+        <h2>GOD</h2>
+        <ul>
+          <li>
+            <a href="/for-brands/">For brands</a>
+          </li>
+          <li>
+            <a href="/privacy/">Trust &amp; privacy</a>
+          </li>
+          <li>
+            <a href="/privacy/#notice">Group Privacy Notice</a>
+          </li>
+          <li>
+            <a href="/contact/">Contact</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="legal">
+      <span>&copy; 2026 Global Omni Data</span>
+      <a href="https://dashboard.god.gaiada.com">Staff sign-in</a>
+    </div>
+  </div>
+</footer>

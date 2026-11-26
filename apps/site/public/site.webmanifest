@@ -1,0 +1,14 @@
+{
+  "name": "GOD (Global Omni Data)",
+  "short_name": "GOD",
+  "description": "The Australian holding company behind YourTal, SnapApp and Free Tax Returns.",
+  "lang": "en-AU",
+  "start_url": "/",
+  "display": "browser",
+  "theme_color": "#0C158E",
+  "background_color": "#F5F6FB",
+  "icons": [
+    { "src": "/icon-180.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

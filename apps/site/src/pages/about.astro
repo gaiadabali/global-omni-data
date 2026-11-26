@@ -1,0 +1,79 @@
+---
+import Base from "../layouts/Base.astro";
+import PageHead from "../components/PageHead.astro";
+import { BRAND_LINKS } from "../lib/site";
+
+const habits = [
+  {
+    b: "People first",
+    s: "A feature that a user would not accept if they saw it does not ship.",
+  },
+  {
+    b: "Aggregate by default",
+    s: "The product shows groups. Individual records stay with a small, named team.",
+  },
+  {
+    b: "Say what we do",
+    s: "The privacy notice describes real processing in plain language.",
+  },
+  {
+    b: "Check before we claim",
+    s: "Figures are rounded, dated and updated each quarter.",
+  },
+  { b: "Keep it local", s: "We build for Australian people, places and rules." },
+];
+---
+
+<Base
+  title="About: the holding company behind three apps | GOD (Global Omni Data)"
+  description="Global Omni Data holds and joins up what YourTal, SnapApp and Free Tax Returns learn, so each can stay simple for the people who use it."
+>
+  <PageHead
+    eyebrow="About"
+    title="The holding company behind three apps"
+    lede="Global Omni Data holds and joins up what YourTal, SnapApp and Free Tax Returns learn, so each can stay simple for the people who use it."
+  />
+
+  <section class="block">
+    <div class="wrap">
+      <div class="sechead">
+        <p class="eyebrow">GOD as the holding</p>
+        <h2>Apps for people, insight for brands</h2>
+        <p>
+          GOD does not run campaigns, lodge returns or read receipts. The brands do that. GOD holds
+          the shared profile, keeps the privacy rules in one place and turns the combined data into
+          aggregate insight.
+        </p>
+        <p>
+          We focus on Australia: Australian postcodes, Australian occupations, Australian tax. That
+          is where the apps are used and where the data means something.
+        </p>
+      </div>
+      <div class="family">
+        {BRAND_LINKS.map((b) => (
+          <a href={b.href} target="_blank" rel="noopener">
+            {b.name}
+            <span class="visually-hidden"> (opens in a new tab)</span>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="wrap">
+      <div class="sechead">
+        <p class="eyebrow">How we work</p>
+        <h2>Five habits</h2>
+      </div>
+      <ol class="steps">
+        {habits.map((h) => (
+          <li>
+            <b>{h.b}</b>
+            <span>{h.s}</span>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+</Base>

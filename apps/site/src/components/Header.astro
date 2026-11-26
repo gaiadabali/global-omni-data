@@ -1,0 +1,33 @@
+---
+import Logo from "./Logo.astro";
+import { isCurrent, NAV } from "../lib/site";
+
+const pathname = Astro.url.pathname;
+---
+
+<header class="hdr">
+  <div class="wrap">
+    <a class="brandlink" href="/" aria-label="GOD, Global Omni Data, home">
+      <Logo height={38} />
+    </a>
+    <button
+      class="iconbtn menubtn"
+      id="menubtn"
+      type="button"
+      aria-expanded="false"
+      aria-controls="nav"
+    >
+      Menu
+    </button>
+    <nav class="nav" id="nav" aria-label="Main">
+      {NAV.map((item) => (
+        <a href={item.href} aria-current={isCurrent(item.href, pathname) ? "page" : undefined}>
+          {item.label}
+        </a>
+      ))}
+      <button class="iconbtn themebtn" id="themebtn" type="button" aria-label="Switch colour theme">
+        Theme
+      </button>
+    </nav>
+  </div>
+</header>

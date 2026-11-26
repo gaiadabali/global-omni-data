@@ -1,0 +1,72 @@
+---
+import "../styles/global.css";
+import lexendLatin from "@fontsource-variable/lexend/files/lexend-latin-wght-normal.woff2?url";
+import interLatin from "@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import { canonicalUrl, SITE_NAME, SITE_URL } from "../lib/site";
+import { themeBootstrap } from "../lib/theme-bootstrap";
+
+interface Props {
+  /** The full <title>. */
+  title: string;
+  description: string;
+  /** Pages that should never be indexed, such as the 404. They also get no canonical or og:url. */
+  noindex?: boolean;
+}
+
+const { title, description, noindex = false } = Astro.props;
+const hideFromSearch = noindex || import.meta.env.PUBLIC_NOINDEX === "1";
+const canonical = noindex ? undefined : canonicalUrl(Astro.url.pathname);
+const ogImage = new URL("/og-image.png", SITE_URL).toString();
+---
+
+<!doctype html>
+<html lang="en-AU">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    {canonical && <link rel="canonical" href={canonical} />}
+    {hideFromSearch && <meta name="robots" content="noindex, nofollow" />}
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#F5F6FB" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#080A20" media="(prefers-color-scheme: dark)" />
+
+    <link rel="icon" type="image/png" sizes="32x32" href="/icon-32.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/icon-180.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={SITE_NAME} />
+    <meta property="og:locale" content="en_AU" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    {canonical && <meta property="og:url" content={canonical} />}
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="GOD Global Omni Data logo" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="preload" href={lexendLatin} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={interLatin} as="font" type="font/woff2" crossorigin />
+
+    <!-- Applies a saved theme before first paint. The only inline script; its hash is in SECURITY-HEADERS.md. -->
+    <script is:inline set:html={themeBootstrap}></script>
+  </head>
+  <body>
+    <a class="skip" href="#main">
+      Skip to content
+    </a>
+    <Header />
+    <main id="main" tabindex="-1">
+      <slot />
+    </main>
+    <Footer />
+    <script>
+      import "../scripts/site";
+    </script>
+  </body>
+</html>

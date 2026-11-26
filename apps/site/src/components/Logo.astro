@@ -1,0 +1,26 @@
+---
+import { Image } from "astro:assets";
+import logo from "../assets/god-logo.png";
+
+interface Props {
+  /** Rendered height in CSS pixels. Width follows the logo's own proportions. */
+  height: number;
+  class?: string;
+}
+
+const { height, class: className } = Astro.props;
+const width = Math.round((height * logo.width) / logo.height);
+---
+
+<Image
+  src={logo}
+  alt="GOD Global Omni Data"
+  width={width}
+  height={height}
+  densities={[1, 2, 3]}
+  format="webp"
+  quality={90}
+  loading="eager"
+  decoding="async"
+  class:list={["logo", className]}
+/>
