@@ -1,5 +1,289 @@
 [
   {
+    "name": "perf-map-state",
+    "path": "/map?perf=1",
+    "role": "owner",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440
+    ],
+    "waitFor": "[data-map-ready=\"true\"]",
+    "delayMs": 1500
+  },
+  {
+    "name": "perf-map-pan-res7",
+    "path": "/map?perf=pan&z=9.6&lat=-33.87&lon=151.2",
+    "role": "owner",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440
+    ],
+    "waitFor": "[data-map-ready=\"true\"]",
+    "delayMs": 8500
+  },
+  {
+    "name": "perf-map-pan-res5",
+    "path": "/map?perf=pan&z=6.8&lat=-33&lon=148.5",
+    "role": "owner",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440
+    ],
+    "waitFor": "[data-map-ready=\"true\"]",
+    "delayMs": 8500
+  },
+  {
+    "name": "perf-activity-pan-res7",
+    "path": "/activity?perf=pan&z=9.6&lat=-37.81&lon=144.96",
+    "role": "owner",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440
+    ],
+    "waitFor": "[data-map-ready=\"true\"]",
+    "delayMs": 8500
+  },
+  {
+    "name": "activity-selected",
+    "path": "/activity?sel=M-0100",
+    "role": "owner",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440
+    ],
+    "waitFor": "[data-map-ready=\"true\"]",
+    "delayMs": 1500
+  },
+  {
+    "name": "map-state",
+    "path": "/map",
+    "role": "owner",
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "widths": [
+      1440,
+      390
+    ],
+    "waitFor": "[data-map-ready=\"true\"]",
+    "delayMs": 1500
+  },
+  {
+    "name": "map-sydney-res6",
+    "path": "/map?z=8.4&lat=-33.87&lon=151.2",
+    "role": "owner",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440
+    ],
+    "waitFor": "[data-map-ready=\"true\"]",
+    "delayMs": 1500
+  },
+  {
+    "name": "map-sydney-hex",
+    "path": "/map?z=9.6&lat=-33.87&lon=151.2",
+    "role": "owner",
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "widths": [
+      1440,
+      390
+    ],
+    "waitFor": "[data-map-ready=\"true\"]",
+    "delayMs": 1500
+  },
+  {
+    "name": "map-sydney-res8",
+    "path": "/map?z=12&lat=-33.87&lon=151.2",
+    "role": "owner",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440
+    ],
+    "waitFor": "[data-map-ready=\"true\"]",
+    "delayMs": 1500
+  },
+  {
+    "name": "map-east-res5",
+    "path": "/map?z=6.6&lat=-33&lon=148.5&brand=yourtal&audience=people",
+    "role": "owner",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440
+    ],
+    "waitFor": "[data-map-ready=\"true\"]",
+    "delayMs": 1500
+  },
+  {
+    "name": "map-per1000",
+    "path": "/map?measure=per1000",
+    "role": "owner",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440,
+      390
+    ],
+    "waitFor": "[data-map-ready=\"true\"]",
+    "delayMs": 1500
+  },
+  {
+    "name": "map-per1000-hex",
+    "path": "/map?measure=per1000&z=8.4&lat=-33.87&lon=151.2",
+    "role": "owner",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440
+    ],
+    "waitFor": "[data-map-ready=\"true\"]",
+    "delayMs": 1500
+  },
+  {
+    "name": "map-month",
+    "path": "/map?month=2025-06&brand=snapapp",
+    "role": "owner",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440
+    ],
+    "waitFor": "[data-map-ready=\"true\"]",
+    "delayMs": 1500
+  },
+  {
+    "name": "map-lead-yourtal",
+    "path": "/map",
+    "role": "brand_lead_yourtal",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440,
+      390
+    ],
+    "waitFor": "[data-map-ready=\"true\"]",
+    "delayMs": 1500
+  },
+  {
+    "name": "map-lead-yourtal-hex",
+    "path": "/map?z=9.6&lat=-33.87&lon=151.2",
+    "role": "brand_lead_yourtal",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440
+    ],
+    "waitFor": "[data-map-ready=\"true\"]",
+    "delayMs": 1500
+  },
+  {
+    "name": "map-selected",
+    "path": "/map?sel=NSW",
+    "role": "owner",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440
+    ],
+    "waitFor": "[data-map-ready=\"true\"]",
+    "delayMs": 1500
+  },
+  {
+    "name": "activity-default",
+    "path": "/activity",
+    "role": "owner",
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "widths": [
+      1440,
+      390
+    ],
+    "waitFor": "[data-map-ready=\"true\"]",
+    "delayMs": 1500
+  },
+  {
+    "name": "activity-teen",
+    "path": "/activity?ageBand=13-17",
+    "role": "owner",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440,
+      390
+    ],
+    "waitFor": "[data-map-ready=\"true\"]",
+    "delayMs": 1500
+  },
+  {
+    "name": "activity-melbourne",
+    "path": "/activity?z=9.6&lat=-37.81&lon=144.96",
+    "role": "owner",
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "widths": [
+      1440,
+      390
+    ],
+    "waitFor": "[data-map-ready=\"true\"]",
+    "delayMs": 1500
+  },
+  {
+    "name": "activity-category",
+    "path": "/activity?category=cafe&z=8.4&lat=-33.87&lon=151.2",
+    "role": "owner",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440
+    ],
+    "waitFor": "[data-map-ready=\"true\"]",
+    "delayMs": 1500
+  },
+  {
+    "name": "activity-lead-yourtal",
+    "path": "/activity",
+    "role": "brand_lead_yourtal",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440
+    ],
+    "waitFor": "[data-map-ready=\"true\"]",
+    "delayMs": 1500
+  },
+  {
     "name": "home",
     "path": "/",
     "role": "owner",
