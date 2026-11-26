@@ -1,0 +1,26 @@
+{
+  "name": "@god/db",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "GOD dashboard database: versioned SQL migrations, the migration runner and the role setup for Postgres.",
+  "scripts": {
+    "migrate": "node src/cli.ts up",
+    "migrate:status": "node src/cli.ts status",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "pg": "8.23.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.39.4",
+    "@types/node": "26.6.2",
+    "@types/pg": "8.23.1",
+    "eslint": "9.39.4",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.74.0",
+    "vitest": "5.1.0"
+  }
+}
