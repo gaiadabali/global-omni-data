@@ -1,3 +1,4 @@
+import { join } from "node:path";
 import type { NextConfig } from "next";
 
 /**
@@ -18,6 +19,11 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // A self-contained server in .next/standalone for the Docker image (apps/dashboard/Dockerfile). The trace root is the
+  // repo root, so the workspace package @god/synthetic is traced too; server.js lands in .next/standalone/apps/dashboard.
+  // `next build` runs with this app as the working directory.
+  output: "standalone",
+  outputFileTracingRoot: join(process.cwd(), "../.."),
   reactStrictMode: true,
   poweredByHeader: false,
   // @god/synthetic ships TypeScript source.
