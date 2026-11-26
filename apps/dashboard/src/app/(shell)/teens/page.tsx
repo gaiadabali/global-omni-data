@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { forbidden } from "next/navigation";
 import "@/components/pages/pages.css";
 import { BarChart, StackedBar } from "@/components/charts";
 import { AudienceReport } from "@/components/insight/AudienceReport";
@@ -26,6 +27,8 @@ export default async function TeensPage({ searchParams }: Props) {
   const viewer = requirePage(await getViewer(), "teens");
   const sp = await searchParams;
   const print = first(sp.print) === "1";
+  // An export view, even opened by its URL, is not for an emergency (break-glass) session. The data layer refuses too.
+  if (print && viewer.breakGlass) forbidden();
   const data = getDashboardData(viewer);
 
   const load = (entity: string) => data.teens({ entity, forExport: print });
@@ -65,7 +68,7 @@ export default async function TeensPage({ searchParams }: Props) {
       <PageHeader
         title={PAGES.teens.title}
         sub={PAGES.teens.sub}
-        actions={<ExportButton kind="teens" entity={entity.id} reportName={`Teen market report: ${entity.name}`} />}
+        actions={viewer.breakGlass ? null : <ExportButton kind="teens" entity={entity.id} reportName={`Teen market report: ${entity.name}`} />}
       />
 
       <TeenRules />

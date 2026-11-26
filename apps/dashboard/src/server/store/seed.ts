@@ -1,6 +1,6 @@
 import { createHash, randomBytes } from "node:crypto";
 import { SESSION_ABSOLUTE_MS } from "./limits";
-import type { AllowEntry, SessionRecord } from "./types";
+import type { AllowEntry, BreakGlassKey, SessionRecord } from "./types";
 
 /**
  * Seeds for the in-memory stores. Fictional people on example.com (a reserved domain no mailbox exists on, so no
@@ -174,5 +174,24 @@ export function devSessionSeed(nowMs: number): (SessionRecord & { tokenHash: str
       "Mozilla/5.0 (Macintosh; Intel Mac OS X 15_6) Chrome/142.0",
       "203.0.113.x",
     ),
+  ];
+}
+
+/**
+ * Dev only: one revoked emergency key for the dev Owner, so Admin's Emergency access panel has a row to show and
+ * still offers to add a key. Random bytes for the key: nothing can sign in with it, and it is revoked anyway.
+ */
+export function devBreakGlassSeed(nowMs: number): BreakGlassKey[] {
+  const day = 86_400_000;
+  return [
+    {
+      credentialId: randomBytes(32).toString("base64url"),
+      publicKey: new Uint8Array(randomBytes(77)),
+      signCount: 3,
+      ownerId: "dev-owner",
+      createdAt: new Date(nowMs - 95 * day).toISOString(),
+      lastUsedAt: new Date(nowMs - 6 * day).toISOString(),
+      revokedAt: new Date(nowMs - 6 * day + 3_600_000).toISOString(),
+    },
   ];
 }

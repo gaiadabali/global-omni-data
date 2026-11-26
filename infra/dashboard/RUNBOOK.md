@@ -244,6 +244,124 @@ GCS bucket and the sumopod sftp route exist for other apps, and both have failed
 no Postgres backup job existed on this box). The audit log is the record that matters most here: copy these dumps off the box
 as soon as a path works. Until then, a disk loss loses this database.
 
+## Step 10. Emergency Owner access (break-glass)
+
+Founder decision 2026-11-27: one sealed emergency Owner key, local to the dashboard, for when YourTal is down. It is a
+WebAuthn credential registered with the dashboard itself (relying party `dashboard.god.gaiada.com`), never with YourTal,
+so it works while YourTal is down. Sign-in is at `https://dashboard.god.gaiada.com/auth/emergency` (not in any menu).
+An emergency session lasts **1 hour**, shows "Emergency access. Every action is recorded." on every screen, can read
+every page and revoke sessions, and **cannot** export, open a Person 360 profile, invite or change the allow-list, or
+add or revoke emergency keys. At most one active key per Owner and two in total. Code: `apps/dashboard/src/server/breakglass/`,
+migration `packages/db/migrations/0003_break_glass.sql`.
+
+**Two people to add a key.** The dashboard's runtime role cannot make an enrolment code; only the server CLI (as
+`god_migrator`) can. So adding a key takes server access (the lead) **and** an Owner signed in with YourTal who passes a
+fresh passkey check. A stolen Owner session alone cannot add one.
+
+The commands below run the CLI from the live image, the same way the deploy runs migrations (`migrate.env`, read-only,
+no capabilities). Set this once per shell on Helios:
+
+```bash
+ssh helios
+TAG=$(cat /opt/god-dashboard/current.tag)
+bgcli() { docker run --rm --network host --env-file /etc/god-dashboard/migrate.env --read-only --cap-drop ALL \
+  --security-opt no-new-privileges --entrypoint node "god-dashboard:$TAG" /app/db/src/cli.ts "$@"; }
+```
+
+### 10.1 Before the first key
+
+- The release with migration 0003 is deployed (step 8). Check: `runuser -u postgres -- psql god_dashboard -c '\dt god_app.*'`
+  lists `break_glass_credentials` and `break_glass_enrolment_codes`.
+- The Owner has signed in with YourTal at least once (their allow-list entry is `active`). Find the entry id:
+  `runuser -u postgres -- psql god_dashboard -Atc "select id, name, status from god_app.allow_list where role = 'owner'"`.
+- The key. **Recommended: a FIDO2 hardware security key with a PIN** (it stays in the envelope). A phone or laptop passkey
+  that syncs to a cloud account is not sealed: it leaves with the account. Any FIDO2 key that holds discoverable
+  credentials and has a PIN works **[UNVERIFIED: no specific model has been tested against this dashboard yet]**.
+
+### 10.2 Make the enrolment code (lead, on Helios)
+
+```bash
+bgcli break-glass-code --owner <entry id>       # for example u-owner-1
+```
+
+It prints the code once (`XXXX-XXXX-XXXX-XXXX-XXXX`), for that Owner only. It works **once, for 15 minutes**. Read it to
+the Owner in person or by phone; do not send it by email or chat. Making a new code stops the old one. Only its SHA-256
+is stored, and the audit log records "Emergency key code made" (who: the server).
+
+### 10.3 The Owner adds the key (Owner, in the browser, with the code)
+
+1. Sign in with YourTal at `https://dashboard.god.gaiada.com`.
+2. Open **Admin, Emergency access**.
+3. Plug in the security key. Type the code and press **Add emergency key**. If YourTal has not checked the passkey in the
+   last 5 minutes, the browser goes to YourTal and back: type the code again.
+4. The browser asks where to save the passkey: choose the **security key** (not this phone or computer), enter or set its
+   PIN, and touch it.
+5. The key shows as **Active**. The audit log has "Emergency key added", and `docker logs god-dashboard` has an
+   `"alert":"break-glass"` line.
+
+### 10.4 Test it once, then seal it
+
+1. Sign out. Open `https://dashboard.god.gaiada.com/auth/emergency`, press **Use the emergency key**, enter the PIN and
+   touch the key. The red banner shows on every screen.
+2. On Helios: `docker logs god-dashboard 2>&1 | grep '"alert":"break-glass"' | tail -3` shows `breakglass.signin`.
+3. Sign out.
+4. **The founder seals the key** in a tamper-evident envelope, signed and dated across the flap, and keeps it **with the
+   paper agreements in the company archive**. The PIN does not go in the same envelope: the founder keeps it apart
+   (memorised, or sealed and stored somewhere else; the founder's choice).
+5. Record in the archive log: the date sealed and the key's label from Admin (`key:` and 12 characters).
+
+### 10.5 Using it (YourTal is down)
+
+Take the envelope out of the archive, open `/auth/emergency`, and use the key. The session ends after 1 hour; sign in
+with it again if needed. Every sign-in is in the audit log ("Emergency sign-in") and writes an alert line to the logs.
+Afterwards the lead reads the audit log for the whole period, and the founder reseals the key in a new envelope and
+records it.
+
+### 10.6 Quarterly test (founder and lead together, first week of January, April, July and October)
+
+1. Check the envelope is intact (signatures across the flap unbroken). Open it.
+2. Sign in at `/auth/emergency`. Check the banner shows, that Insight has no Export button, and that Admin, Emergency
+   access shows the key's **Last used** as now. Sign out.
+3. On Helios: the alert line is in `docker logs` (10.4 step 2), and `bgcli break-glass-list` shows the key `ACTIVE`, last
+   used today.
+4. Reseal in a new envelope and record the date.
+
+If any step fails, revoke the key (10.7) and add a new one (10.2 and 10.3) the same week.
+
+### 10.7 Revoke it
+
+- **YourTal works:** an Owner opens Admin, Emergency access, presses **Revoke** and confirms the passkey check. The key
+  stops at once and that Owner's emergency sessions end.
+- **YourTal is down, or the key is lost or stolen:** on Helios,
+  ```bash
+  bgcli break-glass-revoke --owner <entry id>     # or --all for every key
+  bgcli break-glass-list                          # check: revoked
+  ```
+  It also ends every live emergency session of that Owner (or all of them with `--all`).
+
+Both write "Emergency key revoked" to the audit log. Revocation is final; a replacement needs a new code. Suspending or
+removing an Owner stops their key at once anyway (every emergency sign-in checks the entry), but revoke it too.
+
+### 10.8 The alert channel (TODO for the lead)
+
+Today `notifyBreakGlass` (`apps/dashboard/src/server/breakglass/notify.ts`) writes one JSON line to stderr and nothing
+else: nobody is told in real time unless someone watches the logs. Wire it to the company alert route (website alerts go
+to the ERP) before relying on it. Until then, check after any YourTal outage:
+
+```bash
+docker logs --since 24h god-dashboard 2>&1 | grep '"alert":"break-glass"'
+```
+
+### 10.9 Notes
+
+- The rate limit (5 attempts per network prefix and 20 in total per 15 minutes) and the open WebAuthn challenges live in
+  the app's memory. A container restart resets them.
+- No CSP change: WebAuthn is not governed by CSP, the ceremony's two requests are same-origin `fetch` calls
+  (`connect-src 'self'`), and the `Permissions-Policy` header leaves `publickey-credentials-get` and
+  `publickey-credentials-create` at their default (this origin only).
+- Migration 0003 also adds `signin.ok`, `signin.fresh` and `signout` to the audit log's allowed actions. 0002 left them
+  out, so on a database at 0002 a successful YourTal sign-in fails when it writes its audit event.
+
 ## Environment variables, all in one place
 
 | Variable | Where | Who owns the name |

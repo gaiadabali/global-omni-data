@@ -19,7 +19,7 @@ afterEach(() => {
 describe("loadMigrations (no database)", () => {
   it("reads the real migrations in order with checksums", () => {
     const real = loadMigrations(fileURLToPath(new URL("../migrations", import.meta.url)));
-    expect(real.map((m) => m.file)).toEqual(["0001_allow_list_sessions.sql", "0002_audit_log.sql"]);
+    expect(real.map((m) => m.file)).toEqual(["0001_allow_list_sessions.sql", "0002_audit_log.sql", "0003_break_glass.sql"]);
     for (const m of real) expect(m.checksum).toMatch(/^[0-9a-f]{64}$/);
   });
 

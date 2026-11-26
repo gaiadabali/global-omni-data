@@ -1,4 +1,10 @@
-import { SESSION_ABSOLUTE_MS, SESSION_TOUCH_MS, sessionEndedReason } from "../store/limits";
+import {
+  BREAK_GLASS_ABSOLUTE_MS,
+  SESSION_ABSOLUTE_MS,
+  SESSION_TOUCH_MS,
+  isBreakGlassSession,
+  sessionEndedReason,
+} from "../store/limits";
 import type { AllowEntry, SessionRecord, Stores } from "../store/types";
 import { isBrandId, type Viewer } from "../types";
 import { TOKEN_SHAPE, newToken, sha256Hex } from "./crypto";
@@ -37,9 +43,16 @@ export async function resolveSession(
   if (!session) return { kind: "none" };
   const ended = sessionEndedReason(session, now);
   if (ended) return { kind: "ended", why: ended };
+  // An emergency session's hour counts from its start, whatever its stored limit says (the database checks it too).
+  if (isBreakGlassSession(session) && now - Date.parse(session.createdAt) >= BREAK_GLASS_ABSOLUTE_MS)
+    return { kind: "ended", why: "absolute" };
   const entry = await stores.allowList.find(session.userId);
-  const viewer = entry ? viewerOf(entry) : null;
-  if (!entry || !viewer) return { kind: "ended", why: "not-listed" };
+  const base = entry ? viewerOf(entry) : null;
+  if (!entry || !base) return { kind: "ended", why: "not-listed" };
+  // An emergency session is an Owner's, on every request, not only at sign-in.
+  const emergency = isBreakGlassSession(session);
+  if (emergency && entry.role !== "owner") return { kind: "ended", why: "not-listed" };
+  const viewer: Viewer = emergency ? { ...base, breakGlass: true } : base;
   if (now - Date.parse(session.lastSeenAt) >= SESSION_TOUCH_MS) {
     const at = new Date(now).toISOString();
     await stores.sessions.touch(session.id, at);
@@ -86,7 +99,10 @@ export function deviceLabel(ua: string | null): string {
   return `${browser} on ${os}`;
 }
 
-/** Starts a session for an allow-listed person after a passkey sign-in. Returns the cookie token once. */
+/**
+ * Starts a session for an allow-listed person after a passkey sign-in. Returns the cookie token once.
+ * `absoluteMs` is the absolute limit: 8 hours, or 1 hour for an emergency session.
+ */
 export async function startSession(
   stores: SessionStores,
   input: {
@@ -96,6 +112,7 @@ export async function startSession(
     userAgent: string | null;
     ip: string | null;
     now: number;
+    absoluteMs?: number;
   },
 ): Promise<{ token: string; session: SessionRecord }> {
   const token = newToken();
@@ -104,7 +121,9 @@ export async function startSession(
     tokenHash: sha256Hex(token),
     userId: input.entry.id,
     createdAt,
-    absoluteExpiresAt: new Date(input.now + SESSION_ABSOLUTE_MS).toISOString(),
+    absoluteExpiresAt: new Date(
+      input.now + Math.min(input.absoluteMs ?? SESSION_ABSOLUTE_MS, SESSION_ABSOLUTE_MS),
+    ).toISOString(),
     authTime: input.authTime,
     amr: input.amr,
     userAgent: input.userAgent ? input.userAgent.slice(0, 300) : null,

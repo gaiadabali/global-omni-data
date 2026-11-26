@@ -2,6 +2,7 @@ import pg from "pg";
 import type { Stores } from "../types";
 import { createPostgresAuditLog } from "./audit";
 import { createAllowListStore } from "./allow-list";
+import { createBreakGlassStore } from "./break-glass";
 import { createSessionStore } from "./sessions";
 
 export { IDLE_MINUTES, ABSOLUTE_HOURS } from "./sessions";
@@ -35,6 +36,7 @@ export function createPostgresStores(url: string): PostgresStores {
     allowList: createAllowListStore(pool),
     sessions: createSessionStore(pool),
     audit: createPostgresAuditLog(pool),
+    breakGlass: createBreakGlassStore(pool),
     close: () => pool.end(),
   };
 }

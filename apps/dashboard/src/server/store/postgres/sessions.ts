@@ -37,11 +37,11 @@ export function createSessionStore(pool: pg.Pool): SessionStore {
     },
 
     async updateAuth(id, authTime, amr) {
-      await pool.query("UPDATE god_app.sessions SET auth_time = $2::timestamptz, amr = $3::text[] WHERE id = $1", [
-        id,
-        authTime,
-        [...amr],
-      ]);
+      // Never an emergency session: it stays one (the database refuses too, migration 0003).
+      await pool.query(
+        "UPDATE god_app.sessions SET auth_time = $2::timestamptz, amr = $3::text[] WHERE id = $1 AND NOT ('break-glass' = ANY (amr))",
+        [id, authTime, [...amr]],
+      );
     },
 
     async revoke(id, by, at) {

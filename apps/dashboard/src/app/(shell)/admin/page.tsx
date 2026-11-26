@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import "@/components/pages/pages.css";
+import { BreakGlassEnrol } from "@/components/admin/BreakGlassEnrol";
+import { BreakGlassRevokeButton } from "@/components/admin/BreakGlassRevokeButton";
 import { EntryActions } from "@/components/admin/EntryActions";
 import { InviteForm } from "@/components/admin/InviteForm";
 import { RevokeButton } from "@/components/admin/RevokeButton";
 import { SignOutEverywhereButton } from "@/components/admin/SignOutEverywhereButton";
-import { Badge, Card, PageHeader, Tabs, type BadgeTone } from "@/components/ui";
+import { Badge, Callout, Card, PageHeader, Tabs, type BadgeTone } from "@/components/ui";
 import { TODAY, fmtDate, fmtDateTime, isIsoDate } from "@/lib/dates";
 import { first } from "@/lib/params";
 import { PAGES } from "@/lib/pages";
@@ -17,6 +19,7 @@ import {
   isAuditAction,
   type AuditAction,
 } from "@/server/audit/types";
+import { readBreakGlassConfig } from "@/server/breakglass/config";
 import { getDashboardData } from "@/server/data";
 import { ORIGINAL_HOLDERS } from "@/server/data/allowlist";
 import { BRAND_LABELS, ROLE_LABELS } from "@/server/types";
@@ -51,13 +54,23 @@ const ACTION_TONE: Record<AuditAction, BadgeTone> = {
   "signin.ok": "ok",
   "signin.fresh": "info",
   signout: "default",
+  "breakglass.code": "acc",
+  "breakglass.enrol": "acc",
+  "breakglass.revoke": "acc",
+  "breakglass.signin": "crit",
+  "breakglass.refused": "crit",
 };
 
-/** Admin: Owner only. The allow-list, the audit log, and active sessions. */
+const TABS = ["allow", "audit", "sessions", "emergency"];
+
+/**
+ * Admin: Owner only. The allow-list, the audit log, active sessions and emergency access. An emergency
+ * (break-glass) session sees all of it, but the buttons it may not use are not shown, and their handlers refuse.
+ */
 export default async function AdminPage({ searchParams }: Props) {
   const viewer = requirePage(await getViewer(), "admin");
   const sp = await searchParams;
-  const tab = ["allow", "audit", "sessions"].includes(first(sp.tab) ?? "")
+  const tab = TABS.includes(first(sp.tab) ?? "")
     ? (first(sp.tab) as string)
     : "allow";
 
@@ -69,7 +82,8 @@ export default async function AdminPage({ searchParams }: Props) {
 
   const data = getDashboardData(viewer);
   const session = await getSessionState();
-  const [allow, sessions, audit] = await Promise.all([
+  const emergency = viewer.breakGlass === true;
+  const [allow, sessions, audit, keys] = await Promise.all([
     data.adminAllowList(),
     data.adminSessions(session.kind === "ok" ? session.session.id : null),
     data.adminAudit({
@@ -78,6 +92,7 @@ export default async function AdminPage({ searchParams }: Props) {
       ...(from ? { from } : {}),
       ...(to ? { to } : {}),
     }),
+    data.adminBreakGlass(),
   ]);
   const filtered = Boolean(who || action || from || to);
 
@@ -125,7 +140,7 @@ export default async function AdminPage({ searchParams }: Props) {
                     )}
                   </td>
                   <td>
-                    {p.id === viewer.id || p.status === "removed" ? null : (
+                    {emergency || p.id === viewer.id || p.status === "removed" ? null : (
                       <EntryActions id={p.id} name={p.name} status={p.status} />
                     )}
                   </td>
@@ -136,7 +151,13 @@ export default async function AdminPage({ searchParams }: Props) {
         </div>
       </Card>
       <Card title="Invite someone">
-        <InviteForm holders={ORIGINAL_HOLDERS} today={TODAY} />
+        {emergency ? (
+          <Callout tone="warn">
+            Not available in emergency access. Invites and allow-list changes need a normal sign-in with YourTal.
+          </Callout>
+        ) : (
+          <InviteForm holders={ORIGINAL_HOLDERS} today={TODAY} />
+        )}
       </Card>
     </>
   );
@@ -262,6 +283,11 @@ export default async function AdminPage({ searchParams }: Props) {
               <tr key={s.id}>
                 <td>
                   <b>{s.person}</b>{" "}
+                  {s.emergency ? (
+                    <Badge tone="crit" plain>
+                      Emergency
+                    </Badge>
+                  ) : null}{" "}
                   {s.current ? (
                     <Badge tone="acc" plain>
                       This session
@@ -289,11 +315,105 @@ export default async function AdminPage({ searchParams }: Props) {
         </table>
       </div>
       <p className="xs muted pad">
-        Sessions end after 30 minutes without activity, and after 8 hours in any case. Revoke ends
+        Sessions end after 30 minutes without activity, and after 8 hours in any case (an emergency
+        session after 1 hour). Revoke ends
         one session at once; Sign out everywhere ends all of that person&apos;s sessions. Suspending
         or removing someone ends theirs too.
       </p>
     </Card>
+  );
+
+  const activeKeys = keys.filter((k) => k.revoked === null);
+  const mine = activeKeys.find((k) => k.ownerId === viewer.id);
+  const enrolOn = readBreakGlassConfig() !== null;
+  const emergencyPanel = (
+    <>
+      <Card title="Emergency Owner key" flush>
+        <p className="small pad">
+          One sealed key that signs an Owner in when YourTal is down, at{" "}
+          <span className="mono">/auth/emergency</span>. It is registered with this dashboard, not with YourTal. An
+          emergency session lasts 1 hour. It can read every page and end sessions. It cannot export, open a profile,
+          change who can sign in, or add or revoke emergency keys. Every emergency sign-in is recorded and raises an
+          alert.
+        </p>
+        <div className="tablewrap">
+          <table>
+            <caption className="sr-only">Emergency keys</caption>
+            <thead>
+              <tr>
+                <th scope="col">Owner</th>
+                <th scope="col">Key</th>
+                <th scope="col">Added</th>
+                <th scope="col">Last used</th>
+                <th scope="col">Status</th>
+                <th scope="col" className="num">
+                  <span className="sr-only">Revoke</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {keys.length ? (
+                keys.map((k) => (
+                  <tr key={k.credentialId}>
+                    <td>
+                      <b>{k.owner}</b>
+                    </td>
+                    <td className="mono small">{k.label}</td>
+                    <td>{fmtDateTime(k.added)}</td>
+                    <td>{k.lastUsed ? fmtDateTime(k.lastUsed) : <span className="muted">Never</span>}</td>
+                    <td>
+                      {k.revoked ? (
+                        <Badge tone="default">Revoked {fmtDateTime(k.revoked)}</Badge>
+                      ) : (
+                        <Badge tone="ok">Active</Badge>
+                      )}
+                    </td>
+                    <td className="num">
+                      {k.revoked || emergency ? null : (
+                        <BreakGlassRevokeButton credentialId={k.credentialId} label={k.label} owner={k.owner} />
+                      )}
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={6} className="muted">
+                    No emergency key yet.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </Card>
+      <Card title="Add an emergency key">
+        {emergency ? (
+          <Callout tone="warn">
+            Not available in emergency access. Emergency keys are added and revoked in a normal sign-in with YourTal.
+          </Callout>
+        ) : mine ? (
+          <p className="small">You have an emergency key. To replace it, revoke it first, then ask for a new code.</p>
+        ) : activeKeys.length >= 2 ? (
+          <p className="small">Two emergency keys are active, the most there can be. Revoke one first.</p>
+        ) : (
+          <div className="stack">
+            <ol className="small bg-steps">
+              <li>Ask the lead for an enrolment code. They make it on the server. It works once, for 15 minutes.</li>
+              <li>Plug in the hardware security key, or have the device that will hold the passkey ready.</li>
+              <li>
+                Enter the code and press Add emergency key. If you have not used your passkey in the last 5 minutes,
+                YourTal asks for it first.
+              </li>
+              <li>Test it once at /auth/emergency, then seal it with the paper agreements in the company archive.</li>
+            </ol>
+            {enrolOn ? null : (
+              <Callout>Emergency keys can only be added on the live dashboard. Dev sign-in is on here.</Callout>
+            )}
+            <BreakGlassEnrol disabled={!enrolOn} />
+          </div>
+        )}
+      </Card>
+    </>
   );
 
   return (
@@ -313,6 +433,7 @@ export default async function AdminPage({ searchParams }: Props) {
           { id: "allow", label: "Allow-list", panel: allowPanel },
           { id: "audit", label: "Audit log", panel: auditPanel },
           { id: "sessions", label: "Sessions", panel: sessionsPanel },
+          { id: "emergency", label: "Emergency access", panel: emergencyPanel },
         ]}
       />
     </div>

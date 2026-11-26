@@ -1,6 +1,16 @@
 import { randomBytes } from "node:crypto";
 import { sessionEndedReason } from "./limits";
-import type { AllowEntry, AllowListStore, AllowStatus, SessionRecord, SessionStore } from "./types";
+import { CODE_TTL_MS, codeHash, newEnrolmentCode, normaliseCode } from "../breakglass/codes";
+import type {
+  AllowEntry,
+  AllowListStore,
+  AllowStatus,
+  BreakGlassKey,
+  BreakGlassStore,
+  CodeCheck,
+  SessionRecord,
+  SessionStore,
+} from "./types";
 
 /**
  * In-memory stores for dev, tests and screenshots (the contract is ./types.ts). Every read hands out a copy, so a
@@ -118,7 +128,7 @@ export function createMemorySessionStore(
     },
     async updateAuth(id, authTime, amr) {
       const r = byId(id);
-      if (r && r.revokedAt === null) {
+      if (r && r.revokedAt === null && !r.amr.includes("break-glass")) {
         r.authTime = authTime;
         r.amr = [...amr];
       }
@@ -147,6 +157,87 @@ export function createMemorySessionStore(
         .filter((r) => sessionEndedReason(r, t) === null)
         .sort((a, b) => Date.parse(b.lastSeenAt) - Date.parse(a.lastSeenAt))
         .map(copy);
+    },
+  };
+}
+
+/** The memory break-glass store also makes codes, which in Postgres only the server CLI can (god_app cannot). */
+export interface MemoryBreakGlassStore extends BreakGlassStore {
+  /** A new enrolment code for an Owner entry; any older unused code for them stops working. Returns the code. */
+  issueCode(ownerId: string): string;
+}
+
+const MAX_ACTIVE_KEYS = 2;
+
+export function createMemoryBreakGlassStore(
+  opts: { seed?: readonly BreakGlassKey[]; now?: Clock } = {},
+): MemoryBreakGlassStore {
+  const now = opts.now ?? Date.now;
+  const keys: BreakGlassKey[] = (opts.seed ?? []).map((k) => ({ ...k, publicKey: new Uint8Array(k.publicKey) }));
+  const codes = new Map<string, { ownerId: string; createdAt: number; expiresAt: number; usedAt: number | null }>();
+  const copy = (k: BreakGlassKey): BreakGlassKey => ({ ...k, publicKey: new Uint8Array(k.publicKey) });
+  const active = () => keys.filter((k) => k.revokedAt === null);
+
+  return {
+    async list() {
+      return [...keys].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)).map(copy);
+    },
+    async findActive(credentialId) {
+      const k = keys.find((x) => x.credentialId === credentialId && x.revokedAt === null);
+      return k ? copy(k) : null;
+    },
+    async create(input) {
+      if (keys.some((k) => k.credentialId === input.credentialId)) return null;
+      const live = active();
+      if (live.length >= MAX_ACTIVE_KEYS || live.some((k) => k.ownerId === input.ownerId)) return null;
+      const k: BreakGlassKey = {
+        credentialId: input.credentialId,
+        publicKey: new Uint8Array(input.publicKey),
+        signCount: input.signCount,
+        ownerId: input.ownerId,
+        createdAt: new Date(now()).toISOString(),
+        lastUsedAt: null,
+        revokedAt: null,
+      };
+      keys.push(k);
+      return copy(k);
+    },
+    async recordUse(credentialId, signCount, at) {
+      const k = keys.find((x) => x.credentialId === credentialId && x.revokedAt === null);
+      if (!k) return false;
+      if (!(k.signCount < signCount || (signCount === 0 && k.signCount === 0))) return false;
+      k.signCount = signCount;
+      k.lastUsedAt = at;
+      return true;
+    },
+    async revoke(credentialId, at) {
+      const k = keys.find((x) => x.credentialId === credentialId && x.revokedAt === null);
+      if (!k) return false;
+      k.revokedAt = at;
+      return true;
+    },
+    async checkCode(hash, at): Promise<CodeCheck> {
+      const c = codes.get(hash);
+      if (!c) return { state: "unknown" };
+      if (c.usedAt !== null) return { state: "used", ownerId: c.ownerId };
+      if (Date.parse(at) >= c.expiresAt) return { state: "expired", ownerId: c.ownerId };
+      return { state: "ok", ownerId: c.ownerId };
+    },
+    async useCode(hash, ownerId, at) {
+      const c = codes.get(hash);
+      const t = Date.parse(at);
+      if (!c || c.ownerId !== ownerId || c.usedAt !== null || t >= c.expiresAt) return false;
+      c.usedAt = t;
+      return true;
+    },
+    issueCode(ownerId) {
+      const t = now();
+      for (const c of codes.values()) {
+        if (c.ownerId === ownerId && c.usedAt === null && c.expiresAt > t) c.expiresAt = t;
+      }
+      const code = newEnrolmentCode();
+      codes.set(codeHash(normaliseCode(code)!), { ownerId, createdAt: t, expiresAt: t + CODE_TTL_MS, usedAt: null });
+      return code;
     },
   };
 }

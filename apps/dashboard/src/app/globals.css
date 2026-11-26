@@ -1247,6 +1247,19 @@
     flex-wrap: wrap;
   }
 
+  /* ---------- emergency (break-glass) session banner ---------- */
+  .emergency-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px max(26px, env(safe-area-inset-right, 0px)) 10px max(26px, env(safe-area-inset-left, 0px));
+    background: var(--crit-bg);
+    border-bottom: 2px solid var(--crit);
+    color: var(--crit);
+    font-weight: 600;
+    font-size: 14px;
+  }
+
   /* ---------- sign-in ---------- */
   .signin {
     min-height: 100vh;
