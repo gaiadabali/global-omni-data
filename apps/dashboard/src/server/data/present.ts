@@ -59,8 +59,6 @@ export interface InfluenceCell {
   id: string;
   /** A real place name; an h3 cell is named for the suburb at its centre. */
   name: string;
-  /** The same as `name`, kept for older callers. */
-  label: string;
   /** Where it is: "Greater Sydney, NSW". */
   parent: string;
   /** [lon, lat]: an area's label point or an h3 cell's centre. */
@@ -108,7 +106,6 @@ export function presentInfluence(
     return {
       id: c.id,
       name: c.name,
-      label: c.name,
       parent: c.parent,
       centroid: c.centroid,
       value,

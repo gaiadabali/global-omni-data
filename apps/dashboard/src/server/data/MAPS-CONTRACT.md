@@ -48,7 +48,7 @@ Other Territories are never returned.
   "unit": "people",                      // or "per 1,000"
   "trendMonths": ["2025-12", "..."],     // the months of every cell's trend: the last 12 ending at `month` (fewer in 2024-12 to 2025-10)
   "cells": [{
-    "id": "125041717", "name": "Parramatta - Rosehill", "label": "Parramatta - Rosehill",   // label = name, kept for old callers
+    "id": "125041717", "name": "Parramatta - Rosehill",
     "parent": "Greater Sydney, NSW", "centroid": [151.004, -33.826],
     "population": 21850,                 // residents, ABS ERP (H3: the cell's share of the SA2s under it)
     "value": 412, "display": "412", "suppressed": false, "band": 3,   // as before: value is the count, or the rate for per1000
@@ -56,7 +56,7 @@ Other Territories are never returned.
     "newThisMonth": { "value": 1, "display": "<10", "suppressed": true }     // joined in `month`, presented
   }],
   "legend": [{ "band": 0, "label": "<10", "min": 0, "max": 10 }, "..."],
-  "truncated": false                     // true when the cap (5,000 cells at H3 res 6; 8,000 at res 7) dropped the smallest
+  "truncated": false                     // true when the cap (3,000 cells at H3 res 6; 8,000 at res 7) dropped the smallest
 }
 ```
 

@@ -77,7 +77,6 @@ describe("presentation layer", () => {
     expect(r.cells.map((c) => c.id).sort()).toEqual(["ACT", "NSW", "NT", "QLD", "SA", "TAS", "VIC", "WA"]);
     const nsw = r.cells.find((c) => c.id === "NSW")!;
     expect(nsw.name).toBe("New South Wales");
-    expect(nsw.label).toBe("New South Wales");
     expect(nsw.parent).toBe("Australia");
     expect(nsw.centroid[0]).toBeGreaterThan(140);
     expect(nsw.centroid[1]).toBeLessThan(-28);

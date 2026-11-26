@@ -61,7 +61,7 @@ import {
 const MAX_CELLS = 20_000;
 /** A screen holds a few hundred to a few thousand H3 cells; these caps keep a whole-country request small. */
 const MAX_CELLS_RES7 = 8_000;
-const MAX_CELLS_RES6 = 5_000;
+const MAX_CELLS_RES6 = 3_000;
 const TREND_MONTHS = 12;
 const SERIES_MONTHS = 24;
 

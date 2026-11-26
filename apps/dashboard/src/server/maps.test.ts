@@ -43,7 +43,6 @@ interface PNumT {
 interface CellT {
   id: string;
   name: string;
-  label: string;
   parent: string;
   centroid: [number, number];
   value: number;
@@ -130,7 +129,6 @@ describe("influence: real levels, names, trend and new this month", () => {
     const para = sa4.cells.find((c) => c.name === "Sydney - Parramatta")!;
     expect(para.parent).toBe("Greater Sydney, NSW");
     expect(para.id).toBe("125");
-    expect(para.label).toBe(para.name);
     expect(para.population).toBeGreaterThan(100_000);
     expect(sa4.legend[0]?.label).toBe("<10");
 
