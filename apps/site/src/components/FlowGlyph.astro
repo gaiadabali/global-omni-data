@@ -1,0 +1,42 @@
+---
+interface Props {
+  kind: "thread" | "merge" | "grid";
+}
+
+const { kind } = Astro.props;
+
+// The same dot as the map, three ways: one thread through three apps, three apps into one profile,
+// and a field of dots with a hollow ring where a group is too small to show.
+const gridDots = Array.from({ length: 24 }, (_, i) => ({
+  cx: 6 + (i % 8) * 12,
+  cy: 6 + Math.floor(i / 8) * 10,
+}));
+---
+
+<svg class="glyph" viewBox="0 0 96 32" aria-hidden="true" focusable="false">
+  {kind === "thread" && (
+    <>
+      <path class="ln" d="M8 16H88"></path>
+      <circle class="dotf" cx="8" cy="16" r="4"></circle>
+      <circle class="dotf" cx="48" cy="16" r="4"></circle>
+      <circle class="dotf" cx="88" cy="16" r="4"></circle>
+    </>
+  )}
+  {kind === "merge" && (
+    <>
+      <path class="ln" d="M8 6L78 16M8 16H78M8 26L78 16"></path>
+      <circle class="dotn" cx="8" cy="6" r="3.5"></circle>
+      <circle class="dotn" cx="8" cy="16" r="3.5"></circle>
+      <circle class="dotn" cx="8" cy="26" r="3.5"></circle>
+      <circle class="dotf" cx="80" cy="16" r="7"></circle>
+    </>
+  )}
+  {kind === "grid" &&
+    gridDots.map((d, i) =>
+      i === 23 ? (
+        <circle class="ring" cx={d.cx} cy={d.cy} r="3"></circle>
+      ) : (
+        <circle class="dotn" cx={d.cx} cy={d.cy} r="3.5"></circle>
+      ),
+    )}
+</svg>
