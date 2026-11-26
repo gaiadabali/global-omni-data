@@ -1,4 +1,5 @@
-import { CITIES, nearestPlace, stateAt } from "./geo";
+import { getArea, isOtherTerritory, sa2IndexAt, suburbs, type Suburb } from "@god/geo";
+import { STATE_CODES } from "./geo";
 import { CATEGORIES, CATEGORY_BY_AGE, TEEN_BAND } from "./world";
 import { gaussian, mulberry32, cumulative, pickCum } from "./rng";
 
@@ -21,7 +22,11 @@ export interface Merchant {
   lat: number;
   lon: number;
   state: number;
-  cityIndex: number;
+  /** The real suburb (ABS locality) the shop sits in, and its code. The chain is fictional; the suburb is not. */
+  suburb: string;
+  suburbCode: string;
+  /** The ABS SA2 code the shop is in. */
+  sa2: string;
   /** Receipts a month at the current month, all ages. */
   base: number;
 }
@@ -32,49 +37,62 @@ const SIZE_BY_CATEGORY = [300, 500, 175, 235, 125, 85];
 
 const cache = new Map<number, readonly Merchant[]>();
 
+/**
+ * Suburbs that can hold a shop, weighted by the residents of their SA2 (shared among the SA2's suburbs, with towns
+ * a little over-weighted so the country has shops too). Computed once.
+ */
+let pool: { list: Suburb[]; cum: number[]; popOf: Map<string, number> } | null = null;
+function suburbPool() {
+  if (pool) return pool;
+  const all = suburbs().filter((s) => {
+    const sa2 = getArea("sa2", s.sa2);
+    return sa2 !== undefined && !isOtherTerritory(sa2) && sa2.population > 0;
+  });
+  const perSa2 = new Map<string, number>();
+  for (const s of all) perSa2.set(s.sa2, (perSa2.get(s.sa2) ?? 0) + 1);
+  const popOf = new Map<string, number>();
+  const weights = all.map((s) => {
+    const pop = getArea("sa2", s.sa2)!.population;
+    popOf.set(s.sa2, pop);
+    return Math.pow(pop, 0.9) / perSa2.get(s.sa2)!;
+  });
+  pool = { list: all, cum: cumulative(weights), popOf };
+  return pool;
+}
+
 export function generateMerchants(seed = 77, count = 3400): readonly Merchant[] {
   const key = seed * 100000 + count;
   const hit = cache.get(key);
   if (hit) return hit;
   const rnd = mulberry32(seed);
-  const cityCum = cumulative(CITIES.map((c) => c.popK * (c.kind === "town" ? 1.4 : 1)));
+  const { list, cum, popOf } = suburbPool();
   const catCum = cumulative(CATEGORY_WEIGHT);
   const out: Merchant[] = [];
   for (let i = 0; i < count; i++) {
-    const ci = pickCum(cityCum, rnd());
-    const c = CITIES[ci]!;
-    const cos = Math.cos((c.lat * Math.PI) / 180);
-    let lat = c.lat;
-    let lon = c.lon;
-    let st = c.state;
-    for (let t = 0; t < 12; t++) {
-      const la = c.lat + (gaussian(rnd) * c.spreadKm * 0.75) / 110.57;
-      const lo = c.lon + (gaussian(rnd) * c.spreadKm * 0.75) / (111.32 * cos);
-      const s = stateAt(la, lo);
-      if (s >= 0) {
-        lat = la;
-        lon = lo;
-        st = s;
-        break;
-      }
-    }
+    const sub = list[pickCum(cum, rnd())]!;
+    // Near the suburb's middle: a small spread (at most about a kilometre), kept inside the suburb's SA2.
+    const spread = Math.min(1.2, 0.3 * Math.sqrt(sub.areaKm2));
+    const la = sub.lat + (gaussian(rnd) * spread) / 110.57;
+    const lo = sub.lon + (gaussian(rnd) * spread) / (111.32 * Math.cos((sub.lat * Math.PI) / 180));
+    const moved = sa2IndexAt(lo, la) === (getArea("sa2", sub.sa2)?.index ?? -1);
+    const lat = moved ? la : sub.lat;
+    const lon = moved ? lo : sub.lon;
     const cat = pickCum(catCum, rnd());
     const chains = CHAINS[CATEGORIES[cat]!.id]!;
     const chain = chains[Math.floor(rnd() * chains.length)]!;
-    const near = nearestPlace(lat, lon);
-    const base = Math.max(
-      14,
-      Math.round(SIZE_BY_CATEGORY[cat]! * Math.exp((rnd() - 0.5) * 1.6) * (c.kind === "town" ? 0.5 : 1)),
-    );
+    const town = (popOf.get(sub.sa2) ?? 0) < 12_000;
+    const base = Math.max(14, Math.round(SIZE_BY_CATEGORY[cat]! * Math.exp((rnd() - 0.5) * 1.6) * (town ? 0.5 : 1)));
     out.push({
       id: `M-${String(i + 1).padStart(4, "0")}`,
-      name: `${chain} ${near.name}`,
+      name: `${chain} ${sub.name}`,
       chain,
       category: cat,
       lat: Math.round(lat * 1e5) / 1e5,
       lon: Math.round(lon * 1e5) / 1e5,
-      state: st,
-      cityIndex: ci,
+      state: STATE_CODES.indexOf(sub.state as (typeof STATE_CODES)[number]),
+      suburb: sub.name,
+      suburbCode: sub.code,
+      sa2: sub.sa2,
       base,
     });
   }

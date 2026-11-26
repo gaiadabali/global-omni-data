@@ -20,8 +20,8 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
-  // @god/synthetic ships TypeScript source.
-  transpilePackages: ["@god/synthetic"],
+  // @god/synthetic and @god/geo ship TypeScript source.
+  transpilePackages: ["@god/synthetic", "@god/geo"],
   // forbidden() gives a real 403 for a page the viewer's role may not open.
   experimental: { authInterrupts: true },
   async headers() {

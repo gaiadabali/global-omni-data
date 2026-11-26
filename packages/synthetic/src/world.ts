@@ -1,6 +1,7 @@
-import { cellToLatLng, cellToParent, getHexagonAreaAvg, latLngToCell, UNITS } from "h3-js";
-import { CITIES, populationDensity, stateAt } from "./geo";
-import { cumulative, gaussian, mulberry32, pickCum, type Rng } from "./rng";
+import { cellToBoundary, cellToLatLng, cellToParent, getHexagonAreaAvg, latLngToCell, UNITS } from "h3-js";
+import { areas, randomPointInSa2, sa2IndexAt } from "@god/geo";
+import { getPlacement } from "./placement";
+import { cumulative, mulberry32, pickCum, type Rng } from "./rng";
 
 /* ---------------- shared vocabulary ---------------- */
 
@@ -75,8 +76,6 @@ const BUSINESS_CATEGORY = [3, 4, 6, 7, 2, 3];
 /* ---------------- the world ---------------- */
 
 export const DEFAULT_SEED = 26112026;
-/** Teens are about 8% of users, on YourTal and SnapApp only. */
-const TEEN_PROBABILITY = 0.0932;
 
 /** [brand mask, people points, business points]. Masks: 1 YourTal, 2 SnapApp, 4 FTR. */
 const GROUPS: readonly (readonly [number, number, number])[] = [
@@ -107,10 +106,13 @@ export interface PointFilter {
 
 export type BrandSeries = Record<BrandId | "god", Float64Array>;
 
-/** Maps points to h3 cells. Res 8 is stored; coarser resolutions are derived from the res 8 dictionary. */
+/** The finest h3 resolution (about 2 km across). The maps stop at suburb size: there is no res 8. */
+export const FINEST_RES = 7;
+
+/** Maps points to h3 cells. Res 7 is stored; coarser resolutions are derived from the res 7 dictionary. */
 export class CellIndex {
-  private readonly key8: Int32Array;
-  private readonly ids8: string[] = [];
+  private readonly keyBase: Int32Array;
+  private readonly idsBase: string[] = [];
   private readonly lookup = new Map<string, number>();
   private readonly parents = new Map<number, { ids: string[]; map: Int32Array }>();
   private readonly keys = new Map<number, Int32Array>();
@@ -118,18 +120,18 @@ export class CellIndex {
   private readonly popCache = new Map<number, Float64Array>();
 
   constructor(n: number) {
-    this.key8 = new Int32Array(n).fill(-1);
+    this.keyBase = new Int32Array(n).fill(-1);
   }
 
   add(i: number, lat: number, lon: number): void {
-    const id = latLngToCell(lat, lon, 8);
+    const id = latLngToCell(lat, lon, FINEST_RES);
     let o = this.lookup.get(id);
     if (o === undefined) {
-      o = this.ids8.length;
-      this.ids8.push(id);
+      o = this.idsBase.length;
+      this.idsBase.push(id);
       this.lookup.set(id, o);
     }
-    this.key8[i] = o;
+    this.keyBase[i] = o;
   }
 
   private parent(res: number): { ids: string[]; map: Int32Array } {
@@ -137,9 +139,9 @@ export class CellIndex {
     if (p) return p;
     const ids: string[] = [];
     const seen = new Map<string, number>();
-    const map = new Int32Array(this.ids8.length);
-    for (let o = 0; o < this.ids8.length; o++) {
-      const parent = cellToParent(this.ids8[o]!, res);
+    const map = new Int32Array(this.idsBase.length);
+    for (let o = 0; o < this.idsBase.length; o++) {
+      const parent = cellToParent(this.idsBase[o]!, res);
       let po = seen.get(parent);
       if (po === undefined) {
         po = ids.length;
@@ -155,18 +157,19 @@ export class CellIndex {
 
   /** Cell ids at a resolution; the index of an id is the key used by `keysAt`. */
   idsAt(res: number): readonly string[] {
-    return res === 8 ? this.ids8 : this.parent(res).ids;
+    if (res > FINEST_RES) throw new RangeError(`h3 resolution ${res} is finer than the finest (${FINEST_RES})`);
+    return res === FINEST_RES ? this.idsBase : this.parent(res).ids;
   }
 
   /** One key per point (-1: the point has no cell). */
   keysAt(res: number): Int32Array {
-    if (res === 8) return this.key8;
+    if (res === FINEST_RES) return this.keyBase;
     let k = this.keys.get(res);
     if (k) return k;
     const { map } = this.parent(res);
-    k = new Int32Array(this.key8.length);
+    k = new Int32Array(this.keyBase.length);
     for (let i = 0; i < k.length; i++) {
-      const o = this.key8[i]!;
+      const o = this.keyBase[i]!;
       k[i] = o < 0 ? -1 : map[o]!;
     }
     this.keys.set(res, k);
@@ -189,7 +192,10 @@ export class CellIndex {
     return c;
   }
 
-  /** Residents in a cell, from the population model. Memoised per resolution. */
+  /**
+   * Residents in a cell, from the ABS estimate: the mean residents-per-km2 of the SA2s at the cell's centre and at
+   * six points halfway to its corners (water counts as none), times the cell's area. Memoised per resolution.
+   */
   populationAt(res: number, key: number): number {
     let pop = this.popCache.get(res);
     if (!pop) {
@@ -199,7 +205,19 @@ export class CellIndex {
     const hit = pop[key]!;
     if (hit >= 0) return hit;
     const c = this.centresAt(res);
-    const v = populationDensity(c.lat[key]!, c.lon[key]!) * getHexagonAreaAvg(res, UNITS.km2);
+    const lat0 = c.lat[key]!;
+    const lon0 = c.lon[key]!;
+    const sa2 = areas("sa2");
+    const density = (lat: number, lon: number): number => {
+      const i = sa2IndexAt(lon, lat);
+      const a = i < 0 ? undefined : sa2[i];
+      return a && a.areaKm2 > 0 ? a.population / a.areaKm2 : 0;
+    };
+    let sum = density(lat0, lon0);
+    for (const [vlat, vlon] of cellToBoundary(this.idsAt(res)[key]!)) {
+      sum += density(lat0 + (vlat - lat0) * 0.55, lon0 + (vlon - lon0) * 0.55);
+    }
+    const v = (sum / 7) * getHexagonAreaAvg(res, UNITS.km2);
     pop[key] = v;
     return v;
   }
@@ -226,7 +244,8 @@ export interface World {
   readonly join: readonly Uint8Array[];
   /** First month any brand was joined. */
   readonly joinAny: Uint8Array;
-  readonly city: Uint16Array;
+  /** Index of the SA2 each point is in (position in `areas("sa2")` of @god/geo). */
+  readonly sa2: Uint16Array;
   /** Registered people by month (running total), per brand and for all GOD (counted once per person). */
   readonly peopleByMonth: BrandSeries;
   readonly businessesByMonth: BrandSeries;
@@ -275,11 +294,11 @@ function build(seed: number): World {
   const category = new Uint8Array(n);
   const join = [0, 1, 2].map(() => new Uint8Array(n).fill(255));
   const joinAny = new Uint8Array(n).fill(255);
-  const city = new Uint16Array(n).fill(65535);
+  const sa2 = new Uint16Array(n);
+  const placement = getPlacement();
   const activityLat = new Float32Array(n);
   const activityLon = new Float32Array(n);
 
-  const cityCum = [0, 1, 2].map((b) => cumulative(CITIES.map((c) => c.popK * c.affinity[b]!)));
   const adultCum = new Map<number, number[]>();
   for (let m = 1; m < 8; m++) {
     const v = [0, 0, 0, 0, 0, 0];
@@ -291,45 +310,16 @@ function build(seed: number): World {
   const catCum = CATEGORY_BY_AGE.map((w) => cumulative(w));
   const bizCatCum = cumulative(BUSINESS_CATEGORY);
 
-  const place = (ci: number, spread: number): [number, number, number] => {
-    const c = CITIES[ci]!;
-    const cos = Math.cos((c.lat * Math.PI) / 180);
-    for (let t = 0; t < 12; t++) {
-      const dx = gaussian(rnd) * c.spreadKm * spread;
-      const dy = gaussian(rnd) * c.spreadKm * spread;
-      const la = c.lat + dy / 110.57;
-      const lo = c.lon + dx / (111.32 * cos);
-      const st = stateAt(la, lo);
-      if (st >= 0) return [la, lo, st];
-    }
-    return [c.lat, c.lon, c.state];
-  };
-  const placeRural = (): [number, number, number] => {
-    for (let t = 0; t < 60; t++) {
-      const la = -10.8 - rnd() * 32.5;
-      const lo = 113.5 + rnd() * 40;
-      const st = stateAt(la, lo);
-      if (st >= 0) return [la, lo, st];
-    }
-    const c = CITIES[0]!;
-    return [c.lat, c.lon, c.state];
-  };
-
   let k = 0;
   const add = (m: number, biz: boolean) => {
     const firstBrand = m & 1 ? 0 : m & 2 ? 1 : 2;
-    const rural = rnd() < (biz ? 0.06 : 0.04);
-    let la: number, lo: number, st: number, ci = 65535;
-    if (rural) {
-      [la, lo, st] = placeRural();
-    } else {
-      ci = pickCum(cityCum[firstBrand]!, rnd());
-      [la, lo, st] = place(ci, biz ? 0.8 : 1);
-    }
+    // An SA2 by real population (and the brand's affinity), then a random point inside its outline.
+    const sa = pickCum(biz ? placement.bizCum : placement.brandCum[firstBrand]!, rnd());
+    const [lo, la] = randomPointInSa2(sa, rnd);
     lat[k] = la;
     lon[k] = lo;
-    state[k] = st;
-    city[k] = ci;
+    state[k] = placement.sa2State[sa]!;
+    sa2[k] = sa;
     mask[k] = m;
     isBusiness[k] = biz ? 1 : 0;
     let first = 255;
@@ -354,7 +344,7 @@ function build(seed: number): World {
     } else {
       weight[k] = 1 + Math.floor(rnd() * 5);
       const teenAllowed = (m & 4) === 0;
-      const a = teenAllowed && rnd() < TEEN_PROBABILITY ? 0 : 1 + pickCum(adultCum.get(m)!, rnd());
+      const a = teenAllowed && rnd() < placement.teenP[sa]! ? 0 : 1 + pickCum(adultCum.get(m)!, rnd());
       age[k] = a;
       category[k] = pickCum(catCum[a]!, rnd());
       if (m & 2) {
@@ -414,7 +404,7 @@ function build(seed: number): World {
     category,
     join,
     joinAny,
-    city,
+    sa2,
     peopleByMonth: prefix(peopleDelta),
     businessesByMonth: prefix(bizDelta),
     peopleByMask,

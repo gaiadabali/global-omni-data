@@ -84,3 +84,59 @@ export function polygonsOf(g: TopoGeometry, arcs: readonly Float64Array[]): Poly
   }
   return [];
 }
+
+export interface GeoFeature {
+  type: "Feature";
+  id: string;
+  properties: Record<string, unknown>;
+  geometry: { type: "Polygon"; coordinates: number[][][] } | { type: "MultiPolygon"; coordinates: number[][][][] };
+}
+export interface GeoFeatureCollection {
+  type: "FeatureCollection";
+  features: GeoFeature[];
+}
+
+/**
+ * The topology as plain GeoJSON, coordinates rounded to `decimals` places (5 is about a metre), for the map layers.
+ * `props` gives the properties of each feature from its id.
+ */
+export function toFeatureCollection(
+  topo: Topology,
+  props: (id: string) => Record<string, unknown>,
+  decimals = 5,
+): GeoFeatureCollection {
+  const arcs = decodeArcs(topo);
+  const f = 10 ** decimals;
+  const ring = (r: Ring): number[][] => {
+    const out: number[][] = [];
+    let lx = NaN;
+    let ly = NaN;
+    for (let i = 0; i < r.length; i += 2) {
+      const x = Math.round(r[i]! * f) / f;
+      const y = Math.round(r[i + 1]! * f) / f;
+      if (x === lx && y === ly) continue;
+      out.push([x, y]);
+      lx = x;
+      ly = y;
+    }
+    return out;
+  };
+  const features: GeoFeature[] = [];
+  for (const g of topo.objects["areas"]!.geometries) {
+    const polys = polygonsOf(g, arcs)
+      .map((p) => p.map(ring).filter((r) => r.length >= 4))
+      .filter((p) => p.length > 0);
+    if (polys.length === 0) continue;
+    const id = String(g.id);
+    features.push({
+      type: "Feature",
+      id,
+      properties: props(id),
+      geometry:
+        polys.length === 1
+          ? { type: "Polygon", coordinates: polys[0]! }
+          : { type: "MultiPolygon", coordinates: polys },
+    });
+  }
+  return { type: "FeatureCollection", features };
+}

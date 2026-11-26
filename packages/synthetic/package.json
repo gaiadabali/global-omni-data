@@ -13,6 +13,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@god/geo": "workspace:*",
     "d3-geo": "3.1.2",
     "h3-js": "4.5.0"
   },
