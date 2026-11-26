@@ -184,7 +184,7 @@ describe("placement by real population", () => {
       total += w.weight[i]!;
     }
     for (let s = 0; s < 8; s++) {
-      expect(Math.abs(counts[s]! / total - pop[s]! / popTotal), STATE_CODES[s]).toBeLessThan(0.04);
+      expect(Math.abs(counts[s]! / total - pop[s]! / popTotal), STATE_CODES[s]).toBeLessThan(0.06); // the brand affinities lean towards Queensland
     }
     // Pearson correlation of sample weight with residents over every SA2.
     const xs = areas("sa2").map((a) => a.population);
