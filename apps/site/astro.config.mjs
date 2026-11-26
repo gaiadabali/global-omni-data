@@ -43,6 +43,8 @@ export default defineConfig({
   output: "static",
   trailingSlash: "always",
   compressHTML: true,
+  // No markdown on this site; Shiki's inline styles would clash with the CSP.
+  markdown: { syntaxHighlight: false },
   devToolbar: { enabled: false },
   integrations: [
     ...(noindex ? [] : [sitemap({ filter: (page) => !page.includes("/404") })]),
