@@ -249,6 +249,8 @@ describe.skipIf(!enabled)("god_dashboard: roles, grants and the append-only audi
       const a = await person();
       const b = await person();
       const c = await person();
+      expect(await addKey(a, "not/base64url")).toBe("23514");
+      expect(await addKey(a, "A".repeat(1401))).toBe("23514");
       expect(await addKey(a)).toBe("ok");
       expect(await addKey(a)).toBe("23505"); // a second active key for the same Owner
       expect(await addKey(await person("data"))).toBe("23514");

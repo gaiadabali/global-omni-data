@@ -12,7 +12,8 @@
 
 CREATE TABLE god_app.break_glass_credentials (
   -- base64url WebAuthn credential id (at most 1023 bytes, so at most 1364 characters).
-  credential_id  text PRIMARY KEY CHECK (credential_id ~ '^[A-Za-z0-9_-]{1,1400}$'),
+  -- (Postgres regex bounds stop at 255, so the length is a separate test.)
+  credential_id  text PRIMARY KEY CHECK (credential_id ~ '^[A-Za-z0-9_-]+$' AND char_length(credential_id) <= 1400),
   -- COSE public key.
   public_key     bytea NOT NULL CHECK (octet_length(public_key) BETWEEN 16 AND 4096),
   sign_count     bigint NOT NULL DEFAULT 0 CHECK (sign_count BETWEEN 0 AND 4294967295),
