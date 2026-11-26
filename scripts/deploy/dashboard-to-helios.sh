@@ -82,6 +82,7 @@ asset="$(curl -fsS -m 10 "http://127.0.0.1:$PORT/signin" | grep -o '/_next/stati
 [ -n "$asset" ] || { echo "   no stylesheet link in /signin" >&2; exit 1; }
 echo "   static asset $asset: HTTP $(curl -s -o /dev/null -w '%{http_code}' -m 10 "http://127.0.0.1:$PORT$asset")"; curl -fsS -m 10 -o /dev/null "http://127.0.0.1:$PORT$asset"
 echo "   public/god-logo.png: HTTP $(curl -s -o /dev/null -w '%{http_code}' -m 10 "http://127.0.0.1:$PORT/god-logo.png")"; curl -fsS -m 10 -o /dev/null "http://127.0.0.1:$PORT/god-logo.png"
+echo "   map worker: HTTP $(curl -s -o /dev/null -w '%{http_code}' -m 10 "http://127.0.0.1:$PORT/maplibre/maplibre-gl-worker.mjs")"; curl -fsS -m 10 -o /dev/null "http://127.0.0.1:$PORT/maplibre/maplibre-gl-worker.mjs"
 for i in $(seq 1 30); do
   h="$(docker inspect -f '{{.State.Health.Status}}' "$C")"; [ "$h" = healthy ] && break
   [ "$i" = 30 ] && { echo "   docker health stayed '$h'" >&2; exit 1; }
