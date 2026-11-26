@@ -98,9 +98,14 @@ SMOKE
 do_ship() {
   [ -z "$DIRTY" ] || [ "${ALLOW_DIRTY:-}" = 1 ] || die "tree has uncommitted changes; commit, or set ALLOW_DIRTY=1"
   ssh "$BUILD_HOST" "docker image inspect '$IMG' >/dev/null" || die "no image $IMG on $BUILD_HOST: run the build step"
-  echo "== compose.yaml -> $HELIOS:/opt/god-dashboard"
+  echo "== compose.yaml and remote.sh -> $HELIOS:/opt/god-dashboard"
   ssh "$HELIOS" "mkdir -p /opt/god-dashboard && cat > /opt/god-dashboard/compose.yaml.new && mv /opt/god-dashboard/compose.yaml.new /opt/god-dashboard/compose.yaml" \
     < "$ROOT/infra/dashboard/compose.yaml"
+  # The remote half of the deploy (migrate, swap, health check, roll-back). Copied on every ship so Helios always
+  # runs the version that matches this tree. Missing from the first version of this script: found on the first
+  # real deploy, 2026-11-27.
+  ssh "$HELIOS" "cat > /opt/god-dashboard/remote.sh.new && chmod 700 /opt/god-dashboard/remote.sh.new && mv /opt/god-dashboard/remote.sh.new /opt/god-dashboard/remote.sh" \
+    < "$ROOT/scripts/deploy/dashboard-remote.sh"
   echo "== $IMG: $BUILD_HOST -> this machine -> $HELIOS (docker save | docker load)"
   ssh "$BUILD_HOST" "docker save '$IMG' | gzip -1" | ssh "$HELIOS" "gunzip | docker load"
   echo "== migrate and swap on $HELIOS"
