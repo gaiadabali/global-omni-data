@@ -4,7 +4,7 @@ import { EMERGENCY_REFUSED, FRESH_REFUSED, type FreshGate } from "../auth/fresh"
 import { getDashboardData } from "../data";
 import type { DashboardData } from "../data/types";
 import { getStores } from "../store";
-import type { AllowEntry, AllowStatus, Stores } from "../store/types";
+import { ENQUIRY_STATUSES, type AllowEntry, type AllowStatus, type EnquiryStatus, type Stores } from "../store/types";
 import { BRAND_LABELS, ROLES, ROLE_LABELS, isBrandId, type Role, type Viewer } from "../types";
 import { getAuditLog } from "./index";
 import { buildReason } from "./reasons";
@@ -22,7 +22,7 @@ import type { AuditLog } from "./types";
 export interface Deps {
   source?: DashboardData;
   audit?: AuditLog;
-  stores?: Pick<Stores, "allowList" | "sessions">;
+  stores?: Pick<Stores, "allowList" | "sessions"> & Partial<Pick<Stores, "enquiries">>;
   /** The fresh passkey gate for this request. Default: refuse. */
   fresh?: () => Promise<FreshGate>;
   /** The real session behind this request (null with dev sign-in): your own session cannot be revoked here. */
@@ -329,4 +329,42 @@ export async function handleRevokeAllForPerson(
     reason: `Signed ${entry.name} out everywhere: ${ended} ${ended === 1 ? "session" : "sessions"} ended`,
   });
   return { ok: true, person: entry.name, ended };
+}
+
+/* ---------------- mark an enquiry new, read or archived ---------------- */
+
+export type EnquiryUpdateResult =
+  { ok: true; id: string; status: EnquiryStatus; unchanged: boolean } | Fail;
+
+const ENQUIRY_VERB: Record<EnquiryStatus, string> = { new: "Marked as new", read: "Marked as read", archived: "Archived" };
+
+/**
+ * An Owner marks an enquiry from the public contact form as new, read or archived. Reversible and low risk, so it needs
+ * no fresh passkey check, but it is recorded (enquiry.update) with the enquiry's id and no part of what the visitor
+ * wrote: the audit log is permanent and the enquiry is not. Not available in an emergency session.
+ */
+export async function handleEnquiryUpdate(
+  viewer: Viewer | null,
+  input: { id: string; status: string },
+  deps: Deps = {},
+): Promise<EnquiryUpdateResult> {
+  const denied = await gate(viewer, "admin", "enquiry.update", deps);
+  if (denied || !viewer) return denied ?? { ok: false, error: "Sign in required." };
+  const status = (ENQUIRY_STATUSES as readonly string[]).includes(input.status) ? (input.status as EnquiryStatus) : null;
+  if (!status) return { ok: false, error: "Unknown status." };
+  const store = (deps.stores?.enquiries ?? getStores().enquiries);
+  const id = str(input.id, 60);
+  const before = await store.find(id);
+  if (!before) return { ok: false, error: "That enquiry is not in the list." };
+  if (before.status === status) return { ok: true, id, status, unchanged: true };
+  const at = new Date((deps.now ?? Date.now)()).toISOString();
+  const after = await store.setStatus(id, status, viewer.id, at);
+  if (!after) return { ok: false, error: "That enquiry is not in the list." };
+  await (deps.audit ?? getAuditLog()).append({
+    who: viewer.id,
+    action: "enquiry.update",
+    target: id,
+    reason: `${ENQUIRY_VERB[status]} (was ${before.status})`,
+  });
+  return { ok: true, id, status, unchanged: false };
 }

@@ -6,6 +6,7 @@
  *   AuditLog        append-only record of sensitive actions (src/server/audit/types.ts)
  *   BreakGlassStore the sealed emergency Owner keys (WebAuthn, local to the dashboard) and their one-time
  *                   enrolment codes (src/server/breakglass/)
+ *   EnquiryStore    what the public contact form sends (src/server/enquiries/), stored before anyone is emailed
  *
  * Two implementations of each: in memory (dev, tests, screenshots) and Postgres (staging, production).
  * getStores() in ./index.ts picks one: Postgres when GOD_DATABASE_URL is set, memory otherwise.
@@ -150,11 +151,69 @@ export interface BreakGlassStore {
   useCode(codeHash: string, ownerId: string, at: string): Promise<boolean>;
 }
 
+export type EnquiryStatus = "new" | "read" | "archived";
+export const ENQUIRY_STATUSES: readonly EnquiryStatus[] = ["new", "read", "archived"];
+
+/** One enquiry from the public contact form. What the visitor sent never changes; only the status does. */
+export interface Enquiry {
+  id: string;
+  /** ISO time, set by the store (the database, in Postgres). */
+  receivedAt: string;
+  name: string;
+  company: string;
+  email: string;
+  /** The message. May hold line breaks. */
+  want: string;
+  /** The budget range the visitor chose, or "". */
+  budget: string;
+  /** Coarse network prefix ("203.0.113.x"), never the full address. Null when there was no usable address. */
+  ipPrefix: string | null;
+  status: EnquiryStatus;
+  /** AllowEntry.id of the Owner who marked it read or archived. Null while it is new. */
+  handledBy: string | null;
+  handledAt: string | null;
+}
+
+/** What the contact form route hands the store. Already validated and cleaned (src/server/enquiries/validate.ts). */
+export interface NewEnquiry {
+  name: string;
+  company: string;
+  email: string;
+  want: string;
+  budget: string;
+  ipPrefix: string | null;
+}
+
+export interface EnquiryFilter {
+  /** A single status, "open" (new and read, not archived) or "all". Default "all". */
+  status?: EnquiryStatus | "open" | "all";
+  /** Case-insensitive text found in the name, company, email or message. */
+  q?: string;
+  /** At most this many, newest first. */
+  limit?: number;
+}
+
+export interface EnquiryStore {
+  /** Stores a new enquiry as "new", received now. The only write the public site can cause. */
+  create(input: NewEnquiry): Promise<Enquiry>;
+  /** Newest first. */
+  list(filter?: EnquiryFilter): Promise<Enquiry[]>;
+  /** How many match the filter (ignoring `limit`). */
+  count(filter?: Omit<EnquiryFilter, "limit">): Promise<number>;
+  find(id: string): Promise<Enquiry | null>;
+  /**
+   * Marks it new, read or archived, by an Owner, at `at`. New clears who and when. Returns the enquiry as it is now,
+   * or null when there is no such enquiry. What the visitor sent never changes.
+   */
+  setStatus(id: string, status: EnquiryStatus, by: string, at: string): Promise<Enquiry | null>;
+}
+
 export interface Stores {
   allowList: AllowListStore;
   sessions: SessionStore;
   audit: AuditLog;
   breakGlass: BreakGlassStore;
+  enquiries: EnquiryStore;
   /** "memory" in dev and tests, "postgres" when GOD_DATABASE_URL is set. */
   kind: "memory" | "postgres";
 }

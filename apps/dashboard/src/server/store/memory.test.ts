@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { describe, expect, it } from "vitest";
 import { SESSION_ABSOLUTE_MS, SESSION_IDLE_MS, sessionEndedReason } from "./limits";
-import { createMemoryAllowList, createMemorySessionStore } from "./memory";
+import { createMemoryAllowList, createMemoryEnquiryStore, createMemorySessionStore } from "./memory";
 import { ALLOW_LIST_SEED } from "./seed";
 
 const hash = (s: string) => createHash("sha256").update(s).digest("hex");
@@ -158,5 +158,60 @@ describe("session limits", () => {
   it("a revoked session has ended, and a malformed one fails closed", () => {
     expect(sessionEndedReason(s({ revokedAt: iso(T0) }), T0)).toBe("revoked");
     expect(sessionEndedReason(s({ absoluteExpiresAt: "nonsense" }), T0)).toBe("absolute");
+  });
+});
+
+describe("memory enquiry store", () => {
+  const mk = (over: Partial<Parameters<ReturnType<typeof createMemoryEnquiryStore>["create"]>[0]> = {}) => ({
+    name: "Sam Lee",
+    company: "Harbour & Bean",
+    email: "sam@example.com",
+    want: "Where do our customers live?",
+    budget: "",
+    ipPrefix: "203.0.113.x",
+    ...over,
+  });
+
+  it("stores a new enquiry as new, received now, with an id, and hands out copies", async () => {
+    const store = createMemoryEnquiryStore({ now: () => T0 });
+    const e = await store.create(mk());
+    expect(e).toMatchObject({ status: "new", handledBy: null, handledAt: null, receivedAt: iso(T0), ipPrefix: "203.0.113.x" });
+    expect(e.id).toMatch(/^enq_[0-9a-f]{24}$/);
+    e.name = "Changed";
+    expect((await store.find(e.id))?.name).toBe("Sam Lee");
+  });
+
+  it("lists newest first, filters by status and text, and counts", async () => {
+    let t = T0;
+    const store = createMemoryEnquiryStore({ now: () => t });
+    const a = await store.create(mk({ name: "Ada", company: "Alpha" }));
+    t += 1000;
+    const b = await store.create(mk({ name: "Bo", company: "Beta", want: "pharmacy sites in Queensland" }));
+    t += 1000;
+    const c = await store.create(mk({ name: "Cy", company: "Gamma", email: "cy@example.org" }));
+    await store.setStatus(a.id, "read", "dev-owner", iso(t));
+    await store.setStatus(b.id, "archived", "dev-owner", iso(t));
+
+    expect((await store.list()).map((e) => e.name)).toEqual(["Cy", "Bo", "Ada"]);
+    expect((await store.list({ status: "open" })).map((e) => e.name)).toEqual(["Cy", "Ada"]);
+    expect((await store.list({ status: "new" })).map((e) => e.id)).toEqual([c.id]);
+    expect((await store.list({ status: "archived" })).map((e) => e.id)).toEqual([b.id]);
+    expect((await store.list({ q: "QUEENSLAND" })).map((e) => e.id)).toEqual([b.id]);
+    expect((await store.list({ q: "example.org" })).map((e) => e.id)).toEqual([c.id]);
+    expect((await store.list({ q: "alpha", status: "read" })).map((e) => e.id)).toEqual([a.id]);
+    expect(await store.list({ q: "alpha", status: "new" })).toEqual([]);
+    expect((await store.list({ limit: 2 })).length).toBe(2);
+    expect(await store.count()).toBe(3);
+    expect(await store.count({ status: "new" })).toBe(1);
+    expect(await store.count({ status: "open" })).toBe(2);
+  });
+
+  it("marks read or archived with who and when, and new again clears them; the visitor's words never change", async () => {
+    const store = createMemoryEnquiryStore({ now: () => T0 });
+    const e = await store.create(mk());
+    const read = await store.setStatus(e.id, "read", "dev-owner", iso(T0 + 5));
+    expect(read).toMatchObject({ status: "read", handledBy: "dev-owner", handledAt: iso(T0 + 5), name: "Sam Lee", want: e.want });
+    expect(await store.setStatus(e.id, "new", "dev-owner", iso(T0 + 9))).toMatchObject({ status: "new", handledBy: null, handledAt: null });
+    expect(await store.setStatus("enq_missing", "read", "dev-owner", iso(T0))).toBeNull();
   });
 });

@@ -10,7 +10,7 @@ import type { BrandId, Viewer } from "../types";
 import { deviceLabel } from "../auth/session";
 import { getStores } from "../store";
 import { isBreakGlassSession } from "../store/limits";
-import type { AllowEntry, BreakGlassStore, Stores } from "../store/types";
+import type { AllowEntry, BreakGlassStore, Enquiry, EnquiryFilter, EnquiryStore, Stores } from "../store/types";
 import { keyLabel } from "../breakglass/notify";
 import {
   presentActivity,
@@ -127,6 +127,23 @@ export interface BreakGlassKeyRow {
   revoked: string | null;
 }
 
+/** One enquiry as Admin lists it: the enquiry, and the name of the Owner who handled it. */
+export interface AdminEnquiryRow extends Enquiry {
+  handledByName: string | null;
+}
+
+export interface EnquiryView {
+  /** Newest first, at most ENQUIRY_LIST_LIMIT. */
+  rows: AdminEnquiryRow[];
+  /** How many match the filter (rows may be fewer). */
+  matching: number;
+  /** All enquiries still marked new, whatever the filter: the count on the Enquiries tab. */
+  newCount: number;
+}
+
+/** The most enquiries Admin lists at once. A search or a status filter narrows past it. */
+export const ENQUIRY_LIST_LIMIT = 200;
+
 export interface AuditView {
   rows: AuditRow[];
   /** Everyone who appears in the log, for the "who" filter. */
@@ -159,6 +176,8 @@ export interface ViewerData {
   adminAudit(filter?: AuditFilter): Promise<AuditView>;
   /** Every emergency key, newest first. */
   adminBreakGlass(): Promise<BreakGlassKeyRow[]>;
+  /** The public contact form's enquiries, newest first, filtered by status and text. Owner only. */
+  adminEnquiries(filter?: Pick<EnquiryFilter, "status" | "q">): Promise<EnquiryView>;
 }
 
 /** What a brand would see: the executive-level threshold view, used for printed reports. */
@@ -186,7 +205,7 @@ export function getDashboardData(
   viewer: Viewer,
   source: DashboardData = provider(),
   audit: AuditLog = getAuditLog(),
-  stores: Pick<Stores, "allowList" | "sessions"> & { breakGlass?: BreakGlassStore } = getStores(),
+  stores: Pick<Stores, "allowList" | "sessions"> & { breakGlass?: BreakGlassStore; enquiries?: EnquiryStore } = getStores(),
 ): ViewerData {
   const need = (page: "insight" | "teens" | "person" | "quality" | "admin") => {
     if (!canAccessPage(viewer, page))
@@ -363,6 +382,21 @@ export function getDashboardData(
         lastUsed: k.lastUsedAt,
         revoked: k.revokedAt,
       }));
+    },
+    async adminEnquiries(filter = {}) {
+      need("admin");
+      const store = stores.enquiries ?? getStores().enquiries;
+      const [rows, matching, newCount, nameOf] = await Promise.all([
+        store.list({ ...filter, limit: ENQUIRY_LIST_LIMIT }),
+        store.count(filter),
+        store.count({ status: "new" }),
+        namer(stores),
+      ]);
+      return {
+        rows: rows.map((e) => ({ ...e, handledByName: e.handledBy ? nameOf(e.handledBy) : null })),
+        matching,
+        newCount,
+      };
     },
     async adminAudit(filter = {}) {
       need("admin");

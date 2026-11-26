@@ -1017,6 +1017,32 @@
     "delayMs": 300
   },
   {
+    "name": "admin-enquiries",
+    "path": "/admin?tab=enquiries",
+    "role": "owner",
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "widths": [
+      1440,
+      390
+    ],
+    "delayMs": 300
+  },
+  {
+    "name": "admin-enquiries-filtered",
+    "path": "/admin?tab=enquiries&status=all&q=pharmacy",
+    "role": "owner",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440
+    ],
+    "delayMs": 300
+  },
+  {
     "name": "refused-insight-brand_lead_yourtal",
     "path": "/insight",
     "role": "brand_lead_yourtal",

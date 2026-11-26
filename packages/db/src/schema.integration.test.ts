@@ -63,7 +63,7 @@ describe.skipIf(!enabled)("god_dashboard: roles, grants and the append-only audi
 
   it("the migrations are applied and recorded", async () => {
     const r = await owner.query("SELECT version, name FROM god_app.schema_migrations ORDER BY version");
-    expect(r.rows.map((x) => `${x.version}_${x.name}`)).toEqual(["1_allow_list_sessions", "2_audit_log", "3_break_glass"]);
+    expect(r.rows.map((x) => `${x.version}_${x.name}`)).toEqual(["1_allow_list_sessions", "2_audit_log", "3_break_glass", "4_enquiries"]);
   });
 
   describe("audit_log is append-only", () => {
@@ -204,6 +204,130 @@ describe.skipIf(!enabled)("god_dashboard: roles, grants and the append-only audi
         "INSERT INTO god_app.sessions (token_hash, user_id, created_at, last_seen_at, absolute_expires_at, auth_time) VALUES (repeat('c', 64), 'no-such-user', now(), now(), now(), now())",
       );
       expect(r).toBe("23503");
+    });
+  });
+
+  describe("enquiries (0004)", () => {
+    const ins = "INSERT INTO god_app.enquiries (name, company, email, want, budget, ip_prefix) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, status, received_at, handled_by, handled_at";
+    const row = (over: Partial<Record<"name" | "company" | "email" | "want" | "budget" | "ip", string | null>> = {}) => {
+      const v = { name: "Sam Lee", company: "Harbour & Bean", email: "sam@example.com", want: "Where do our customers live?", budget: "", ip: "203.0.113.x", ...over };
+      return [v.name, v.company, v.email, v.want, v.budget, v.ip];
+    };
+
+    it("god_app inserts what the visitor sent; the database sets the id, the time and the status", async () => {
+      const before = Date.now();
+      const r = await app.query(ins, row({ name: `Enq ${rand()}` }));
+      expect(r.rows[0].id).toMatch(/^enq_[0-9a-f]{32}$/);
+      expect(r.rows[0].status).toBe("new");
+      expect(r.rows[0].handled_by).toBeNull();
+      expect(r.rows[0].handled_at).toBeNull();
+      expect(Math.abs(new Date(r.rows[0].received_at).getTime() - before)).toBeLessThan(60_000);
+    });
+
+    it("god_app cannot choose the id, the time, the status or who handled it at insert", async () => {
+      for (const col of ["id", "received_at", "status", "handled_by", "handled_at"]) {
+        const value = col === "received_at" || col === "handled_at" ? "now()" : "'read'";
+        expect(await code(app, `INSERT INTO god_app.enquiries (name, company, email, want, ${col}) VALUES ('A', 'B', 'a@b.co', 'x', ${value})`), col).toBe("42501");
+      }
+      // A "read" row cannot be slipped in by naming only the allowed columns either: they always come out new.
+      const r = await app.query(ins, row());
+      expect(r.rows[0].status).toBe("new");
+    });
+
+    it("god_app cannot delete or truncate", async () => {
+      expect(await code(app, "DELETE FROM god_app.enquiries")).toBe("42501");
+      expect(await code(app, "DELETE FROM god_app.enquiries WHERE false")).toBe("42501");
+      expect(await code(app, "TRUNCATE god_app.enquiries")).toBe("42501");
+    });
+
+    it("god_app updates only the status and who and when: never what the visitor sent", async () => {
+      const id = (await app.query(ins, row())).rows[0].id as string;
+      for (const set of ["name = 'X'", "company = 'X'", "email = 'x@y.co'", "want = 'X'", "budget = 'X'", "ip_prefix = 'x'", "received_at = now()", "id = 'enq_other'"]) {
+        expect(await code(app, `UPDATE god_app.enquiries SET ${set} WHERE id = $1`, [id]), set).toBe("42501");
+      }
+      expect(await code(app, "UPDATE god_app.enquiries SET status = 'read', handled_by = 'dev-owner', handled_at = now() WHERE id = $1", [id])).toBe("ok");
+      expect(await code(app, "UPDATE god_app.enquiries SET status = 'archived', handled_by = 'dev-owner', handled_at = now() WHERE id = $1", [id])).toBe("ok");
+      expect(await code(app, "UPDATE god_app.enquiries SET status = 'new', handled_by = NULL, handled_at = NULL WHERE id = $1", [id])).toBe("ok");
+    });
+
+    it("status and who and when stay in step, and the status is one of three", async () => {
+      const id = (await app.query(ins, row())).rows[0].id as string;
+      // Read with nobody, or new with somebody, is refused.
+      expect(await code(app, "UPDATE god_app.enquiries SET status = 'read' WHERE id = $1", [id])).toBe("23514");
+      expect(await code(app, "UPDATE god_app.enquiries SET handled_by = 'dev-owner', handled_at = now() WHERE id = $1", [id])).toBe("23514");
+      expect(await code(app, "UPDATE god_app.enquiries SET status = 'read', handled_by = 'dev-owner' WHERE id = $1", [id])).toBe("23514");
+      expect(await code(app, "UPDATE god_app.enquiries SET status = 'deleted', handled_by = 'dev-owner', handled_at = now() WHERE id = $1", [id])).toBe("23514");
+      expect(await code(app, "UPDATE god_app.enquiries SET status = 'read', handled_by = ' ', handled_at = now() WHERE id = $1", [id])).toBe("23514");
+    });
+
+    it("a trigger keeps what the visitor sent final even for the owner and a superuser", async () => {
+      const id = (await app.query(ins, row())).rows[0].id as string;
+      for (const c of [owner, admin]) {
+        for (const set of ["name = 'X'", "email = 'x@y.co'", "want = 'X'", "received_at = now()", "ip_prefix = NULL", "id = 'enq_other'"]) {
+          expect(await code(c, `UPDATE god_app.enquiries SET ${set} WHERE id = $1`, [id]), set).toBe("23001");
+        }
+        // The owner can still change the status columns.
+        expect(await code(c, "UPDATE god_app.enquiries SET status = 'archived', handled_by = 'lead', handled_at = now() WHERE id = $1", [id])).toBe("ok");
+        expect(await code(c, "UPDATE god_app.enquiries SET status = 'new', handled_by = NULL, handled_at = NULL WHERE id = $1", [id])).toBe("ok");
+      }
+    });
+
+    it("every field has its limit in the database, at the limit and one over", async () => {
+      const at = async (over: Parameters<typeof row>[0]) => code(app, ins, row(over));
+      expect(await at({ name: "n".repeat(100) })).toBe("ok");
+      expect(await at({ name: "n".repeat(101) })).toBe("23514");
+      expect(await at({ company: "c".repeat(120) })).toBe("ok");
+      expect(await at({ company: "c".repeat(121) })).toBe("23514");
+      expect(await at({ want: "w".repeat(4000) })).toBe("ok");
+      expect(await at({ want: "w".repeat(4001) })).toBe("23514");
+      expect(await at({ budget: "b".repeat(60) })).toBe("ok");
+      expect(await at({ budget: "b".repeat(61) })).toBe("23514");
+      expect(await at({ email: `${"a".repeat(242)}@example.com` })).toBe("ok");
+      expect(await at({ email: `${"a".repeat(243)}@example.com` })).toBe("23514");
+      expect(await at({ ip: "x".repeat(64) })).toBe("ok");
+      expect(await at({ ip: "x".repeat(65) })).toBe("23514");
+      expect(await at({ ip: null })).toBe("ok");
+      // Characters, not bytes: 100 emoji fit.
+      expect(await at({ name: "😀".repeat(100) })).toBe("ok");
+    });
+
+    it("name, company, email and message are required and not blank", async () => {
+      for (const field of ["name", "company", "email", "want"] as const) {
+        expect(await code(app, ins, row({ [field]: "" })), field).toBe("23514");
+        expect(await code(app, ins, row({ [field]: "   " })), field).toBe("23514");
+        expect(await code(app, ins, row({ [field]: null })), field).toBe("23502");
+      }
+    });
+
+    it("a single-line field takes no CR, LF, tab or other control character, so none can reach a mail header", async () => {
+      for (const bad of ["a\nb", "a\rb", "a\r\nBcc: x@y.co", "a\tb", "a\u0007b", "a\u007fb"]) {
+        expect(await code(app, ins, row({ name: bad })), JSON.stringify(bad)).toBe("23514");
+        expect(await code(app, ins, row({ company: bad })), JSON.stringify(bad)).toBe("23514");
+        expect(await code(app, ins, row({ budget: bad })), JSON.stringify(bad)).toBe("23514");
+        expect(await code(app, ins, row({ email: `a@example.com${bad}` })), JSON.stringify(bad)).toBe("23514");
+      }
+      // The message may have line breaks.
+      expect(await code(app, ins, row({ want: "one\r\n\r\ntwo\nthree" }))).toBe("ok");
+    });
+
+    it("the email has the site's shape and nothing that adds a second address or a name", async () => {
+      for (const email of ["sam@example", "sam example@x.co", "@x.co", "sam@@x.co", "a@b.co,c@d.co", "a@b.co;c@d.co", "Sam <a@b.co>", "a(b)@c.co", '"a"@b.co', "a@[1.2.3.4].co", "a\\b@c.co", "a:b@c.co"]) {
+        expect(await code(app, ins, row({ email })), email).toBe("23514");
+      }
+      for (const email of ["sam@example.com", "sam.lee+god@example.co.uk", "o'brien@example.com"]) {
+        expect(await code(app, ins, row({ email })), email).toBe("ok");
+      }
+    });
+
+    it("the table's status CHECK holds for the owner too", async () => {
+      expect(await code(owner, "INSERT INTO god_app.enquiries (name, company, email, want, status) VALUES ('A', 'B', 'a@b.co', 'x', 'spam')")).toBe("23514");
+      expect(await code(owner, "INSERT INTO god_app.enquiries (name, company, email, want, status) VALUES ('A', 'B', 'a@b.co', 'x', 'read')")).toBe("23514");
+      expect(await code(owner, "INSERT INTO god_app.enquiries (name, company, email, want, status, handled_by, handled_at) VALUES ('A', 'B', 'a@b.co', 'x', 'read', 'lead', now())")).toBe("ok");
+    });
+
+    it("the audit log takes enquiry.update", async () => {
+      expect(await code(app, "INSERT INTO god_app.audit_log (who, action, target) VALUES ('dev-owner', 'enquiry.update', 'enq_x')")).toBe("ok");
+      expect(await code(app, "INSERT INTO god_app.audit_log (who, action, target) VALUES ('dev-owner', 'enquiry.delete', 'enq_x')")).toBe("23514");
     });
   });
 
@@ -386,10 +510,10 @@ describe.skipIf(!enabled)("the migration runner against scratch databases", () =
   it("applies everything once, then does nothing", async () => {
     const url = await scratch();
     const first = await migrate(url, { dir: MIGRATIONS });
-    expect(first.applied).toEqual(["0001_allow_list_sessions", "0002_audit_log", "0003_break_glass"]);
+    expect(first.applied).toEqual(["0001_allow_list_sessions", "0002_audit_log", "0003_break_glass", "0004_enquiries"]);
     const second = await migrate(url, { dir: MIGRATIONS });
-    expect(second).toEqual({ applied: [], upToDate: 3 });
-    expect((await status(url, { dir: MIGRATIONS })).map((r) => r.state)).toEqual(["applied", "applied", "applied"]);
+    expect(second).toEqual({ applied: [], upToDate: 4 });
+    expect((await status(url, { dir: MIGRATIONS })).map((r) => r.state)).toEqual(["applied", "applied", "applied", "applied"]);
   });
 
   it("0003 applies on top of a database already at 0002 that holds data, and keeps it", async () => {
@@ -397,6 +521,7 @@ describe.skipIf(!enabled)("the migration runner against scratch databases", () =
     const dir = copyMigrations();
     const third = readFileSync(join(dir, "0003_break_glass.sql"), "utf8");
     rmSync(join(dir, "0003_break_glass.sql"));
+    rmSync(join(dir, "0004_enquiries.sql"));
     expect((await migrate(url, { dir })).applied).toEqual(["0001_allow_list_sessions", "0002_audit_log"]);
     const c = await connect(url);
     try {
@@ -420,6 +545,25 @@ describe.skipIf(!enabled)("the migration runner against scratch databases", () =
     }
   });
 
+  it("0004 applies on top of a database already at 0003 that holds data, and keeps it", async () => {
+    const url = await scratch();
+    const dir = copyMigrations();
+    const fourth = readFileSync(join(dir, "0004_enquiries.sql"), "utf8");
+    rmSync(join(dir, "0004_enquiries.sql"));
+    expect((await migrate(url, { dir })).applied).toEqual(["0001_allow_list_sessions", "0002_audit_log", "0003_break_glass"]);
+    const c = await connect(url);
+    try {
+      await c.query("INSERT INTO god_app.audit_log (who, action, target) VALUES ('u-o', 'breakglass.signin', 'x'), ('u-o', 'signout', 'y')");
+      writeFileSync(join(dir, "0004_enquiries.sql"), fourth);
+      expect(await migrate(url, { dir })).toEqual({ applied: ["0004_enquiries"], upToDate: 3 });
+      expect((await c.query("SELECT count(*)::int AS n FROM god_app.audit_log")).rows[0]).toEqual({ n: 2 });
+      await c.query("INSERT INTO god_app.audit_log (who, action, target) VALUES ('u-o', 'enquiry.update', 'enq_x')");
+      expect((await c.query("SELECT count(*)::int AS n FROM god_app.enquiries")).rows[0]).toEqual({ n: 0 });
+    } finally {
+      await c.end();
+    }
+  });
+
   it("refuses an applied migration that was edited", async () => {
     const url = await scratch();
     const dir = copyMigrations();
@@ -427,14 +571,15 @@ describe.skipIf(!enabled)("the migration runner against scratch databases", () =
     const f = join(dir, "0002_audit_log.sql");
     writeFileSync(f, readFileSync(f, "utf8") + "\n-- sneaky edit\n");
     await expect(migrate(url, { dir })).rejects.toThrow(/edited after it was applied/);
-    expect((await status(url, { dir })).map((r) => r.state)).toEqual(["applied", "changed", "applied"]);
+    expect((await status(url, { dir })).map((r) => r.state)).toEqual(["applied", "changed", "applied", "applied"]);
   });
 
   it("refuses when an applied migration's file is gone", async () => {
     const url = await scratch();
     const dir = copyMigrations();
     await migrate(url, { dir });
-    rmSync(join(dir, "0003_break_glass.sql"));
+    // The newest file: taking an earlier one out would break the numbering first, which is a different refusal.
+    rmSync(join(dir, "0004_enquiries.sql"));
     await expect(migrate(url, { dir })).rejects.toThrow(/missing or out of order/);
   });
 
@@ -458,7 +603,7 @@ describe.skipIf(!enabled)("the migration runner against scratch databases", () =
   it("two runners at once: one applies, the other waits and finds nothing to do", async () => {
     const url = await scratch();
     const [a, b] = await Promise.all([migrate(url, { dir: MIGRATIONS }), migrate(url, { dir: MIGRATIONS })]);
-    expect(a.applied.length + b.applied.length).toBe(3);
+    expect(a.applied.length + b.applied.length).toBe(4);
     expect(Math.min(a.applied.length, b.applied.length)).toBe(0);
   });
 });

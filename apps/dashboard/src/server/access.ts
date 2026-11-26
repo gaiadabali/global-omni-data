@@ -52,6 +52,16 @@ export const API_ACCESS: Record<ApiId, readonly Role[]> = {
   "map.activityArea": EVERYONE,
 };
 
+/**
+ * The routes that need NO sign-in, on purpose. Every other route handler calls requireApi() and refuses without a
+ * viewer; these never look at one. Each is a write or a read anyone on the internet can make, so each one defends
+ * itself (origin, size, rate limit, validation) and is listed here so a new public route is a visible decision.
+ * public-routes.test.ts keeps this list equal to the route files under src/app/api that never call getViewer().
+ */
+export const PUBLIC_ROUTES = [
+  { method: "POST", path: "/api/public/contact", what: "the public site's contact form (src/server/enquiries/)" },
+] as const;
+
 /** Pages that belong to one brand. A brand lead may open only their own. */
 export const BRAND_PAGE: Partial<Record<PageId, BrandId>> = {
   yourtal: "yourtal",
@@ -126,9 +136,12 @@ export type GuardedAction =
   | "allowlist.change"
   | "breakglass.enrol"
   | "breakglass.revoke"
-  | "session.revoke";
+  | "session.revoke"
+  | "enquiry.update";
 
 const EMERGENCY_ALLOWED: readonly GuardedAction[] = ["session.revoke"];
+// enquiry.update (marking an enquiry read or archived) is a write, so it is not allowed in an emergency session: reading
+// the Enquiries tab is.
 
 export function allowedInEmergency(viewer: Viewer | null, action: GuardedAction): boolean {
   return viewer?.breakGlass !== true || EMERGENCY_ALLOWED.includes(action);

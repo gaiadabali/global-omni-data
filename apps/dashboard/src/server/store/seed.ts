@@ -1,6 +1,6 @@
 import { createHash, randomBytes } from "node:crypto";
 import { SESSION_ABSOLUTE_MS } from "./limits";
-import type { AllowEntry, BreakGlassKey, SessionRecord } from "./types";
+import type { AllowEntry, BreakGlassKey, Enquiry, SessionRecord } from "./types";
 
 /**
  * Seeds for the in-memory stores. Fictional people on example.com (a reserved domain no mailbox exists on, so no
@@ -194,4 +194,45 @@ export function devBreakGlassSeed(nowMs: number): BreakGlassKey[] {
       revokedAt: new Date(nowMs - 6 * day + 3_600_000).toISOString(),
     },
   ];
+}
+
+/**
+ * Dev only: fictional enquiries for Admin's Enquiries tab. Invented people and companies on example.com, a reserved
+ * domain no mailbox exists on. Nothing here is real, and the real database starts empty.
+ */
+export const ENQUIRY_SEED: readonly Enquiry[] = [
+  enquiry("enq_seed01", "2026-11-26T14:20:00+11:00", "Sam Lee", "Harbour & Bean", "sam.lee", "Where do our customers live, and which suburbs are we missing? We run six cafes across Sydney and Wollongong.", "$10,000 to $50,000", "203.0.113.x"),
+  enquiry("enq_seed02", "2026-11-26T09:05:00+11:00", "Nadia Haddad", "Corner Pharmacy Group", "nadia.haddad", "We are planning two new pharmacies in Queensland.\n\nCould we see how many people aged 25 to 44 live near each site, and what they spend on health and beauty?\n\nWe would also like to know how you keep people's details private.", "$50,000 to $150,000", "198.51.100.x"),
+  enquiry("enq_seed03", "2026-11-25T16:42:00+11:00", "Tom Nguyen", "Nguyen & Sons Plumbing", "tom.nguyen", "Do you have anything for a small trade business?", "", "192.0.2.x", "read", "dev-owner", "2026-11-26T08:50:00+11:00"),
+  enquiry("enq_seed04", "2026-11-24T11:30:00+11:00", "Aroha Walker", "Kōwhai Outdoor Gear", "aroha.walker", "We sell hiking gear online. Can you tell us which regions buy the most, and when?", "Under $10,000", "2001:db8:1::/48", "read", "dev-owner", "2026-11-24T15:12:00+11:00"),
+  enquiry("enq_seed05", "2026-11-20T10:15:00+11:00", "Jamie Cole", "Cole Wholesale Pty Ltd", "jamie.cole", "Selling you our mailing list. Reply for a price.", "", null, "archived", "dev-owner", "2026-11-20T10:40:00+11:00"),
+  enquiry("enq_seed06", "2026-11-18T13:00:00+11:00", "Mei Tanaka", "Tanaka Kitchenware", "mei.tanaka", "Can we run a YourTal campaign for a new product line, and what does it cost?", "$10,000 to $50,000", "203.0.113.x", "archived", "dev-owner", "2026-11-19T09:00:00+11:00"),
+];
+
+function enquiry(
+  id: string,
+  receivedAt: string,
+  name: string,
+  company: string,
+  local: string,
+  want: string,
+  budget: string,
+  ipPrefix: string | null,
+  status: Enquiry["status"] = "new",
+  handledBy: string | null = null,
+  handledAt: string | null = null,
+): Enquiry {
+  return {
+    id,
+    receivedAt: new Date(receivedAt).toISOString(),
+    name,
+    company,
+    email: `${local}@example.com`,
+    want,
+    budget,
+    ipPrefix,
+    status,
+    handledBy,
+    handledAt: handledAt ? new Date(handledAt).toISOString() : null,
+  };
 }

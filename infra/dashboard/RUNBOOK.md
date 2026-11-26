@@ -362,6 +362,135 @@ docker logs --since 24h god-dashboard 2>&1 | grep '"alert":"break-glass"'
 - Migration 0003 also adds `signin.ok`, `signin.fresh` and `signout` to the audit log's allowed actions. 0002 left them
   out, so on a database at 0002 a successful YourTal sign-in fails when it writes its audit event.
 
+## Step 11. Contact form: god.gaiada.com to the dashboard, and the email
+
+The public site (static, Astro, on Helios) has a contact form. It posts JSON to **`https://god.gaiada.com/api/contact`**
+(same origin, so the site's CSP `connect-src 'self'` stays exactly as it is). nginx on the **god.gaiada.com** vhost proxies
+that to the dashboard's **`POST /api/public/contact`** on `127.0.0.1:3125`. Every enquiry is **stored first** in
+`god_app.enquiries` (migration 0004, applied by the normal deploy); the email to `hello@god.gaiada.com` is only a
+heads-up after that, so nothing is lost while mail is not set up. Owners read and handle enquiries in **Admin, Enquiries**.
+Code: `apps/dashboard/src/server/enquiries/`.
+
+### 11.1 Deploy the release with migration 0004 first
+
+Step 5 / step 8 (gate, build, ship). Check afterwards: `runuser -u postgres -- psql god_dashboard -c '\d god_app.enquiries'`
+shows the table. The route answers `500` until the table exists, so deploy before the vhost change.
+
+### 11.2 The variables (names only here; add them to `/etc/god-dashboard/dashboard.env`, mode 600)
+
+| Variable | Value |
+|---|---|
+| `GOD_SITE_ORIGIN` | optional. The only `Origin` the route accepts. Default `https://god.gaiada.com`. Set it only if the site moves (a bare origin, no path) |
+| `GOD_SMTP_URL` | `smtp://127.0.0.1:25` (Helios's local postfix, which signs with DKIM). No TLS to a loopback server; any other host needs STARTTLS (`smtp://`) or `smtps://` |
+| `GOD_ENQUIRY_TO` | `hello@god.gaiada.com` |
+| `GOD_ENQUIRY_FROM` | `GOD website <no-reply@god.gaiada.com>` (no quotes in the env file) |
+
+If **any of the three mail variables is unset or empty**, no email is sent and the container logs one line
+(`enquiry.mail.disabled`) the first time an enquiry arrives. Enquiries are still stored. After editing the file:
+`GOD_IMAGE_TAG=$(cat /opt/god-dashboard/current.tag) docker compose -f /opt/god-dashboard/compose.yaml up -d --force-recreate`
+(step 8: compose only re-reads `env_file` when it recreates the container), and check
+`docker exec god-dashboard printenv GOD_ENQUIRY_FROM`. The container uses host networking, so `127.0.0.1:25` is Helios's
+postfix: **[UNVERIFIED]** that it listens on loopback and accepts mail from 127.0.0.1. Check:
+`ss -ltnp 'sport = :25'`, `postconf mynetworks`, and
+`docker exec god-dashboard node -e "require('net').connect(25,'127.0.0.1').once('data',d=>{console.log(String(d));process.exit()})"`
+(prints the `220 ...` banner).
+
+### 11.3 The nginx block on the god.gaiada.com vhost
+
+One zone in the `http` context (a new file such as `/etc/nginx/conf.d/god-contact-limit.conf`):
+
+```nginx
+limit_req_zone $binary_remote_addr zone=god_contact:1m rate=6r/m;
+```
+
+and this inside the `server { ... server_name god.gaiada.com; ... }` block that serves the site (an exact-match location wins
+over the site's own `location /`):
+
+```nginx
+    # The contact form. The browser posts to /api/contact on this origin; the dashboard answers at /api/public/contact.
+    location = /api/contact {
+        limit_except POST { deny all; }                 # POST only
+        limit_req zone=god_contact burst=3 nodelay;     # about 6 a minute per address, a burst of 4
+        limit_req_status 429;
+        client_max_body_size 16k;                       # the app refuses over 8 KB itself
+        client_body_buffer_size 16k;
+
+        proxy_pass http://127.0.0.1:3125/api/public/contact;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;        # the ONLY address the app reads: set here, never passed through
+        proxy_set_header X-Forwarded-For $remote_addr;  # not appended to: a client-sent value is dropped
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Connection "";
+        proxy_set_header Cookie "";                     # no cookie ever reaches the app
+        proxy_hide_header Set-Cookie;
+        proxy_read_timeout 15s;
+        proxy_send_timeout 15s;
+        proxy_no_cache 1;                               # never cached, in either direction
+        proxy_cache_bypass 1;
+    }
+```
+
+Notes for the lead:
+
+- `Origin` and `Content-Type` pass through untouched (the default). The app refuses any request whose `Origin` is not
+  `https://god.gaiada.com`, **including one with no `Origin` header**. A browser always sends `Origin` on a `fetch` POST,
+  even same-origin; test once in a real browser, not only with curl.
+- Do **not** add an `add_header` inside this location: nginx then drops the server-level ones (HSTS, and the site's CSP, if it
+  is set there) for this location. Without it they are inherited, which is harmless: a CSP on a no-body API response does
+  nothing. The app itself sends `Cache-Control: no-store`, no cookie and no CSP (`src/proxy.ts` skips `/api`).
+- If CloudPanel manages this vhost, put the block in its Vhost editor, not only in the file on disk: an on-disk edit is
+  lost the next time CloudPanel rewrites the vhost. **[UNVERIFIED]** on this box.
+- **Optional hardening on the dashboard vhost** (`nginx.dashboard.god.gaiada.com.conf`): the same route is also reachable
+  at `https://dashboard.god.gaiada.com/api/public/contact`. The `Origin` check stops browsers there, not curl with a forged
+  `Origin`; it is rate limited either way. To remove the second door, add
+  `location ^~ /api/public/ { return 404; }` to that vhost. It is not in the repo's vhost file because this release did not
+  change that file.
+- The app's own limits are in memory (5 an hour per `/24` or IPv6 `/48`, 100 an hour in total, `429` with `Retry-After`) and
+  reset when the container restarts. nginx's `limit_req` is the one that survives a restart.
+
+```bash
+nginx -t && systemctl reload nginx
+```
+
+### 11.4 Check it with curl
+
+```bash
+S=https://god.gaiada.com/api/contact
+B='{"name":"Runbook check","company":"GOD","email":"you@example.com","want":"Checking the contact form","budget":"","website":""}'
+curl -s -o /dev/null -w '%{http_code}\n' -X POST $S -H 'Origin: https://god.gaiada.com' -H 'Content-Type: application/json' -d "$B"   # 201 (a real row: archive it in Admin, Enquiries)
+curl -s -o /dev/null -w '%{http_code}\n' -X POST $S -H 'Content-Type: application/json' -d "$B"                                       # 403 no Origin
+curl -s -o /dev/null -w '%{http_code}\n' -X POST $S -H 'Origin: https://evil.example' -H 'Content-Type: application/json' -d "$B"     # 403 wrong Origin
+curl -s -o /dev/null -w '%{http_code}\n' -X POST $S -H 'Origin: https://god.gaiada.com' -H 'Content-Type: text/plain' -d "$B"         # 415
+curl -s -o /dev/null -w '%{http_code}\n' -X POST $S -H 'Origin: https://god.gaiada.com' -H 'Content-Type: application/json' -d '{"website":"x"}'   # 204, nothing stored
+curl -s -o /dev/null -w '%{http_code}\n' $S                                                                                           # 403 (GET refused by nginx)
+curl -sI -X POST $S -H 'Origin: https://god.gaiada.com' -H 'Content-Type: application/json' -d "$B" | grep -iE '^(HTTP|set-cookie|content-security|cache-control)'
+#   expect no set-cookie, and cache-control: no-store
+# on Helios
+docker logs --since 10m god-dashboard 2>&1 | grep -E 'enquiry\.'     # enquiry.mail.disabled / .failed / .honeypot / .store.failed
+```
+
+Then open **Admin, Enquiries** as an Owner: the row is there, the tab label counts it as new, and **Mark as read** writes an
+"Enquiry updated" event to the audit log. Archive the test row.
+
+### 11.5 Email: the founder's DNS dependency
+
+- **Today:** mail for `god.gaiada.com` is not set up (the founder is adding it in Google Workspace). Until it is,
+  notifications cannot reach `hello@god.gaiada.com`: with no MX record Helios's postfix falls back to the domain's A record,
+  which is Helios itself, so the mail loops or bounces **[UNVERIFIED: how this postfix is configured]**. **Nothing is lost**:
+  every enquiry is already in Admin, Enquiries. Postfix answering `250 queued` only means it accepted the message; delivery
+  can still fail later, in `/var/log/mail.log`, which the app never sees. A failure the app does see is logged as
+  `enquiry.mail.failed` with a reason code.
+- **Founder (Google Workspace):** add `god.gaiada.com` to the Workspace, create the `hello@god.gaiada.com` mailbox or alias,
+  and publish the MX records Workspace gives for `god.gaiada.com`.
+- **Lead (DNS and Helios), so the mail is accepted as genuinely from `no-reply@god.gaiada.com`:** an SPF record for
+  `god.gaiada.com` that names **both** Google and Helios (one SPF record only: `v=spf1 include:_spf.google.com ip4:<Helios
+  address> ~all`), a DKIM key for `god.gaiada.com` on Helios's postfix (selector and key) with its TXT record, and a DMARC
+  record (`_dmarc`, `p=none` to start). **[UNVERIFIED]**: the brief says Helios's postfix signs with DKIM; that it already
+  signs for `god.gaiada.com` was not checked.
+- **Check once all of that is live:** send the curl test in 11.4, find the email in `hello@`, and in Gmail "Show original"
+  confirm `SPF: PASS` and `DKIM: PASS` for `god.gaiada.com`. Reply to it: the reply goes to the enquirer (Reply-To).
+
 ## Environment variables, all in one place
 
 | Variable | Where | Who owns the name |
@@ -372,4 +501,5 @@ docker logs --since 24h god-dashboard 2>&1 | grep '"alert":"break-glass"'
 | `GOD_PORT` | the deploy command, default 3125; must match the vhost | the deploy script |
 | `NODE_ENV`, `HOSTNAME`, `PORT`, `NODE_OPTIONS` | `compose.yaml` | here |
 | `GOD_BUILD_SHA` | baked into the image | the Dockerfile |
+| `GOD_SITE_ORIGIN` (optional), `GOD_SMTP_URL`, `GOD_ENQUIRY_TO`, `GOD_ENQUIRY_FROM` | `dashboard.env`; the three mail ones are all or nothing (step 11) | this branch (`fe/contact`) |
 | `GOD_DEV_AUTH`, `GOD_DEPLOYMENT` | **never set on Helios** | the dashboard |

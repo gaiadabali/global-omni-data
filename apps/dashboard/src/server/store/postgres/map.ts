@@ -1,6 +1,6 @@
 import type { AuditEvent } from "../../audit/types";
 import type { BrandId, Role } from "../../types";
-import type { AllowEntry, AllowStatus, BreakGlassKey, SessionRecord } from "../types";
+import type { AllowEntry, AllowStatus, BreakGlassKey, Enquiry, EnquiryStatus, SessionRecord } from "../types";
 
 /** Row mapping, pure so it can be unit tested without a database. Time values leave here as ISO strings. */
 
@@ -130,3 +130,35 @@ export function toBreakGlassKey(r: BreakGlassRow): BreakGlassKey {
 
 /** Emails are stored lower case and trimmed (the table has a CHECK for it). */
 export const normEmail = (email: string): string => email.trim().toLowerCase();
+
+export const ENQUIRY_COLUMNS = `id, received_at, name, company, email, want, budget, ip_prefix, status, handled_by, handled_at`;
+
+export interface EnquiryRow {
+  id: string;
+  received_at: Date;
+  name: string;
+  company: string;
+  email: string;
+  want: string;
+  budget: string;
+  ip_prefix: string | null;
+  status: EnquiryStatus;
+  handled_by: string | null;
+  handled_at: Date | null;
+}
+
+export function toEnquiry(r: EnquiryRow): Enquiry {
+  return {
+    id: r.id,
+    receivedAt: iso(r.received_at),
+    name: r.name,
+    company: r.company,
+    email: r.email,
+    want: r.want,
+    budget: r.budget,
+    ipPrefix: r.ip_prefix,
+    status: r.status,
+    handledBy: r.handled_by,
+    handledAt: isoOrNull(r.handled_at),
+  };
+}

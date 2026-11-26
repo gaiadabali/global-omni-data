@@ -108,6 +108,27 @@ describe("the print view and the other query forms", () => {
   });
 });
 
+describe("Admin, Enquiries tab", () => {
+  beforeEach(() => vi.mocked(getViewer).mockReset());
+
+  it("an Owner gets the tab, with any filter or search text, even a nonsense one", async () => {
+    as("owner");
+    for (const sp of [
+      { tab: "enquiries" },
+      { tab: "enquiries", status: "all", q: "pharmacy" },
+      { tab: "enquiries", status: "no-such-status", q: "x".repeat(500) },
+      { tab: ["enquiries", "audit"], status: ["new", "read"], q: ["%", "_"] },
+    ]) {
+      await expect(AdminPage({ searchParams: Promise.resolve(sp) })).resolves.toBeTruthy();
+    }
+  });
+
+  it("an Executive, the one other role that can read most pages, gets a 403 on that tab too", async () => {
+    as("executive");
+    await expect(AdminPage({ searchParams: Promise.resolve({ tab: "enquiries" }) })).rejects.toThrow("FORBIDDEN");
+  });
+});
+
 describe("the overview for a brand lead", () => {
   beforeEach(() => vi.mocked(getViewer).mockReset());
 
