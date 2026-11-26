@@ -172,7 +172,8 @@ describe("state, nonce and the transaction cookie", () => {
     const sealed = sealTransaction(txn(), SECRET);
     const flipped = `${sealed.slice(0, 20)}${sealed[20] === "A" ? "B" : "A"}${sealed.slice(21)}`;
     for (const bad of [
-      input(undefined),
+      // "" rather than undefined: undefined would take the default (a valid cookie).
+      input(""),
       input(txn(), { state: "state-other" }),
       input(txn(), { state: "" }),
       input(flipped),

@@ -74,7 +74,11 @@ export default async function SignInPage({
   const real = isRealSignInOn();
   const session = dev ? null : await getSessionState();
   const reasonKey: Reason | null =
-    key && key in REASONS ? (key as Reason) : session?.kind === "ended" ? "expired" : null;
+    key && Object.hasOwn(REASONS, key)
+      ? (key as Reason)
+      : session?.kind === "ended"
+        ? "expired"
+        : null;
   const reason = reasonKey ? REASONS[reasonKey] : null;
   const viewer = dev ? await getViewer() : session?.kind === "ok" ? session.viewer : null;
   const dots = backdropDots();
