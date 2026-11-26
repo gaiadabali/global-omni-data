@@ -139,12 +139,21 @@ function fitBox(map: MapLibreMap, b: BBox, ins: Insets, pad: number, maxZoom: nu
   const dx = (b[2] - b[0]) / 360;
   const dy = (mercY(b[3]) - mercY(b[1])) / (2 * Math.PI);
   const z = Math.log2(Math.min(rw / dx, rh / dy) / 512);
-  map.easeTo({
-    center: [(b[0] + b[2]) / 2, invMercY((mercY(b[1]) + mercY(b[3])) / 2)],
-    zoom: Math.max(MIN_ZOOM, Math.min(maxZoom, z)),
-    offset: [(ins.left - ins.right) / 2, (ins.top - ins.bottom) / 2],
-    duration,
-  });
+  const zoom = Math.max(MIN_ZOOM, Math.min(maxZoom, z));
+  const c = centreFor((b[0] + b[2]) / 2, invMercY((mercY(b[1]) + mercY(b[3])) / 2), zoom, ins);
+  map.easeTo({ center: c, zoom, duration });
+}
+
+/**
+ * The map centre that puts a place in the middle of the free part of the canvas. The place sits at the centre of the
+ * canvas plus half the difference of the insets; the centre of the map is that many pixels the other way. Plain
+ * Web Mercator arithmetic, so it does not depend on how the camera treats an offset.
+ */
+function centreFor(lon: number, lat: number, zoom: number, ins: Insets): [number, number] {
+  const world = 512 * 2 ** zoom;
+  const ox = (ins.left - ins.right) / 2;
+  const oy = (ins.top - ins.bottom) / 2;
+  return [lon - (ox * 360) / world, invMercY(mercY(lat) + (oy * 2 * Math.PI) / world)];
 }
 
 export function MapCanvas(props: MapCanvasProps) {
@@ -155,6 +164,8 @@ export function MapCanvas(props: MapCanvasProps) {
   const mapRef = useRef<MapLibreMap | null>(null);
   const overlayRef = useRef<MapboxOverlay | null>(null);
   const latest = useLatest(props);
+  // True once the view is no longer the first national fit (the person moved it, or the page flew it somewhere).
+  const touchedRef = useRef(false);
   const [loaded, setLoaded] = useState(false);
   // Milliseconds from the start of the page load to the first drawn answer (shown with ?perf=1).
   const [readyMs, setReadyMs] = useState<number | null>(null);
@@ -172,6 +183,7 @@ export function MapCanvas(props: MapCanvasProps) {
       zoomBy(delta) {
         const map = mapRef.current;
         if (!map) return;
+        touchedRef.current = true;
         map.easeTo({
           zoom: Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, map.getZoom() + delta)),
           duration: latest.current.reducedMotion ? 0 : 250,
@@ -181,6 +193,7 @@ export function MapCanvas(props: MapCanvasProps) {
         const map = mapRef.current;
         const stage = stageRef.current;
         if (!map || !stage) return;
+        touchedRef.current = false;
         fitBox(map, AUSTRALIA_BOUNDS, readInsets(stage), 16, MAX_ZOOM, latest.current.reducedMotion ? 0 : 400);
       },
       flyTo(lon, lat, zoom) {
@@ -188,17 +201,15 @@ export function MapCanvas(props: MapCanvasProps) {
         const stage = stageRef.current;
         if (!map) return;
         const i = stage ? readInsets(stage) : { left: 0, right: 0, top: 0, bottom: 0 };
-        map.easeTo({
-          center: [lon, lat],
-          zoom: zoom ?? map.getZoom(),
-          offset: [(i.left - i.right) / 2, (i.top - i.bottom) / 2],
-          duration: latest.current.reducedMotion ? 0 : 500,
-        });
+        const z = zoom ?? map.getZoom();
+        touchedRef.current = true;
+        map.easeTo({ center: centreFor(lon, lat, z, i), zoom: z, duration: latest.current.reducedMotion ? 0 : 500 });
       },
       fitBounds(b) {
         const map = mapRef.current;
         const stage = stageRef.current;
         if (!map || !stage) return;
+        touchedRef.current = true;
         fitBox(map, b, readInsets(stage), 32, 9, latest.current.reducedMotion ? 0 : 500);
       },
     }),
@@ -268,10 +279,21 @@ export function MapCanvas(props: MapCanvasProps) {
     overlayRef.current = overlay;
 
     // Has the person moved the map themselves? Until then a change of canvas size re-fits Australia.
-    let touched = initialView !== null;
+    touchedRef.current = initialView !== null;
     map.on("movestart", (e) => {
-      if ((e as unknown as { originalEvent?: unknown }).originalEvent) touched = true;
+      if ((e as unknown as { originalEvent?: unknown }).originalEvent) touchedRef.current = true;
     });
+    // The panels settle after the map loads (fonts, the list, the sheet), so keep fitting Australia into what they leave
+    // free until the view is touched. Watching the panels' own size catches every late change.
+    let frame = 0;
+    const refit = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        if (!touchedRef.current) fitBox(map, AUSTRALIA_BOUNDS, readInsets(stage), 16, MAX_ZOOM, 0);
+      });
+    };
+    const panelWatcher = new ResizeObserver(refit);
+    stage.querySelectorAll("[data-occ-d],[data-occ-c]").forEach((el) => panelWatcher.observe(el));
 
     map.on("load", () => {
       map.addControl(overlay as unknown as IControl);
@@ -279,9 +301,7 @@ export function MapCanvas(props: MapCanvasProps) {
       latest.current.onView(currentView(map));
       // Once the page around the map has settled, fit Australia into the part the panels leave free (the panels were
       // measured while the layout was still arriving). Nothing happens if the person has already moved the map.
-      map.once("idle", () => {
-        if (!touched) fitBox(map, AUSTRALIA_BOUNDS, readInsets(stage), 16, MAX_ZOOM, 0);
-      });
+      map.once("idle", refit);
     });
     const wantCamera = new URLSearchParams(window.location.search).has("perf");
     map.on("moveend", () => {
@@ -298,7 +318,7 @@ export function MapCanvas(props: MapCanvasProps) {
     // The canvas settles after the first view was reported (the layout and the fonts arrive after the map loads, so the
     // first box can be a small one). A resize is not a move, so report the view again: the page asks for a bigger box.
     map.on("resize", () => {
-      if (!touched) fitBox(map, AUSTRALIA_BOUNDS, readInsets(stage), 16, MAX_ZOOM, 0);
+      refit();
       latest.current.onView(currentView(map));
     });
     const watcher = new ResizeObserver(() => map.resize());
@@ -311,6 +331,8 @@ export function MapCanvas(props: MapCanvasProps) {
 
     return () => {
       watcher.disconnect();
+      panelWatcher.disconnect();
+      cancelAnimationFrame(frame);
       mapRef.current = null;
       overlayRef.current = null;
       setLoaded(false);
@@ -407,6 +429,7 @@ export function MapCanvas(props: MapCanvasProps) {
   const zoomVia = (delta: number) => {
     const map = mapRef.current;
     if (!map) return;
+    touchedRef.current = true;
     map.easeTo({
       zoom: Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, map.getZoom() + delta)),
       duration: props.reducedMotion ? 0 : 250,
@@ -454,6 +477,7 @@ export function MapCanvas(props: MapCanvasProps) {
             const map = mapRef.current;
             const stage = stageRef.current;
             if (!map || !stage) return;
+            touchedRef.current = false;
             fitBox(map, AUSTRALIA_BOUNDS, readInsets(stage), 16, MAX_ZOOM, props.reducedMotion ? 0 : 400);
           }}
         >
