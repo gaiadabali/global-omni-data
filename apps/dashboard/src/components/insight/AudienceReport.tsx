@@ -171,7 +171,7 @@ export function AudienceReport({ r, print = false }: { r: Report; print?: boolea
         </div>
       </Card>
 
-      <div className="cols">
+      <div className="cols cols-4">
         <Card title="Visit frequency">
           <Bars title="Visit frequency" description="Share of the audience by how often they visit." rows={r.frequency} whole={whole} />
         </Card>

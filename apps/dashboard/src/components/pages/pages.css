@@ -4,6 +4,17 @@
  * only, no style="" attributes (the CSP has no 'unsafe-inline' for styles).
  */
 
+/* A scroller must also contain the absolutely positioned screen-reader text inside it, or that text sits past
+   the right edge of a narrow screen and makes the whole page scroll sideways. */
+.tablewrap {
+  position: relative;
+}
+.cols-4 {
+  --basis: 230px;
+}
+dialog.modal {
+  text-align: left;
+}
 .pad {
   padding: 0 16px 6px;
 }
@@ -56,7 +67,8 @@
 }
 .rules {
   margin: 0;
-  padding-left: 18px;
+  padding-left: 20px;
+  list-style: disc;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -135,15 +147,14 @@ body:has(.report-sheet) main {
   transform: translateY(-50%) rotate(-24deg);
   padding: 0 8%;
   text-align: center;
-  font: 700 28px/1.3 "Lexend Variable", system-ui, sans-serif;
+  font: 700 24px/1.3 "Lexend Variable", system-ui, sans-serif;
   color: var(--ink);
-  opacity: 0.055;
+  opacity: 0.06;
   pointer-events: none;
-  z-index: 0;
+  z-index: 5;
 }
 .report-sheet > * {
   position: relative;
-  z-index: 1;
 }
 .printbar {
   padding: 4px 0 2px;
@@ -258,4 +269,11 @@ body:has(.report-sheet) main {
   .report-sheet {
     padding-bottom: 28px;
   }
+}
+
+.arealegend .lg svg {
+  flex: none;
+}
+.person-li {
+  align-items: center;
 }

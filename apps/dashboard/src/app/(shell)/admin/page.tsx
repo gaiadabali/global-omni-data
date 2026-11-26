@@ -91,7 +91,7 @@ export default async function AdminPage({ searchParams }: Props) {
                     <div className="mono faint xs">{p.handle}</div>
                   </td>
                   <td>{ROLE_LABELS[p.role]}</td>
-                  <td>{p.brand ? BRAND_LABELS[p.brand] : <span className="muted">All brands you may see</span>}</td>
+                  <td>{p.brand ? BRAND_LABELS[p.brand] : <span className="muted">None</span>}</td>
                   <td>{fmtDate(p.agreementSigned)}</td>
                   <td>{p.originalHeldBy}</td>
                   <td>

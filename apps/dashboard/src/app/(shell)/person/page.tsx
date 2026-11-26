@@ -28,7 +28,7 @@ export default async function PersonPage({ searchParams }: Props) {
   const kind = classifyPersonQuery(q);
   const data = getDashboardData(viewer);
 
-  const hits = kind === "not-an-id" ? [] : await data.personSearch(q);
+  const hits = kind === "not-an-id" || id ? [] : await data.personSearch(q);
   const shown = showAll ? hits : hits.slice(0, PAGE_SIZE);
   const outcome = id ? await data.personGet(id) : null;
   const accessedBy = outcome?.kind === "profile" ? await data.personAccessedBy(outcome.profile.id) : [];
@@ -65,7 +65,11 @@ export default async function PersonPage({ searchParams }: Props) {
           </button>
         </form>
 
-        {kind === "not-an-id" ? (
+        {outcome ? (
+          <p className="small">
+            <Link href={q ? `/person?q=${encodeURIComponent(q)}` : "/person"}>Back to the list of profiles</Link>
+          </p>
+        ) : kind === "not-an-id" ? (
           <Callout tone="warn" role="alert">
             Search by GOD id only. Names, emails and phone numbers are not stored or searchable here.
           </Callout>
@@ -78,46 +82,32 @@ export default async function PersonPage({ searchParams }: Props) {
                 ? `${hits.length} synthetic profiles. Pick one, or type a GOD id like G-7F3K to narrow the list.`
                 : `${hits.length} ${hits.length === 1 ? "profile matches" : "profiles match"}.`}
             </p>
-            <div className="tablewrap">
-              <table>
-                <caption className="sr-only">Profiles</caption>
-                <thead>
-                  <tr>
-                    <th scope="col">GOD id</th>
-                    <th scope="col">Age band</th>
-                    <th scope="col">Apps</th>
-                    <th scope="col" className="num">
-                      <span className="sr-only">Open</span>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {shown.map((p) => (
-                    <tr key={p.id}>
-                      <td className="mono">{p.id}</td>
-                      <td>{p.teen ? "13–17" : p.ageBand}</td>
-                      <td>
-                        {p.teen ? (
-                          <Badge tone="warn" plain>
-                            Teen account
-                          </Badge>
-                        ) : (
-                          p.brands.map((b) => BRAND_LABELS[b]).join(", ")
-                        )}
-                      </td>
-                      <td className="num">
-                        {p.teen ? (
-                          <Link className="btn sm" href={`/person?id=${p.id}`} prefetch={false}>
-                            Open
-                          </Link>
-                        ) : (
-                          <OpenProfileButton id={p.id} />
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="list">
+              {shown.map((p) => (
+                <div className="li person-li" key={p.id}>
+                  <div className="grow">
+                    <span className="mono">{p.id}</span>
+                    <div className="small muted">
+                      {p.teen ? "13–17" : p.ageBand}
+                      {" · "}
+                      {p.teen ? (
+                        <Badge tone="warn" plain>
+                          Teen account
+                        </Badge>
+                      ) : (
+                        p.brands.map((b) => BRAND_LABELS[b]).join(", ")
+                      )}
+                    </div>
+                  </div>
+                  {p.teen ? (
+                    <Link className="btn sm" href={`/person?id=${p.id}`} prefetch={false}>
+                      Open
+                    </Link>
+                  ) : (
+                    <OpenProfileButton id={p.id} />
+                  )}
+                </div>
+              ))}
             </div>
             {!showAll && hits.length > shown.length ? (
               <p className="small">

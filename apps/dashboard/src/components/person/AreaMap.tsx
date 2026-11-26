@@ -55,6 +55,7 @@ export function AreaMap({ areas, dots }: { areas: PersonProfileRaw["areas"]; dot
           const colour = i === 0 ? "var(--acc)" : i === 1 ? "var(--heat)" : "var(--sa)";
           return (
             <g key={a.label}>
+              <title>{a.label}</title>
               <circle
                 cx={c.x}
                 cy={c.y}
@@ -65,10 +66,7 @@ export function AreaMap({ areas, dots }: { areas: PersonProfileRaw["areas"]; dot
                 strokeWidth={1.5}
                 strokeDasharray={i === 2 ? "4 3" : undefined}
               />
-              <text x={c.x} y={Math.max(11, c.y - Math.max(8, a.radiusKm * scale) - 4)} textAnchor="middle" className="pmap-label">
-                {a.label}
-              </text>
-            </g>
+</g>
           );
         })}
         {dots.map((d) => {
@@ -80,7 +78,7 @@ export function AreaMap({ areas, dots }: { areas: PersonProfileRaw["areas"]; dot
           );
         })}
       </svg>
-      <div className="lgrow small">
+      <div className="lgrow small arealegend">
         {usedCategories.map((c) => (
           <span className="lg" key={c}>
             <svg width="10" height="10" aria-hidden="true">
@@ -89,12 +87,17 @@ export function AreaMap({ areas, dots }: { areas: PersonProfileRaw["areas"]; dot
             {CATEGORY_NAME[c] ?? c}
           </span>
         ))}
-        <span className="lg">
-          <svg width="12" height="12" aria-hidden="true">
-            <circle cx="6" cy="6" r="5" fill="var(--acc)" fillOpacity={0.2} stroke="var(--acc)" />
-          </svg>
-          Activity areas
-        </span>
+        {areas.map((a, i) => {
+          const colour = i === 0 ? "var(--acc)" : i === 1 ? "var(--heat)" : "var(--sa)";
+          return (
+            <span className="lg" key={a.label}>
+              <svg width="12" height="12" aria-hidden="true">
+                <circle cx="6" cy="6" r="5" fill={colour} fillOpacity={0.2} stroke={colour} strokeDasharray={i === 2 ? "2 2" : undefined} />
+              </svg>
+              {a.label}
+            </span>
+          );
+        })}
       </div>
     </div>
   );
