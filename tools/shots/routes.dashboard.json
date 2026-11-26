@@ -60,6 +60,32 @@
     "delayMs": 500
   },
   {
+    "name": "home-week",
+    "path": "/?period=week",
+    "role": "owner",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440
+    ],
+    "waitFor": "[data-chart][data-ready=\"1\"]",
+    "delayMs": 500
+  },
+  {
+    "name": "brand-yourtal-ytd",
+    "path": "/brands/yourtal?period=ytd",
+    "role": "owner",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440
+    ],
+    "waitFor": "[data-chart][data-ready=\"1\"]",
+    "delayMs": 500
+  },
+  {
     "name": "stub-map",
     "path": "/map",
     "role": "owner",

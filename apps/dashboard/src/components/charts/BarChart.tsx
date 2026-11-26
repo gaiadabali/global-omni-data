@@ -86,8 +86,9 @@ export function BarChart({
     const values = s0?.values ?? [];
     const rowH = 28;
     const H = n * rowH + 8;
-    const labelW = Math.min(190, Math.max(84, Math.round(W * 0.34)));
-    const valueW = 70;
+    const narrow = W < 480;
+    const labelW = Math.min(200, Math.max(96, Math.round(W * (narrow ? 0.44 : 0.34))));
+    const valueW = narrow ? 58 : 70;
     const x0 = labelW + 8;
     const x = scaleLinear()
       .domain([0, max(values) || 1])
@@ -216,7 +217,11 @@ export function BarChart({
                   return d ? <path key={s.id} d={d} fill={s.color} /> : null;
                 })}
                 {(n - 1 - i) % step === 0 ? (
-                  <text x={(band(i) ?? 0) + bw / 2} y={H - 7} textAnchor="middle">
+                  <text
+                    x={(band(i) ?? 0) + bw / 2}
+                    y={H - 7}
+                    textAnchor={(band(i) ?? 0) + bw / 2 + 22 > W ? "end" : "middle"}
+                  >
                     {l}
                   </text>
                 ) : null}

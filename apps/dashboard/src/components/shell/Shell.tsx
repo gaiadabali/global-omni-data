@@ -57,7 +57,7 @@ export function Shell({
               <Icon name="user" />
               <span className="lbl">
                 {viewer.displayName}
-                <span className="block xs muted">{roleLabel}</span>
+                <span className="xs muted"> · {ROLE_LABELS[viewer.role]}</span>
               </span>
             </div>
             {dev ? (
