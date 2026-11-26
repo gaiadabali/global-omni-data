@@ -246,8 +246,9 @@ export function suburbs(): readonly Suburb[] {
 
 /** What is at a point: its suburb, SA2 and a "Greater Sydney, NSW" style parent label. */
 export function placeAt(lon: number, lat: number): Place {
-  const sa2 = nearestSa2(lon, lat);
   const near = nearestSuburb(lon, lat);
+  // A point in the sea has no SA2 of its own: its suburb's SA2 gives the label.
+  const sa2 = nearestSa2(lon, lat) ?? (near ? (getStore().byId.sa2.get(near.suburb.sa2) ?? null) : null);
   const parent = sa2 ? parentLabel("sa2", sa2.id) : near ? `${near.suburb.state}` : "";
   const name = near?.suburb.name ?? sa2?.name ?? "Remote area";
   return { name, suburb: near?.suburb ?? null, sa2, parent };

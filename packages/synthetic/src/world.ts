@@ -300,6 +300,10 @@ export interface World {
    * laid out key by key (key k, month j is at k * months + j). `months` is at most filter.month + 1.
    */
   aggregateSeries(filter: PointFilter, keys: ArrayLike<number>, size: number, months: number): Float64Array;
+  /** The same sum, over only the listed points (the points of one area). */
+  aggregateAt(filter: PointFilter, points: ArrayLike<number>): number;
+  /** The same running totals, over only the listed points: `months` values. */
+  aggregateSeriesAt(filter: PointFilter, points: ArrayLike<number>, months: number): Float64Array;
 }
 
 function seasonFactor(brand: number, month: number): number {
@@ -431,6 +435,25 @@ function build(seed: number): World {
     return d;
   };
 
+  /** Everything in a filter except the join month: audience, brand membership, age band and category. */
+  const matcher = (f: PointFilter): ((i: number) => boolean) => {
+    const wantPeople = f.audience !== "businesses";
+    const wantBiz = f.audience !== "people";
+    const alsoMask = f.alsoBrand ? BRAND_BIT[f.alsoBrand] : 0;
+    const filtersPeople = f.ageBand !== undefined || f.category !== undefined;
+    return (i) => {
+      const biz = isBusiness[i] === 1;
+      if (biz ? !wantBiz : !wantPeople) return false;
+      if (alsoMask && (mask[i]! & alsoMask) === 0) return false;
+      if (filtersPeople) {
+        if (biz) return false;
+        if (f.ageBand !== undefined && age[i] !== f.ageBand) return false;
+        if (f.category !== undefined && category[i] !== f.category) return false;
+      }
+      return true;
+    };
+  };
+
   // h3 indexes are built lazily (they cost about a second).
   let cells: CellIndex | null = null;
   let activity: CellIndex | null = null;
@@ -490,6 +513,32 @@ function build(seed: number): World {
         if (key < 0) continue;
         out[key] = out[key]! + weight[i]!;
       }
+      return out;
+    },
+    aggregateAt(f, points) {
+      const keep = matcher(f);
+      const jm = f.brand === "all" ? joinAny : join[BRANDS.indexOf(f.brand)]!;
+      let sum = 0;
+      for (let k = 0; k < points.length; k++) {
+        const i = points[k]!;
+        if (jm[i]! <= f.month && keep(i)) sum += weight[i]!;
+      }
+      return sum;
+    },
+    aggregateSeriesAt(f, points, months) {
+      if (months < 1 || months > f.month + 1) throw new RangeError(`months must be 1..${f.month + 1}`);
+      const out = new Float64Array(months);
+      const keep = matcher(f);
+      const jm = f.brand === "all" ? joinAny : join[BRANDS.indexOf(f.brand)]!;
+      const start = f.month - months + 1;
+      for (let k = 0; k < points.length; k++) {
+        const i = points[k]!;
+        const j = jm[i]!;
+        if (j > f.month || !keep(i)) continue;
+        const at = j > start ? j - start : 0;
+        out[at] = out[at]! + weight[i]!;
+      }
+      for (let m = 1; m < months; m++) out[m] = out[m]! + out[m - 1]!;
       return out;
     },
     aggregateSeries(f, keys, size, months) {

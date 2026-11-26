@@ -251,7 +251,8 @@ describe("summary", () => {
   });
 
   it("applies thresholds: hidden areas sort last by id, and show no growth figure", async () => {
-    const q = "level=sa2&brand=ftr&month=2024-12&limit=100";
+    // SnapApp businesses in December 2024: a few hundred in the whole country, so most SA2s are under 10.
+    const q = "level=sa2&brand=snapapp&audience=businesses&month=2024-12&limit=100";
     const e = await ok<SummaryT>(handleSummary(exec, sp(q)));
     const o = await ok<SummaryT>(handleSummary(owner, sp(q)));
     const hiddenE = e.areas.filter((a) => a.suppressed);
@@ -322,11 +323,12 @@ describe("area detail", () => {
   });
 
   it("hides a small count from the executive, with no per-1,000 and no rank, and shows it to the owner", async () => {
-    // Find an SA2 with a few FTR people in December 2024.
-    const s = await ok<SummaryT>(handleSummary(owner, sp("level=sa2&brand=ftr&month=2024-12&limit=100")));
+    // Find an SA2 with a few SnapApp businesses in December 2024.
+    const base = "brand=snapapp&audience=businesses&month=2024-12";
+    const s = await ok<SummaryT>(handleSummary(owner, sp(`level=sa2&${base}&limit=100`)));
     const tiny = s.areas.find((a) => a.suppressed && a.value > 0)!;
     expect(tiny).toBeDefined();
-    const q = `level=sa2&id=${tiny.id}&brand=ftr&month=2024-12`;
+    const q = `level=sa2&id=${tiny.id}&${base}`;
     const e = await ok<AreaT>(handleArea(exec, sp(q)));
     const o = await ok<AreaT>(handleArea(owner, sp(q)));
     expect(e.selection.value).toEqual({ value: 0, display: "<10", suppressed: true });

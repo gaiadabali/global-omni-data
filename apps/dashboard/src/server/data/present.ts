@@ -1,4 +1,4 @@
-import { plottable, presentCount, toPNum, type CountKind, type PNum } from "../privacy";
+import { plottableCount, presentCount, toPNum, type CountKind, type PNum } from "../privacy";
 import type { Viewer } from "../types";
 import { countBand, countLegend, rateBand, rateLegend, type LegendBreak } from "./legend";
 import type { BrandId } from "../types";
@@ -41,7 +41,7 @@ export function presentTree<T>(value: T, viewer: V): Present<T> {
 function walk(value: unknown, viewer: V): unknown {
   if (isRawCount(value)) return toPNum(value.n, { kind: value.kind, viewer });
   if (isRawSeries(value)) {
-    return value.values.map((n) => plottable(presentCount(n, { kind: value.kind, viewer })));
+    return value.values.map((n) => plottableCount(n, { kind: value.kind, viewer }));
   }
   if (Array.isArray(value)) return value.map((x) => walk(x, viewer));
   if (value !== null && typeof value === "object") {
@@ -89,8 +89,7 @@ export interface PresentedInfluence {
   truncated: boolean;
 }
 
-const series = (s: RawSeries, viewer: V): number[] =>
-  s.values.map((n) => plottable(presentCount(n, { kind: s.kind, viewer })));
+const series = (s: RawSeries, viewer: V): number[] => s.values.map((n) => plottableCount(n, { kind: s.kind, viewer }));
 
 export function presentInfluence(
   raw: InfluenceRaw,

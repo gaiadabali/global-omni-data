@@ -95,11 +95,29 @@ function levelKeys(w: World, level: AreaLevel): ArrayLike<number> {
   return keys;
 }
 
+/** The points whose key is `idx`: the sample points of one area. */
+function pointsOf(keys: ArrayLike<number>, idx: number): Int32Array {
+  let n = 0;
+  for (let i = 0; i < keys.length; i++) if (keys[i] === idx) n++;
+  const out = new Int32Array(n);
+  let k = 0;
+  for (let i = 0; i < keys.length; i++) if (keys[i] === idx) out[k++] = i;
+  return out;
+}
+
 /** A key array that is 0 for the points whose key is `idx` and -1 for the rest, to aggregate one area. */
 function only(keys: ArrayLike<number>, idx: number): Int8Array {
   const out = new Int8Array(keys.length).fill(-1);
   for (let i = 0; i < keys.length; i++) if (keys[i] === idx) out[i] = 0;
   return out;
+}
+
+const EVERY = new WeakMap<World, Int32Array>();
+/** Every sample point, in order. */
+function allPoints(w: World): Int32Array {
+  let a = EVERY.get(w);
+  if (!a) EVERY.set(w, (a = Int32Array.from({ length: w.n }, (_, i) => i)));
+  return a;
 }
 
 const ALL = new WeakMap<World, Int8Array>();
@@ -128,7 +146,7 @@ function homeCell(w: World, res: number, key: number, lat: number, lon: number):
   if (hit) return hit;
   const near = nearestSuburb(lon, lat);
   const sa2Index = w.cells.sa2sAt(res)[key] ?? -1;
-  const sa2 = sa2Index >= 0 ? areas("sa2")[sa2Index] : nearestSa2(lon, lat);
+  const sa2 = sa2Index >= 0 ? areas("sa2")[sa2Index] : (nearestSa2(lon, lat) ?? (near ? getArea("sa2", near.suburb.sa2) : undefined));
   hit = {
     name: near?.suburb.name ?? sa2?.name ?? "Remote area",
     parent: sa2 ? parentOfArea("sa2", sa2.id) : (near?.suburb.state ?? ""),
@@ -258,7 +276,7 @@ export async function mapArea(q: AreaQuery): Promise<AreaRaw | null> {
   const m = monthOrThrow(q.month);
   const filter: PointFilter = { audience: q.audience, brand: q.brand, month: m };
 
-  let target: Int8Array;
+  let points: Int32Array;
   let info: AreaRaw["area"];
   let rank: AreaRaw["rank"];
 
@@ -268,7 +286,7 @@ export async function mapArea(q: AreaQuery): Promise<AreaRaw | null> {
     if (res !== 6 && res !== 7) return null;
     const key = w.cells.indexOf(res, q.id);
     const keys = w.cells.keysAt(res);
-    target = only(keys, key);
+    points = pointsOf(keys, key);
     const [lat, lon] = cellToLatLng(q.id);
     const sa2Index = key >= 0 ? (w.cells.sa2sAt(res)[key] ?? -1) : -1;
     const sa2 = sa2Index >= 0 ? areas("sa2")[sa2Index] : nearestSa2(lon, lat);
@@ -301,7 +319,7 @@ export async function mapArea(q: AreaQuery): Promise<AreaRaw | null> {
     const area = getArea(level, q.id);
     if (!area || isOtherTerritory(area)) return null;
     const keys = levelKeys(w, level);
-    target = only(keys, area.index);
+    points = pointsOf(keys, area.index);
     info = {
       level,
       id: area.id,
@@ -324,13 +342,13 @@ export async function mapArea(q: AreaQuery): Promise<AreaRaw | null> {
     };
   }
 
-  const value = w.aggregate(filter, target, 1)[0]!;
+  const value = w.aggregateAt(filter, points);
   const Lm = Math.min(SERIES_MONTHS, m + 1);
-  const series = w.aggregateSeries(filter, target, 1, Lm);
-  const nationalValue = w.aggregate(filter, everyone(w), 1)[0]!;
+  const series = w.aggregateSeriesAt(filter, points, Lm);
+  const nationalValue = w.aggregateAt(filter, allPoints(w));
   const brandTotals = (b: BrandId | "all") => ({
-    people: count(w.aggregate({ audience: "people", brand: b, month: m }, target, 1)[0]!),
-    businesses: count(w.aggregate({ audience: "businesses", brand: b, month: m }, target, 1)[0]!),
+    people: count(w.aggregateAt({ audience: "people", brand: b, month: m }, points)),
+    businesses: count(w.aggregateAt({ audience: "businesses", brand: b, month: m }, points)),
   });
   const ageMix: AreaRaw["ageMix"] =
     q.audience === "businesses"
@@ -339,7 +357,7 @@ export async function mapArea(q: AreaQuery): Promise<AreaRaw | null> {
           band,
           teen: a === TEEN_BAND,
           people: count(
-            w.aggregate({ audience: "people", brand: q.brand, month: m, ageBand: a }, target, 1)[0]!,
+            w.aggregateAt({ audience: "people", brand: q.brand, month: m, ageBand: a }, points),
             a === TEEN_BAND ? "teen" : "adult",
           ),
         }));
