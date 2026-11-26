@@ -207,10 +207,16 @@ in the same release). If a migration itself is the problem, restore from `/var/b
 
 ```bash
 docker compose -f /opt/god-dashboard/compose.yaml down
-runuser -u postgres -- dropdb god_dashboard && runuser -u postgres -- psql -f /root/god-setup-roles.sql   # recreates the empty database
-runuser -u postgres -- pg_restore -d god_dashboard --no-owner --role=god_migrator /var/backups/god-dashboard/pre-<sha>-<time>.dump
-# then roll the image back as above
+runuser -u postgres -- dropdb god_dashboard
+runuser -u postgres -- psql -v ON_ERROR_STOP=1 -q -f /root/god-setup-roles.sql      # recreates the empty database, owner, schema
+runuser -u postgres -- pg_restore -d god_dashboard --clean --if-exists --no-owner --role=god_migrator --exit-on-error \
+  /var/backups/god-dashboard/pre-<sha>-<time>.dump
+runuser -u postgres -- psql -v ON_ERROR_STOP=1 -q -f /root/god-setup-roles.sql      # again: re-asserts the per-role settings a dump does not carry
+# then roll the image back as above (the migrations table came back with the dump, so a later deploy re-applies only what is missing)
 ```
+
+This restore sequence was rehearsed on a throwaway `postgres:18` on server-f (2026-11-26): rows, the migration history and
+the `god_app` grants all came back, and the migration runner reported nothing to do afterwards. It has not been run on Helios.
 
 A failed deploy (the new container never answers `/healthz` with the new build) puts the previous image back by itself and
 exits 1; the migrations of that release stay applied.

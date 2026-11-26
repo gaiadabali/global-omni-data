@@ -77,6 +77,11 @@ echo "   /healthz: $body"
 case "$body" in *"\"build\":\"$TAG\""*) ;; *) echo "   build sha missing from /healthz" >&2; exit 1 ;; esac
 echo "   runs as uid $(docker exec "$C" id -u) (must not be 0)"; [ "$(docker exec "$C" id -u)" != 0 ]
 curl -fsS -m 10 -o /dev/null -D - "http://127.0.0.1:$PORT/signin" | tr -d '\r' | grep -i -E '^(HTTP|content-security-policy:|x-frame-options)' | cut -c1-120 | sed 's/^/   /'
+# The standalone server does not serve .next/static or public/ by itself unless the Dockerfile copied them: prove it.
+asset="$(curl -fsS -m 10 "http://127.0.0.1:$PORT/signin" | grep -o '/_next/static/[^"]*\.css' | head -1)"
+[ -n "$asset" ] || { echo "   no stylesheet link in /signin" >&2; exit 1; }
+echo "   static asset $asset: HTTP $(curl -s -o /dev/null -w '%{http_code}' -m 10 "http://127.0.0.1:$PORT$asset")"; curl -fsS -m 10 -o /dev/null "http://127.0.0.1:$PORT$asset"
+echo "   public/god-logo.png: HTTP $(curl -s -o /dev/null -w '%{http_code}' -m 10 "http://127.0.0.1:$PORT/god-logo.png")"; curl -fsS -m 10 -o /dev/null "http://127.0.0.1:$PORT/god-logo.png"
 for i in $(seq 1 30); do
   h="$(docker inspect -f '{{.State.Health.Status}}' "$C")"; [ "$h" = healthy ] && break
   [ "$i" = 30 ] && { echo "   docker health stayed '$h'" >&2; exit 1; }
