@@ -8,7 +8,7 @@ import { fmtInt, monthLong } from "@/lib/format";
 import type { ActivityHeatCell, ActivityMerchant, PresentedActivity } from "@/server/data";
 import { activityLayers, visibleMerchants } from "./activity-layers";
 import { MapCanvas, type MapHandle, type MapViewChange, type TipContent } from "./MapCanvas";
-import { ControlSheet, Legend, MonthControl } from "./MapUi";
+import { ControlSheet, Legend, MonthControl, PerfLine } from "./MapUi";
 import {
   useFontReady,
   useLatest,
@@ -128,6 +128,7 @@ export default function ActivityMap({ initial, meta, basemapUrl, lockedBrandName
   const zoom = view?.z ?? 3.7;
   const labelMode = zoom < 5 ? "states" : "capitals";
   const dotScale = zoom < 5 ? 0.8 : zoom < 8 ? 1 : 1.25;
+  const lowZoom = zoom < 6.4;
   const layers = useMemo(
     () =>
       tokens
@@ -141,10 +142,11 @@ export default function ActivityMap({ initial, meta, basemapUrl, lockedBrandName
             hasBasemap: basemapUrl !== null,
             fontReady,
             labels: labelMode,
+            lowZoom,
             dotScale,
           })
         : [],
-    [tokens, outlines, shown, offSet, ui.heat, ui.sel, basemapUrl, fontReady, labelMode, dotScale],
+    [tokens, outlines, shown, offSet, ui.heat, ui.sel, basemapUrl, fontReady, labelMode, dotScale, lowZoom],
   );
 
   const categoryName = useMemo(() => new Map(meta.categories.map((c) => [c.id, c.name])), [meta.categories]);
@@ -299,10 +301,12 @@ export default function ActivityMap({ initial, meta, basemapUrl, lockedBrandName
         />
         <div className="ctl">
           <span className="lab">Layers</span>
-          <label className="chip on gm-layer">
-            <input type="checkbox" checked={ui.heat} onChange={(e) => change({ heat: e.target.checked })} />
-            Activity areas
-          </label>
+          <div>
+            <label className="chip on gm-layer">
+              <input type="checkbox" checked={ui.heat} onChange={(e) => change({ heat: e.target.checked })} />
+              Activity areas
+            </label>
+          </div>
         </div>
       </ControlSheet>
       {lockedBrandName ? (
@@ -479,6 +483,7 @@ export default function ActivityMap({ initial, meta, basemapUrl, lockedBrandName
           <p className="note">Click a dot or an area on the map, or choose one here, to open its detail.</p>
         </aside>
       </div>
+      <PerfLine stats={loader.stats} />
     </div>
   );
 }

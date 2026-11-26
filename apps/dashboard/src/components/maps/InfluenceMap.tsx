@@ -7,7 +7,7 @@ import { Callout, Num, Segmented, Select } from "@/components/ui";
 import { fmtInt, monthLong } from "@/lib/format";
 import type { InfluenceCell, PresentedInfluence } from "@/server/data";
 import { MapCanvas, type MapHandle, type MapViewChange, type TipContent } from "./MapCanvas";
-import { ControlSheet, Legend, MonthControl } from "./MapUi";
+import { ControlSheet, Legend, MonthControl, PerfLine } from "./MapUi";
 import {
   useFontReady,
   useLatest,
@@ -436,15 +436,4 @@ function PerThousand({ cell }: { cell: InfluenceCell }) {
   if (!exact || !cell.population) return <span className="pill plain">Per 1,000 hidden</span>;
   const rate = (cell.value / cell.population) * 1000;
   return <span className="pill acc plain">{rate.toFixed(2)} per 1,000 residents</span>;
-}
-
-/** With ?perf=1 the page prints its request counts, for measuring pans. Nothing is shown otherwise. */
-function PerfLine({ stats }: { stats: { requests: number; aborted: number; hits: number } }) {
-  const [on] = useState(() => new URLSearchParams(window.location.search).has("perf"));
-  if (!on) return null;
-  return (
-    <p className="xs faint" data-perf>
-      requests {stats.requests}, aborted {stats.aborted}, cache hits {stats.hits}
-    </p>
-  );
 }

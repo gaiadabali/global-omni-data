@@ -18,6 +18,8 @@ export interface ActivityLayerInput {
   fontReady: boolean;
   /** Which labels to draw: state codes at the national view, capitals once zoomed in. */
   labels: "states" | "capitals";
+  /** Zoomed out far enough that heat cells are only a few pixels across: draw them stronger so they show. */
+  lowZoom: boolean;
   /** Dot size multiplier by zoom band (changes a few times across the whole range, not on every frame). */
   dotScale: number;
 }
@@ -61,7 +63,9 @@ export function activityLayers(i: ActivityLayerInput): LayersList {
 
   if (data && i.heat) {
     const bands = data.legend.length;
-    const palette: RGBA[] = data.legend.map((b) => withAlpha(tokens.heat, heatAlpha(b.band, bands)));
+    // Cells are only a few pixels wide at the national view, so they get more opacity and an edge there.
+    const boost = (a: number) => (i.lowZoom ? Math.min(1, a * 1.7 + (a > 0.1 ? 0.12 : 0)) : a);
+    const palette: RGBA[] = data.legend.map((b) => withAlpha(tokens.heat, boost(heatAlpha(b.band, bands))));
     const last = palette[palette.length - 1] ?? withAlpha(tokens.heat, 0.5);
     layers.push(
       new H3HexagonLayer<ActivityHeatCell>({
@@ -72,15 +76,16 @@ export function activityLayers(i: ActivityLayerInput): LayersList {
         highlightColor: withAlpha(tokens.ink, 0.18),
         getHexagon: (d) => d.id,
         getFillColor: (d) => palette[d.band] ?? last,
-        getLineColor: withAlpha(tokens.ink, 1),
-        getLineWidth: (d) => (d.id === selected ? 3 : 0),
+        getLineColor: (d) => (d.id === selected ? withAlpha(tokens.ink, 1) : withAlpha(tokens.heat, d.band === 0 ? 0.2 : 0.9)),
+        getLineWidth: (d) => (d.id === selected ? 3 : i.lowZoom ? 1 : 0),
         stroked: true,
         filled: true,
         extruded: false,
         lineWidthUnits: "pixels",
         updateTriggers: {
-          getFillColor: [data, tokens],
-          getLineWidth: [selected],
+          getFillColor: [data, tokens, i.lowZoom],
+          getLineColor: [data, tokens, selected],
+          getLineWidth: [selected, i.lowZoom],
         },
       }),
     );
@@ -149,6 +154,9 @@ export function activityLayers(i: ActivityLayerInput): LayersList {
           getPosition: (d) => d.position,
           getText: (d) => d.name,
           getSize: 12,
+          background: true,
+          getBackgroundColor: withAlpha(tokens.bg, 0.82),
+          backgroundPadding: [4, 2],
           ...text,
         }),
       );

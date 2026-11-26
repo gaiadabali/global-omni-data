@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { coordName, topBy } from "./top";
+import { coordName, distanceKm, nearCapital, topBy } from "./top";
 
 interface Row {
   id: string;
@@ -39,8 +39,29 @@ describe("topBy", () => {
 });
 
 describe("coordName", () => {
-  it("names a place by its coordinates", () => {
-    expect(coordName(-33.87, 151.21)).toBe("Area near 33.9 S, 151.2 E");
-    expect(coordName(10.04, -3.5)).toBe("Area near 10.0 N, 3.5 W");
+  it("names an area by the capital it is near and its coordinates", () => {
+    expect(coordName(-33.91, 151.21)).toBe("Sydney area, 33.91S 151.21E");
+    expect(coordName(-37.8, 145.0)).toBe("Melbourne area, 37.80S 145.00E");
+  });
+
+  it("gives areas in the same city different names", () => {
+    expect(coordName(-33.91, 151.21)).not.toBe(coordName(-33.87, 151.19));
+  });
+
+  it("leaves the capital out far from any", () => {
+    expect(coordName(-23.7, 133.88)).toBe("Area at 23.70S 133.88E");
+    expect(coordName(10.04, -3.5)).toBe("Area at 10.04N 3.50W");
+  });
+});
+
+describe("distance", () => {
+  it("is about 713 km from Sydney to Melbourne", () => {
+    expect(Math.round(distanceKm(-33.869, 151.209, -37.814, 144.963))).toBeGreaterThan(700);
+    expect(Math.round(distanceKm(-33.869, 151.209, -37.814, 144.963))).toBeLessThan(725);
+  });
+  it("finds the nearest capital within 150 km", () => {
+    expect(nearCapital(-34.4, 150.9)).toBe("Sydney");
+    expect(nearCapital(-35.3, 149.1)).toBe("Canberra");
+    expect(nearCapital(-23.7, 133.88)).toBeNull();
   });
 });

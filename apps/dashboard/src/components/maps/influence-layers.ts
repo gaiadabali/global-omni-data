@@ -2,7 +2,7 @@ import { H3HexagonLayer } from "@deck.gl/geo-layers";
 import { GeoJsonLayer, TextLayer } from "@deck.gl/layers";
 import type { LayersList } from "@deck.gl/core";
 import type { InfluenceCell, PresentedInfluence } from "@/server/data";
-import { bandColor, withAlpha, type MapTokens, type RGB, type RGBA } from "./colors";
+import { bandColor, labelColors, withAlpha, type MapTokens, type RGB, type RGBA } from "./colors";
 import { CAPITALS, stateCode, type StateCollection, type StateFeature, type StateLabel } from "./states";
 import type { BrandChoice } from "./url-state";
 
@@ -113,23 +113,31 @@ export function influenceLayers(i: InfluenceLayerInput): LayersList {
       fontFamily: LABEL_FONT,
       fontWeight: 600,
       fontSettings: { sdf: true },
-      outlineWidth: 0.2,
-      outlineColor: withAlpha(tokens.bg, 1),
-      getColor: withAlpha(tokens.ink, 1),
+      outlineWidth: 0.25,
       getTextAnchor: "middle" as const,
       getAlignmentBaseline: "center" as const,
+      sizeUnits: "pixels" as const,
       pickable: false,
     };
     if (stateLevel) {
+      // Each label takes the colour that reads on its own fill: white on a dark state, ink on a light one.
+      const labels = i.labels.map((l) => {
+        const cell = cellById.get(l.code);
+        const fill = cell ? (palette[cell.band] ?? palette[palette.length - 1]) : undefined;
+        return { ...l, ...labelColors(fill, tokens) };
+      });
       layers.push(
-        new TextLayer<StateLabel>({
+        new TextLayer<(typeof labels)[number]>({
           id: "state-labels",
-          data: i.labels,
+          data: labels,
           getPosition: (d) => d.position,
           getText: (d) => d.code,
           getSize: 13,
-          sizeUnits: "pixels",
+          getColor: (d) => d.color,
+          outlineColor: [0, 0, 0, 0],
           ...text,
+          // The outline colour follows the label: set per layer, so use the halo only where it is light.
+          updateTriggers: { getColor: [data, tokens, i.brand] },
         }),
       );
     } else {
@@ -140,7 +148,12 @@ export function influenceLayers(i: InfluenceLayerInput): LayersList {
           getPosition: (d) => d.position,
           getText: (d) => d.name,
           getSize: 12,
-          sizeUnits: "pixels",
+          getColor: withAlpha(tokens.ink, 1),
+          outlineColor: [0, 0, 0, 0],
+          // A soft box behind the name: it has to read over any hexagon colour.
+          background: true,
+          getBackgroundColor: withAlpha(tokens.bg, 0.82),
+          backgroundPadding: [4, 2],
           ...text,
         }),
       );

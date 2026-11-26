@@ -1,5 +1,70 @@
 [
   {
+    "name": "perf-map-state",
+    "path": "/map?perf=1",
+    "role": "owner",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440
+    ],
+    "waitFor": "[data-map-ready=\"true\"]",
+    "delayMs": 1500
+  },
+  {
+    "name": "perf-map-pan-res7",
+    "path": "/map?perf=pan&z=9.6&lat=-33.87&lon=151.2",
+    "role": "owner",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440
+    ],
+    "waitFor": "[data-map-ready=\"true\"]",
+    "delayMs": 8500
+  },
+  {
+    "name": "perf-map-pan-res5",
+    "path": "/map?perf=pan&z=6.8&lat=-33&lon=148.5",
+    "role": "owner",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440
+    ],
+    "waitFor": "[data-map-ready=\"true\"]",
+    "delayMs": 8500
+  },
+  {
+    "name": "perf-activity-pan-res7",
+    "path": "/activity?perf=pan&z=9.6&lat=-37.81&lon=144.96",
+    "role": "owner",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440
+    ],
+    "waitFor": "[data-map-ready=\"true\"]",
+    "delayMs": 8500
+  },
+  {
+    "name": "activity-selected",
+    "path": "/activity?sel=M-0100",
+    "role": "owner",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440
+    ],
+    "waitFor": "[data-map-ready=\"true\"]",
+    "delayMs": 1500
+  },
+  {
     "name": "map-state",
     "path": "/map",
     "role": "owner",

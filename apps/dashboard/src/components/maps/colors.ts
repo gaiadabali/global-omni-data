@@ -59,9 +59,9 @@ export function bandColor(band: number, bands: number, base: RGB, brand: RGB): R
 /** Activity-area opacity by band: very faint under the threshold, then rising with the square root. */
 export function heatAlpha(band: number, bands: number): number {
   if (band <= 0) return 0.06;
-  if (bands <= 2) return 0.6;
+  if (bands <= 2) return 0.5;
   const t = Math.min(band, bands - 1) - 1;
-  return Math.round((0.16 + 0.72 * Math.sqrt(t / (bands - 2))) * 100) / 100;
+  return Math.round((0.14 + 0.58 * Math.sqrt(t / (bands - 2))) * 100) / 100;
 }
 
 /* ---------------- tokens ---------------- */
@@ -119,4 +119,18 @@ export function readTokens(el: Element): MapTokens {
     // A dark map background has low luminance.
     dark: 0.2126 * bg[0] + 0.7152 * bg[1] + 0.0722 * bg[2] < 110,
   };
+}
+
+const WHITE: RGBA = [255, 255, 255, 255];
+const DARK: RGBA = [16, 18, 43, 255];
+
+/** Perceived brightness of a colour, 0 to 255. */
+export function brightness(c: readonly number[]): number {
+  return 0.2126 * (c[0] ?? 0) + 0.7152 * (c[1] ?? 0) + 0.0722 * (c[2] ?? 0);
+}
+
+/** White text on a dark fill, dark text on a light one. With no fill (no data yet) the theme's ink. */
+export function labelColors(fill: readonly number[] | undefined, tokens: MapTokens): { color: RGBA } {
+  if (!fill) return { color: withAlpha(tokens.ink, 1) };
+  return { color: brightness(fill) < 150 ? WHITE : DARK };
 }

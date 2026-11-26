@@ -53,6 +53,8 @@ export type Fetcher = (url: string, init: { signal: AbortSignal }) => Promise<{
 }>;
 
 export interface LoaderStats {
+  /** The last queries sent, newest last (for the ?perf=1 line). */
+  urls: string[];
   /** Network requests started (cache hits do not count). */
   requests: number;
   /** Requests that were aborted because a newer query replaced them. */
@@ -66,7 +68,7 @@ export interface LoaderStats {
  */
 export class MapLoader<T> {
   readonly cache: QueryCache<T>;
-  readonly stats: LoaderStats = { requests: 0, aborted: 0, hits: 0 };
+  readonly stats: LoaderStats = { requests: 0, aborted: 0, hits: 0, urls: [] };
   private current: { url: string; controller: AbortController } | null = null;
   private prefetching = new Set<string>();
 
@@ -92,6 +94,7 @@ export class MapLoader<T> {
     const controller = new AbortController();
     this.current = { url, controller };
     this.stats.requests++;
+    this.noteUrl(url);
     try {
       const body = await this.fetchBody(url, controller.signal);
       this.cache.set(url, body);
@@ -105,11 +108,17 @@ export class MapLoader<T> {
     if (this.cache.has(url) || this.prefetching.has(url) || this.current?.url === url) return;
     this.prefetching.add(url);
     this.stats.requests++;
+    this.noteUrl(url);
     const controller = new AbortController();
     this.fetchBody(url, controller.signal)
       .then((b) => this.cache.set(url, b))
       .catch(() => undefined)
       .finally(() => this.prefetching.delete(url));
+  }
+
+  private noteUrl(url: string): void {
+    this.stats.urls.push(url);
+    if (this.stats.urls.length > 12) this.stats.urls.shift();
   }
 
   abortCurrent(): void {

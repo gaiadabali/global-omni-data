@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { bandColor, fillPct, heatAlpha, mix, parseColor, rgbCss, withAlpha } from "./colors";
+import { bandColor, brightness, fillPct, heatAlpha, labelColors, mix, parseColor, rgbCss, withAlpha, type MapTokens } from "./colors";
 
 describe("parseColor", () => {
   it("reads hex and rgb", () => {
@@ -67,12 +67,12 @@ describe("band to fill", () => {
 describe("heat", () => {
   it("is faint under the threshold and rises", () => {
     expect(heatAlpha(0, 5)).toBe(0.06);
-    expect(heatAlpha(1, 5)).toBe(0.16);
-    expect(heatAlpha(4, 5)).toBe(0.88);
+    expect(heatAlpha(1, 5)).toBe(0.14);
+    expect(heatAlpha(4, 5)).toBe(0.72);
     expect(heatAlpha(2, 5)).toBeGreaterThan(heatAlpha(1, 5));
   });
   it("copes with a short legend", () => {
-    expect(heatAlpha(1, 2)).toBe(0.6);
+    expect(heatAlpha(1, 2)).toBe(0.5);
   });
 });
 
@@ -81,5 +81,20 @@ describe("output formats", () => {
     expect(withAlpha([1, 2, 3], 0.5)).toEqual([1, 2, 3, 128]);
     expect(withAlpha([1, 2, 3], 2)).toEqual([1, 2, 3, 255]);
     expect(rgbCss([1, 2, 3])).toBe("rgb(1, 2, 3)");
+  });
+});
+
+describe("label colours", () => {
+  const tokens = { ink: [16, 18, 43] } as unknown as MapTokens;
+  it("puts white on a dark fill and dark text on a light one", () => {
+    expect(labelColors([42, 50, 150, 245], tokens).color).toEqual([255, 255, 255, 255]);
+    expect(labelColors([200, 205, 235, 245], tokens).color).toEqual([16, 18, 43, 255]);
+  });
+  it("uses the theme ink when there is no fill yet", () => {
+    expect(labelColors(undefined, tokens).color).toEqual([16, 18, 43, 255]);
+  });
+  it("measures brightness", () => {
+    expect(brightness([0, 0, 0])).toBe(0);
+    expect(Math.round(brightness([255, 255, 255]))).toBe(255);
   });
 });

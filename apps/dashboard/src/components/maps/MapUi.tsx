@@ -190,3 +190,20 @@ export function ControlSheet({ summary, children }: { summary: string; children:
     </div>
   );
 }
+
+/** With ?perf=1 the page prints its request counts, for measuring pans. Nothing is shown otherwise. */
+export function PerfLine({ stats }: { stats: { requests: number; aborted: number; hits: number; urls: string[] } }) {
+  const [on] = useState(() => new URLSearchParams(window.location.search).has("perf"));
+  if (!on) return null;
+  return (
+    <p className="xs faint" data-perf>
+      requests {stats.requests}, aborted {stats.aborted}, cache hits {stats.hits}
+      {stats.urls.map((u) => (
+        <span key={u} className="gm-perfurl">
+          <br />
+          {u.replace("/api/map/", "")}
+        </span>
+      ))}
+    </p>
+  );
+}

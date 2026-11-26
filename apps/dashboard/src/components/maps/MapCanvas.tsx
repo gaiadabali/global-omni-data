@@ -88,7 +88,9 @@ export function MapCanvas(props: MapCanvasProps) {
   const [loaded, setLoaded] = useState(false);
   // Milliseconds from the start of the page load to the first drawn answer (shown with ?perf=1).
   const [readyMs, setReadyMs] = useState<number | null>(null);
-  const [perf] = useState(() => new URLSearchParams(window.location.search).has("perf"));
+  // ?perf=1 shows timings and errors on the map; ?perf=pan also pans the map in small steps (to count requests).
+  const [perfMode] = useState(() => new URLSearchParams(window.location.search).get("perf"));
+  const perf = perfMode !== null;
   const [failed, setFailed] = useState<string | null>(null);
   const [tip, setTip] = useState<{ x: number; y: number; content: TipContent } | null>(null);
 
@@ -155,6 +157,11 @@ export function MapCanvas(props: MapCanvasProps) {
       queueMicrotask(() => setFailed(e instanceof Error ? e.message : "The map could not start."));
       return;
     }
+    // MapLibre 6 no longer has map.transform, which deck.gl's overlay still reads (the map height, to scale the
+    // near and far planes). Give it the one value it needs.
+    if ((map as unknown as { transform?: unknown }).transform === undefined) {
+      Object.defineProperty(map, "transform", { configurable: true, get: () => ({ height: container.clientHeight }) });
+    }
     map.touchZoomRotate.disableRotation();
     map.keyboard.disableRotation();
     map.getCanvas().setAttribute("aria-label", latest.current.ariaLabel);
@@ -217,6 +224,17 @@ export function MapCanvas(props: MapCanvasProps) {
     }
   }, [tokens, loaded, basemapUrl]);
 
+  // With ?perf=1 an uncaught error is shown on the map, with the top of its stack: a debugging aid.
+  useEffect(() => {
+    if (!perf) return;
+    const onError = (ev: ErrorEvent) => {
+      const stack = typeof ev.error?.stack === "string" ? ev.error.stack.split("\n").slice(0, 5).join(" | ") : "";
+      setFailed(`${ev.message} ${stack}`);
+    };
+    window.addEventListener("error", onError);
+    return () => window.removeEventListener("error", onError);
+  }, [perf]);
+
   // Hand the data layers to deck.gl.
   useEffect(() => {
     if (!loaded) return;
@@ -239,6 +257,23 @@ export function MapCanvas(props: MapCanvasProps) {
       if (timer) clearTimeout(timer);
     };
   }, [loaded, dataReady, readyMs]);
+
+  // The pan probe: twelve small drags (about 1.2 degrees in all at street-level zoom), to count the requests a pan makes.
+  useEffect(() => {
+    if (perfMode !== "pan" || readyMs === null) return;
+    const map = mapRef.current;
+    if (!map) return;
+    let n = 0;
+    const t = setInterval(() => {
+      if (n++ >= 12) {
+        clearInterval(t);
+        return;
+      }
+      // Down the coast, about 110 px a step: it leaves the box already fetched after four or five steps.
+      map.panBy([n % 2 ? 20 : 10, -110], { duration: 0 });
+    }, 450);
+    return () => clearInterval(t);
+  }, [perfMode, readyMs]);
 
   // Put the tooltip next to the pointer, kept inside the map.
   useLayoutEffect(() => {

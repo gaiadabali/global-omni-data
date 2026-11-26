@@ -38,7 +38,7 @@ describe("MapLoader", () => {
     pending[0]!.resolve({ n: 1 });
     expect(await first).toEqual({ n: 1 });
     expect(await l.load("/api/map/influence?month=2026-11")).toEqual({ n: 1 });
-    expect(l.stats).toEqual({ requests: 1, aborted: 0, hits: 1 });
+    expect(l.stats).toEqual({ requests: 1, aborted: 0, hits: 1, urls: ["/api/map/influence?month=2026-11"] });
   });
 
   it("aborts the request in flight when a newer query replaces it", async () => {
