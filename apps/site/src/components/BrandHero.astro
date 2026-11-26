@@ -1,0 +1,108 @@
+---
+import BrandMark from "./BrandMark.astro";
+import Icon from "./Icon.astro";
+import { brand, type BrandKey } from "../lib/brands";
+
+/**
+ * The head of a brand page: breadcrumbs, the brand's own mark, the h1, a lede, its honest status, a link to
+ * the live site and one to GOD's contact page, and a device frame in the "visual" slot. A thin rule in the
+ * brand's own colour sits above the mark (the only place a brand colour appears outside its mark).
+ */
+interface Props {
+  brand: BrandKey;
+  title: string;
+  lede: string;
+  secondary?: { href: string; label: string };
+}
+
+const {
+  brand: key,
+  title,
+  lede,
+  secondary = { href: "/contact/", label: "Talk to GOD" },
+} = Astro.props;
+const b = brand(key);
+---
+
+<section class="phero bhero" data-brand={key}>
+  <div class="wrap">
+    <div>
+      <nav aria-label="Breadcrumb">
+        <ol class="crumbs">
+          <li>
+            <a href="/">Home</a>
+          </li>
+          <li>
+            <a href="/brands/">Our brands</a>
+          </li>
+          <li>
+            <span aria-current="page">{b.name}</span>
+          </li>
+        </ol>
+      </nav>
+      <div class="bh-id">
+        <span class="bh-rule" aria-hidden="true"></span>
+        <BrandMark brand={key} name={b.name} size="lg" />
+      </div>
+      <h1>{title}</h1>
+      <p class="lede">{lede}</p>
+      <p class="bh-status">
+        <span class={`status ${b.status.kind}`}>{b.status.label}</span>
+      </p>
+      <div class="row">
+        <a class="btn btn-primary" href={b.href} target="_blank" rel="noopener">
+          Visit {b.host}
+          <span class="visually-hidden"> (opens in a new tab)</span>
+          <Icon name="external" />
+        </a>
+        <a class="btn btn-line" href={secondary.href}>
+          {secondary.label}
+        </a>
+      </div>
+    </div>
+    <div class="phero-visual bh-visual">
+      <slot name="visual" />
+    </div>
+  </div>
+</section>
+
+<style>
+  .bh-id {
+    display: grid;
+    gap: 16px;
+    justify-items: start;
+    margin-bottom: 28px;
+  }
+  .bh-rule {
+    display: block;
+    width: 48px;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--indigo-ink);
+  }
+  [data-brand="yourtal"] .bh-rule {
+    background: #ffc53d;
+  }
+  [data-brand="snapapp"] .bh-rule {
+    background: #1878d8;
+  }
+  [data-brand="ftr"] .bh-rule {
+    background: #10b981;
+  }
+  .bh-status {
+    margin: 20px 0 0;
+  }
+  .bh-visual {
+    display: grid;
+    justify-items: center;
+    padding: 48px 24px;
+    border-radius: 28px;
+    background: var(--raised);
+    min-width: 0;
+  }
+  @media (max-width: 960px) {
+    .bh-visual {
+      padding: 32px 16px;
+    }
+  }
+</style>

@@ -1,9 +1,14 @@
 [
   { "name": "home", "path": "/", "widths": [1440, 390], "themes": ["light", "dark"] },
-  { "name": "about", "path": "/about/", "widths": [1440, 390], "themes": ["light", "dark"] },
   { "name": "brands", "path": "/brands/", "widths": [1440, 390], "themes": ["light", "dark"] },
+  { "name": "yourtal", "path": "/brands/yourtal/", "widths": [1440, 390], "themes": ["light", "dark"] },
+  { "name": "snapapp", "path": "/brands/snapapp/", "widths": [1440, 390], "themes": ["light", "dark"] },
+  { "name": "free-tax-returns", "path": "/brands/free-tax-returns/", "widths": [1440, 390], "themes": ["light", "dark"] },
   { "name": "for-brands", "path": "/for-brands/", "widths": [1440, 390], "themes": ["light", "dark"] },
+  { "name": "how-it-works", "path": "/how-it-works/", "widths": [1440, 390], "themes": ["light", "dark"] },
   { "name": "privacy", "path": "/privacy/", "widths": [1440, 390], "themes": ["light", "dark"] },
+  { "name": "privacy-notice", "path": "/privacy-notice/", "widths": [1440, 390], "themes": ["light", "dark"] },
+  { "name": "about", "path": "/about/", "widths": [1440, 390], "themes": ["light", "dark"] },
   { "name": "contact", "path": "/contact/", "widths": [1440, 390], "themes": ["light", "dark"] },
   { "name": "404", "path": "/404.html", "widths": [1440, 390], "themes": ["light", "dark"] }
 ]

@@ -1,0 +1,65 @@
+---
+import Icon from "./Icon.astro";
+
+/**
+ * Two columns on a brand page: what the brand adds to GOD's aggregate picture (filled dots) and what stays
+ * inside the brand (rings, meaning it never leaves). Both are plain lists.
+ */
+interface Props {
+  name: string;
+  adds: string[];
+  stays: string[];
+  /** One sentence under each list, optional. */
+  addsNote?: string;
+  staysNote?: string;
+}
+
+const { name, adds, stays, addsNote, staysNote } = Astro.props;
+---
+
+<div class="as-grid">
+  <div class="card as-col" data-reveal="1">
+    <h3>What {name} adds to GOD</h3>
+    <ul class="ticks">
+      {adds.map((x) => (
+        <li>{x}</li>
+      ))}
+    </ul>
+    {addsNote && <p class="small">{addsNote}</p>}
+  </div>
+  <div class="card as-col" data-reveal="2">
+    <h3>
+      <Icon name="lock" /> What stays in {name}
+    </h3>
+    <ul class="ticks rings">
+      {stays.map((x) => (
+        <li>{x}</li>
+      ))}
+    </ul>
+    {staysNote && <p class="small">{staysNote}</p>}
+  </div>
+</div>
+
+<style>
+  .as-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+  }
+  .as-col {
+    display: grid;
+    gap: 20px;
+    align-content: start;
+  }
+  .as-col h3 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.25rem;
+  }
+  @media (max-width: 720px) {
+    .as-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

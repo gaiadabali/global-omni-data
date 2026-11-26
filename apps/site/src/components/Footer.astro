@@ -1,24 +1,25 @@
 ---
 import Logo from "./Logo.astro";
-import { BRAND_LINKS } from "../lib/site";
+import { BRANDS } from "../lib/brands";
+import { CONTACT_EMAIL } from "../lib/site";
 ---
 
 <footer class="ftr">
   <div class="wrap">
     <div class="cols">
       <div>
-        <Logo height={44} />
-        <p>The Australian holding company behind YourTal, SnapApp and Free Tax Returns.</p>
+        <Logo height={48} />
+        <p>
+          The Australian group behind YourTal, SnapApp and Free Tax Returns. We turn what people do,
+          with their consent, into insight for brands. Brands never see a person.
+        </p>
       </div>
       <div>
-        <h2>Brands</h2>
+        <h2>Our brands</h2>
         <ul>
-          {BRAND_LINKS.map((b) => (
+          {BRANDS.map((b) => (
             <li>
-              <a href={b.href} target="_blank" rel="noopener">
-                {b.name}
-                <span class="visually-hidden"> (opens in a new tab)</span>
-              </a>
+              <a href={b.page}>{b.name}</a>
             </li>
           ))}
         </ul>
@@ -30,13 +31,30 @@ import { BRAND_LINKS } from "../lib/site";
             <a href="/for-brands/">For brands</a>
           </li>
           <li>
-            <a href="/privacy/">Trust &amp; privacy</a>
+            <a href="/how-it-works/">How it works</a>
           </li>
           <li>
-            <a href="/privacy/#notice">Group Privacy Notice</a>
+            <a href="/about/">About</a>
           </li>
           <li>
             <a href="/contact/">Contact</a>
+          </li>
+        </ul>
+      </div>
+      <div>
+        <h2>Trust</h2>
+        <ul>
+          <li>
+            <a href="/privacy/">Trust &amp; privacy</a>
+          </li>
+          <li>
+            <a href="/privacy/#teens">The teen standard</a>
+          </li>
+          <li>
+            <a href="/privacy-notice/">Group Privacy Notice</a>
+          </li>
+          <li>
+            <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
           </li>
         </ul>
       </div>

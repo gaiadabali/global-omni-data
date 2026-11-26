@@ -1,0 +1,145 @@
+---
+import BrandMark from "./BrandMark.astro";
+import { BRANDS } from "../lib/brands";
+
+/**
+ * How the group fits together, as a static flow: three apps, each adding one part of the picture, into one
+ * profile held by GOD, out to brands as counts for groups. The last row repeats the dot-and-ring signature.
+ */
+const adds: Record<string, string> = {
+  yourtal: "Interests, area and age band",
+  snapapp: "Where people shop and what they buy",
+  ftr: "Occupation and income bracket",
+};
+---
+
+<figure
+  class="gd"
+  aria-label="Three apps feed one profile held by GOD, which brands see only as counts for groups"
+>
+  <ul class="gd-apps">
+    {BRANDS.map((b) => (
+      <li>
+        <BrandMark brand={b.key} name={b.name} />
+        <span class="meta">{adds[b.key]}</span>
+      </li>
+    ))}
+  </ul>
+  <div class="gd-line" aria-hidden="true"></div>
+  <div class="gd-node">
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <circle cx="6" cy="6" r="3.2"></circle>
+      <circle cx="18" cy="6" r="3.2"></circle>
+      <circle cx="6" cy="18" r="3.2"></circle>
+      <circle cx="18" cy="18" r="3.2"></circle>
+    </svg>
+    <div>
+      <p class="gd-t">GOD</p>
+      <p class="meta">One profile per person, after they accept the notice</p>
+    </div>
+  </div>
+  <div class="gd-line" aria-hidden="true"></div>
+  <div class="gd-out">
+    <p class="gd-t">Brands</p>
+    <p class="meta">Counts and shares for groups. Small groups show as "&#8288;&lt;10"</p>
+    <svg class="gd-dots" viewBox="0 0 168 12" aria-hidden="true" focusable="false">
+      {Array.from({ length: 12 }, (_, i) =>
+        i === 9 ? (
+          <circle class="ring" cx={6 + i * 14} cy="6" r="4" />
+        ) : (
+          <circle class:list={[i < 5 ? "hot" : "dim"]} cx={6 + i * 14} cy="6" r="4.5" />
+        ),
+      )}
+    </svg>
+  </div>
+</figure>
+
+<style>
+  .gd {
+    margin: 0;
+    padding: 32px;
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    background: var(--card);
+    box-shadow: var(--shadow-lg);
+  }
+  .gd-apps {
+    display: grid;
+    gap: 12px;
+    list-style: none;
+  }
+  .gd-apps li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 16px;
+    padding: 12px 16px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--paper);
+  }
+  .gd-apps .meta {
+    font-size: 0.75rem;
+  }
+  .gd-line {
+    width: 1px;
+    height: 28px;
+    margin: 0 auto;
+    background: var(--line-2);
+  }
+  .gd-node {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+    border-radius: 14px;
+    background: var(--night);
+    color: var(--night-ink);
+  }
+  .gd-node svg {
+    width: 36px;
+    height: 36px;
+    flex: none;
+    fill: var(--night-ink);
+  }
+  .gd-node .meta {
+    color: var(--night-ink-3);
+  }
+  .gd-t {
+    margin: 0 0 2px;
+    font-weight: 600;
+  }
+  .gd-node .gd-t {
+    color: var(--night-ink);
+  }
+  .gd-out {
+    padding: 16px 20px;
+    border: 1px dashed var(--line-2);
+    border-radius: 14px;
+  }
+  .gd-out .meta {
+    margin: 0 0 12px;
+  }
+  .gd-dots {
+    width: 100%;
+    max-width: 240px;
+    height: auto;
+  }
+  .gd-dots .hot {
+    fill: var(--indigo-ink);
+  }
+  .gd-dots .dim {
+    fill: var(--dot-dim);
+  }
+  .gd-dots .ring {
+    fill: none;
+    stroke: var(--ring);
+    stroke-width: 1.4;
+  }
+  @media (max-width: 480px) {
+    .gd {
+      padding: 20px;
+    }
+  }
+</style>

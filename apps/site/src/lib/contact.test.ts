@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   buildPayload,
   EMAIL_INVALID_MESSAGE,
+  FIELD_LIMITS,
   submitContact,
   validateContact,
   type ContactInput,
@@ -94,5 +95,22 @@ describe("submitContact", () => {
     expect(
       await submitContact("https://x.example/in", good, fetchImpl as unknown as typeof fetch),
     ).toBe("failed");
+  });
+});
+
+describe("FIELD_LIMITS", () => {
+  it("matches what the contact endpoint enforces", () => {
+    expect(FIELD_LIMITS).toEqual({ name: 100, company: 120, email: 254, want: 4000, budget: 60 });
+  });
+
+  it("is longer than every budget option the form offers", () => {
+    for (const o of [
+      "Under $10,000",
+      "$10,000 to $50,000",
+      "$50,000 to $150,000",
+      "Over $150,000",
+    ]) {
+      expect(o.length).toBeLessThanOrEqual(FIELD_LIMITS.budget);
+    }
   });
 });

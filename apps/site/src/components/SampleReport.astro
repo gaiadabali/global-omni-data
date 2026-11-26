@@ -1,0 +1,221 @@
+---
+import Bar from "./Bar.astro";
+import HexMap from "./HexMap.astro";
+
+/**
+ * The sample catchment report for Harbour & Bean, a fictional café group. Every figure is made up to show the
+ * layout, and the report says so twice. "full" adds the map, occupation and visit views.
+ */
+interface Props {
+  full?: boolean;
+}
+const { full = false } = Astro.props;
+
+const where = [
+  { label: "Surry Hills", width: 82, value: "18%", hot: true },
+  { label: "Redfern", width: 56, value: "12%" },
+  { label: "Darlinghurst", width: 41, value: "9%" },
+  { label: "Paddington", width: 29, value: "6%" },
+  { label: "Waterloo", width: 6, value: "<10" },
+];
+const age = [
+  { label: "13 to 17", width: 6, value: "<20" },
+  { label: "18 to 24", width: 44, value: "19%" },
+  { label: "25 to 34", width: 78, value: "34%", hot: true },
+  { label: "35 to 49", width: 52, value: "23%" },
+  { label: "50 and over", width: 49, value: "21%" },
+];
+const also = [
+  { label: "Bakeries", width: 71, value: "2.1×", hot: true },
+  { label: "Gyms", width: 58, value: "1.7×" },
+  { label: "Bookshops", width: 46, value: "1.4×" },
+  { label: "Florists", width: 33, value: "1.1×" },
+];
+const jobs = [
+  { label: "Professionals", width: 74, value: "31%", hot: true },
+  { label: "Health workers", width: 41, value: "14%" },
+  { label: "Trades", width: 30, value: "10%" },
+  { label: "Hospitality", width: 27, value: "9%" },
+];
+const visits = [
+  { label: "Weekly or more", width: 38, value: "26%" },
+  { label: "Fortnightly", width: 51, value: "35%", hot: true },
+  { label: "Monthly", width: 40, value: "27%" },
+  { label: "Less often", width: 18, value: "12%" },
+];
+---
+
+<article
+  class:list={["report", { full }]}
+  aria-label="Sample catchment report for Harbour and Bean, a fictional café group"
+>
+  <header class="rep-h">
+    <div>
+      <p class="meta">Catchment report · last 90 days</p>
+      <h3>Harbour &amp; Bean, inner Sydney</h3>
+    </div>
+    <span class="sample">Sample data · fictional brand</span>
+  </header>
+
+  {full && (
+    <div class="rep-map">
+      <div>
+        <h4>Where customers live</h4>
+        <p class="small">
+          Suburb-sized areas around the two shops. The map stops here: there is no street level.
+        </p>
+      </div>
+      <HexMap />
+    </div>
+  )}
+
+  <div class="rep-grid">
+    <section>
+      <h4>Top suburbs</h4>
+      {where.map((r) => (
+        <Bar {...r} />
+      ))}
+    </section>
+    <section>
+      <h4>Age mix</h4>
+      {age.map((r) => (
+        <Bar {...r} />
+      ))}
+    </section>
+    <section>
+      <h4>Also shops at</h4>
+      {also.map((r) => (
+        <Bar {...r} />
+      ))}
+      <p class="note">Affinity: how much more likely than the area's average.</p>
+    </section>
+    {full && (
+      <section>
+        <h4>Occupation</h4>
+        {jobs.map((r) => (
+          <Bar {...r} />
+        ))}
+        <p class="note">From the occupations people choose in Free Tax Returns.</p>
+      </section>
+    )}
+    {full && (
+      <section>
+        <h4>How often they come back</h4>
+        {visits.map((r) => (
+          <Bar {...r} />
+        ))}
+      </section>
+    )}
+    {full && (
+      <section class="keys">
+        <h4>How to read it</h4>
+        <ul class="ticks">
+          <li>Every figure covers a group, never a person.</li>
+          <li>A hollow ring means fewer than 10 people. It shows as "&#8288;&lt;10".</li>
+          <li>Teen figures need 20 or more teens, or show as "&#8288;&lt;20".</li>
+        </ul>
+      </section>
+    )}
+  </div>
+
+  <footer class="rep-f meta">
+    Groups under 10 people show as "&#8288;&lt;10". No person-level data is in this report.
+  </footer>
+</article>
+
+<style>
+  .report {
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    background: var(--card);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+  }
+  .rep-h {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 24px 28px;
+    border-bottom: 1px solid var(--line);
+  }
+  .rep-h .meta {
+    margin: 0 0 6px;
+  }
+  .rep-h h3 {
+    font-family: var(--f-display);
+    font-weight: 450;
+    font-size: 1.5rem;
+    letter-spacing: -0.01em;
+  }
+  .rep-map {
+    display: grid;
+    grid-template-columns: minmax(0, 4fr) minmax(0, 7fr);
+    gap: 32px;
+    align-items: center;
+    padding: 28px;
+    border-bottom: 1px solid var(--line);
+  }
+  .rep-map h4 {
+    margin-bottom: 8px;
+  }
+  .rep-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .rep-grid section {
+    padding: 24px 28px;
+  }
+  .rep-grid section + section {
+    border-left: 1px solid var(--line);
+  }
+  .full .rep-grid section:nth-child(4) {
+    border-left: 0;
+  }
+  .full .rep-grid section:nth-child(n + 4) {
+    border-top: 1px solid var(--line);
+  }
+  h4 {
+    margin-bottom: 12px;
+    font-size: 0.9375rem;
+  }
+  .note {
+    margin-top: 12px;
+    font-size: 0.8125rem;
+    color: var(--ink-3);
+  }
+  .keys .ticks {
+    font-size: 0.9rem;
+    gap: 10px;
+  }
+  .rep-f {
+    margin: 0;
+    padding: 16px 28px;
+    border-top: 1px solid var(--line);
+    background: var(--raised);
+  }
+  @media (max-width: 960px) {
+    .rep-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .rep-grid section + section,
+    .full .rep-grid section:nth-child(4) {
+      border-left: 0;
+      border-top: 1px solid var(--line);
+    }
+    .rep-map {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 20px;
+    }
+  }
+  @media (max-width: 480px) {
+    .rep-h,
+    .rep-map,
+    .rep-grid section,
+    .rep-f {
+      padding-left: 20px;
+      padding-right: 20px;
+    }
+  }
+</style>

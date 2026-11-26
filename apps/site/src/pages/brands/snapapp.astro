@@ -1,0 +1,352 @@
+---
+import { Picture } from "astro:assets";
+import Base from "../../layouts/Base.astro";
+import BrandHero from "../../components/BrandHero.astro";
+import AddsStays from "../../components/AddsStays.astro";
+import Phone from "../../components/Phone.astro";
+import Browser from "../../components/Browser.astro";
+import Cta from "../../components/Cta.astro";
+import Icon from "../../components/Icon.astro";
+import saHome from "../../assets/screens/snapapp-home-desktop.webp";
+import saHow from "../../assets/screens/snapapp-how.webp";
+import saFeatures from "../../assets/screens/snapapp-features.webp";
+import saPricing from "../../assets/screens/snapapp-pricing.webp";
+import terminal from "../../assets/photos/receipt-terminal.jpg";
+
+const steps = [
+  {
+    h: "Snap it",
+    p: "The camera frames the paper. The original is kept exactly as taken, and the photo waits in a queue if you are offline.",
+  },
+  {
+    h: "It reads every line",
+    p: "SnapApp reads the item, the price and the GST flag on each line, and splits GST-free from taxable to the cent.",
+  },
+  {
+    h: "It's sorted",
+    p: "The receipt is filed under a category, counted against your budget and made searchable. Export it all as CSV when you need to.",
+  },
+];
+
+const checks = [
+  "Marked as a tax invoice",
+  "The ABN passes its checksum",
+  "GST equals one eleventh of the taxable lines",
+  "The lines add up to the total",
+  "At $1,000 or more, the buyer is identified",
+];
+
+const after = [
+  {
+    h: "Categories",
+    p: "Every receipt is filed under a category, so a month of spending sorts itself.",
+  },
+  { h: "Search", p: "Find a receipt by merchant, category or amount." },
+  { h: "Budgets", p: "See what is left to spend, and what is safe to spend today." },
+  { h: "Savings goals", p: "Set a goal and watch it move as you spend." },
+  {
+    h: "Subscriptions",
+    p: "Recurring charges are found in your receipts, so you can see what keeps coming.",
+  },
+  { h: "Household sharing", p: "Share a space with the people you live with." },
+  { h: "CSV export", p: "Take your data out whenever you want it." },
+  {
+    h: "Works offline",
+    p: "Snap without a signal. Uploads queue and send when you are back online.",
+  },
+];
+
+const price = [
+  { k: "To start", v: "10 free scans at sign-up. No card needed." },
+  { k: "After that", v: "10 cents a scan, which is one credit. GST is included." },
+  { k: "Packs", v: "50 credits for $5, 100 for $10, 250 for $25." },
+  { k: "Credits", v: "They never expire, and there is no subscription." },
+  { k: "If a read fails", v: "The credit comes back." },
+];
+
+const deductions = [
+  "A receipt filed in a work category counts toward your deductions.",
+  "On a mixed docket, tick just the one line that was for work.",
+  "Send the file to Free Tax Returns through your YourTal sign-in. The file has no merchant names and no images.",
+  "In Free Tax Returns you review each line and press “Add to worksheet”. Nothing is added until you do.",
+];
+---
+
+<Base
+  title="SnapApp: the receipt app that reads every line | GOD (Global Omni Data)"
+  description="SnapApp reads every line of a receipt, splits GST-free from taxable, checks it is a valid tax invoice and keeps the original for five years. Android beta now, iPhone in development."
+  ogImage="/og/snapapp.png"
+>
+  <BrandHero
+    brand="snapapp"
+    title="The receipt app that reads every line"
+    lede="Photograph a docket. SnapApp reads each line, splits GST-free from taxable, checks it is a valid tax invoice and keeps a true copy for five years. Then it shows you where the money went."
+  >
+    <Browser
+      slot="visual"
+      src={saHome}
+      alt="The SnapApp home page: “The receipt app that reads every line”, beside a phone showing a receipt split into GST-free and taxable lines"
+      url="snapapp.gaiada.com"
+      eager
+    />
+  </BrandHero>
+
+  <section class="sec" id="how">
+    <div class="wrap split flip">
+      <div class="vis" data-reveal>
+        <Phone
+          src={saHow}
+          alt="A paper receipt from a roadhouse beside the SnapApp record of it: a $32.20 total marked as a valid tax invoice, $16.80 GST-free and $15.40 taxable, with six lines read"
+          caption="Demo workspace, illustrative figures"
+        />
+      </div>
+      <div>
+        <p class="kicker" data-reveal>
+          How it works
+        </p>
+        <h2 data-reveal>Snap. Read. Sorted.</h2>
+        <ol class="steps" data-reveal="2">
+          {steps.map((s) => (
+            <li>
+              <h3>{s.h}</h3>
+              <p>{s.p}</p>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec night" id="checks">
+    <div class="wrap split">
+      <div data-reveal>
+        <p class="kicker">What it checks</p>
+        <h2>Five checks on every tax invoice</h2>
+        <p class="lede">
+          When one fails, SnapApp suggests a fix. When it cannot read a figure, it leaves a blank
+          rather than guessing. A confident wrong number is worse than a blank one.
+        </p>
+      </div>
+      <ul class="ticks" data-reveal="2">
+        {checks.map((c) => (
+          <li>{c}</li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <section class="sec" id="after">
+    <div class="wrap">
+      <div class="sec-head split">
+        <div data-reveal>
+          <p class="kicker">After the snap</p>
+          <h2>Everything that happens once the receipt is read</h2>
+        </div>
+        <p class="lede" data-reveal="2">
+          A receipt is only useful if you can find it and use it. These are the parts of SnapApp
+          that do that work.
+        </p>
+      </div>
+      <div class="split after">
+        <ul class="feats two" data-reveal>
+          {after.map((a) => (
+            <li>
+              <h3>{a.h}</h3>
+              <p>{a.p}</p>
+            </li>
+          ))}
+        </ul>
+        <div class="vis" data-reveal="2">
+          <Phone
+            src={saFeatures}
+            alt="The SnapApp features page: “Snap the docket. The paperwork's done.”, with buttons to get the Android app and a note that iPhone is in development"
+            caption="Demo workspace, illustrative figures"
+          />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec tint" id="copy">
+    <div class="wrap split">
+      <figure data-reveal>
+        <div class="photo shot">
+          <Picture
+            src={terminal}
+            alt="A hand holding a card payment terminal as it prints a receipt"
+            widths={[480, 720, 960, 1200]}
+            sizes="(max-width: 960px) 100vw, 45vw"
+            formats={["avif", "webp"]}
+          />
+        </div>
+      </figure>
+      <div>
+        <p class="kicker" data-reveal>
+          Your record, kept honestly
+        </p>
+        <h2 data-reveal>The original stays the original</h2>
+        <ul class="ledger tight" data-reveal="2">
+          <li>
+            <span>Kept for five years</span>
+            <span>
+              The photo is stored byte for byte. Corrections sit beside the original and never
+              replace it.
+            </span>
+          </li>
+          <li>
+            <span>Location removed</span>
+            <span>GPS data is stripped from the photo and never indexed.</span>
+          </li>
+          <li>
+            <span>Card numbers shortened</span>
+            <span>Only the last four digits are kept.</span>
+          </li>
+          <li>
+            <span>Not for sale</span>
+            <span>Your data is not sold and is not used for advertising.</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="pricing">
+    <div class="wrap split flip">
+      <div class="vis" data-reveal>
+        <Phone
+          src={saPricing}
+          alt="The SnapApp pricing page: “Pay for scans, not subscriptions”, with 10 free scans to start and 10 cents a scan after that"
+          caption="Demo workspace, illustrative figures"
+        />
+      </div>
+      <div>
+        <p class="kicker" data-reveal>
+          Pricing
+        </p>
+        <h2 data-reveal>Pay for scans, not subscriptions</h2>
+        <ul class="ledger tight" data-reveal="2">
+          {price.map((x) => (
+            <li>
+              <span>{x.k}</span>
+              <span>{x.v}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="deductions">
+    <div class="wrap split">
+      <div data-reveal>
+        <p class="kicker">Work expenses</p>
+        <h2>Send deductions to Free Tax Returns</h2>
+        <p class="lede">
+          Free Tax Returns is another GOD brand. This works in Australia only, in your personal
+          space only, and not for teen accounts.
+        </p>
+        <p class="stack">
+          <a class="go" href="/brands/free-tax-returns/">
+            About Free Tax Returns
+            <Icon name="arrow" />
+          </a>
+        </p>
+      </div>
+      <ul class="ticks" data-reveal="2">
+        {deductions.map((d) => (
+          <li>{d}</li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <section class="sec" id="gives">
+    <div class="wrap">
+      <div class="sec-head" data-reveal>
+        <p class="kicker">Inside the group</p>
+        <h2>What SnapApp gives GOD, and what it keeps</h2>
+        <p class="lede">
+          People accept the group privacy notice first. After that, only counts reach brands. Teens
+          aged 13 to 17 can use SnapApp only when a parent invites them; the parent can view the
+          teen space, and the teen is told.
+        </p>
+      </div>
+      <AddsStays
+        name="SnapApp"
+        adds={[
+          "Where people shop, by the suburb and postcode printed on the receipt",
+          "What they buy, by category",
+          "Spending, in bands",
+        ]}
+        stays={[
+          "Receipt images, which are never copied to GOD",
+          "Your phone's location. Photo GPS is stripped",
+          "Full card numbers. Only the last four digits are kept",
+        ]}
+      />
+      <p class="small note" data-reveal>
+        SnapApp is in Android beta, with a direct download. An iPhone app is in development.
+        <a class="go" href="/privacy/">
+          Our privacy standard
+          <Icon name="arrow" />
+        </a>
+      </p>
+    </div>
+  </section>
+
+  <Cta
+    title="Try SnapApp on Android"
+    lede="The Android beta is open now, with 10 free scans and no card needed. Brands that want to understand where people shop can talk to GOD."
+    primary={{ href: "https://snapapp.gaiada.com", label: "Visit snapapp.gaiada.com" }}
+    secondary={{ href: "/contact/", label: "Talk to GOD" }}
+  />
+</Base>
+
+<style>
+  .vis {
+    display: grid;
+    justify-items: center;
+    padding: 40px 24px;
+    border-radius: 28px;
+    background: var(--raised);
+    min-width: 0;
+  }
+  .after {
+    align-items: start;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  }
+  .shot {
+    aspect-ratio: 1 / 1;
+  }
+  /* Crop to the hand and terminal; the printed header of the receipt carries a payment brand. */
+  .shot :global(img) {
+    object-position: center 85%;
+  }
+  .tight {
+    margin-top: 24px;
+  }
+  .tight > li {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+    padding: 16px 0;
+  }
+  .note {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 24px;
+    margin-top: 40px;
+    max-width: 46rem;
+  }
+  @media (max-width: 960px) {
+    .vis {
+      padding: 32px 16px;
+    }
+    .after {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .shot {
+      aspect-ratio: 4 / 3;
+    }
+  }
+</style>

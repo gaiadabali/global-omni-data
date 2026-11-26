@@ -1,6 +1,6 @@
 ---
 import "../styles/global.css";
-import lexendLatin from "@fontsource-variable/lexend/files/lexend-latin-wght-normal.woff2?url";
+import newsreaderLatin from "@fontsource-variable/newsreader/files/newsreader-latin-wght-normal.woff2?url";
 import interLatin from "@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
@@ -11,14 +11,23 @@ interface Props {
   /** The full <title>. */
   title: string;
   description: string;
+  /** Social preview image under public/, such as "/og/for-brands.png". Defaults to the site-wide one. */
+  ogImage?: string;
+  ogAlt?: string;
   /** Pages that should never be indexed, such as the 404. They also get no canonical or og:url. */
   noindex?: boolean;
 }
 
-const { title, description, noindex = false } = Astro.props;
+const {
+  title,
+  description,
+  ogImage = "/og-image.png",
+  ogAlt = "GOD, Global Omni Data: insight from what Australians actually do",
+  noindex = false,
+} = Astro.props;
 const hideFromSearch = noindex || import.meta.env.PUBLIC_NOINDEX === "1";
 const canonical = noindex ? undefined : canonicalUrl(Astro.url.pathname);
-const ogImage = new URL("/og-image.png", SITE_URL).toString();
+const ogUrl = new URL(ogImage, SITE_URL).toString();
 ---
 
 <!doctype html>
@@ -31,8 +40,8 @@ const ogImage = new URL("/og-image.png", SITE_URL).toString();
     {canonical && <link rel="canonical" href={canonical} />}
     {hideFromSearch && <meta name="robots" content="noindex, nofollow" />}
     <meta name="color-scheme" content="light dark" />
-    <meta name="theme-color" content="#F7F4EE" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#0B0D14" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#F5F6FA" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0A0C17" media="(prefers-color-scheme: dark)" />
 
     <link rel="icon" type="image/png" sizes="32x32" href="/icon-32.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/icon-180.png" />
@@ -44,13 +53,16 @@ const ogImage = new URL("/og-image.png", SITE_URL).toString();
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     {canonical && <meta property="og:url" content={canonical} />}
-    <meta property="og:image" content={ogImage} />
+    <meta property="og:image" content={ogUrl} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="GOD Global Omni Data logo" />
+    <meta property="og:image:alt" content={ogAlt} />
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogUrl} />
 
-    <link rel="preload" href={lexendLatin} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={newsreaderLatin} as="font" type="font/woff2" crossorigin />
     <link rel="preload" href={interLatin} as="font" type="font/woff2" crossorigin />
 
     <!-- Applies a saved theme before first paint. The only inline script; its hash is in SECURITY-HEADERS.md. -->

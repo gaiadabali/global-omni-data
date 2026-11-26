@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <!-- Brand mark: navy rounded square with emerald checkmark (mirrors the nav logo) -->
+  <rect width="48" height="48" rx="10" fill="#0f172a" />
+  <path
+    d="M34 15 20.5 28.5 14 22"
+    fill="none"
+    stroke="#34d399"
+    stroke-width="4.4"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+</svg>

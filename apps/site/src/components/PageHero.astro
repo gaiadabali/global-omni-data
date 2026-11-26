@@ -1,0 +1,57 @@
+---
+/**
+ * The head of an inner page: breadcrumbs, a kicker, the h1, a lede and optional actions on the left, and an
+ * optional visual on the right (slot "visual"). With no visual the text takes the full width.
+ */
+interface Crumb {
+  href?: string;
+  label: string;
+}
+
+interface Props {
+  title: string;
+  lede: string;
+  kicker?: string;
+  crumbs?: Crumb[];
+  /** Paint the hero on the deep indigo band. */
+  night?: boolean;
+}
+
+const { title, lede, kicker, crumbs, night = false } = Astro.props;
+const hasVisual = Astro.slots.has("visual");
+---
+
+<section class:list={["phero", { night, solo: !hasVisual }]}>
+  <div class="wrap">
+    <div>
+      {crumbs && (
+        <nav aria-label="Breadcrumb">
+          <ol class="crumbs">
+            {crumbs.map((c) => (
+              <li>
+                {c.href ? (
+                  <a href={c.href}>{c.label}</a>
+                ) : (
+                  <span aria-current="page">{c.label}</span>
+                )}
+              </li>
+            ))}
+          </ol>
+        </nav>
+      )}
+      {kicker && <p class="kicker">{kicker}</p>}
+      <h1>{title}</h1>
+      <p class="lede">{lede}</p>
+      {Astro.slots.has("default") && (
+        <div class="row">
+          <slot />
+        </div>
+      )}
+    </div>
+    {hasVisual && (
+      <div class="phero-visual">
+        <slot name="visual" />
+      </div>
+    )}
+  </div>
+</section>

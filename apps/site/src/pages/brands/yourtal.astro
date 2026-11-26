@@ -1,0 +1,287 @@
+---
+import Base from "../../layouts/Base.astro";
+import BrandHero from "../../components/BrandHero.astro";
+import AddsStays from "../../components/AddsStays.astro";
+import Phone from "../../components/Phone.astro";
+import Cta from "../../components/Cta.astro";
+import Icon from "../../components/Icon.astro";
+import ytHome from "../../assets/screens/yourtal-home.webp";
+import ytRewards from "../../assets/screens/yourtal-rewards.webp";
+import ytBusiness from "../../assets/screens/yourtal-business.webp";
+
+const steps = [
+  {
+    h: "Watch",
+    p: "Pick a video from a local business, honestly labelled with its length and data cost before you start.",
+  },
+  {
+    h: "Answer honestly",
+    p: "A question or two along the way, about what you just watched. No trick questions, no personal ones.",
+  },
+  {
+    h: "Earn and spend",
+    p: "Points land in your wallet and unlock within a few days. Spend them on real vouchers at the businesses you watched.",
+  },
+];
+
+const viewers = [
+  {
+    h: "Terms before you press play",
+    p: "The length, data cost, reward and scoring rule are shown first, and they never change once you start watching.",
+  },
+  {
+    h: "Points that stay",
+    p: "New points are pending for a short time, then available. They don't expire, and they stay in the region where you earned them.",
+  },
+  {
+    h: "A day off costs nothing",
+    p: "Streak bonuses arrive on day 3 and day 7. Missing a day never costs you points. There is a daily earning limit.",
+  },
+  {
+    h: "Gift a voucher",
+    p: "Send a voucher you don't need to another member.",
+  },
+  {
+    h: "Give to charity",
+    p: "List a voucher in a three-day charity auction. The winner pays the charity directly.",
+  },
+  {
+    h: "No audience to perform for",
+    p: "There are no public profiles, no comments and no follower counts. You can also watch without an account, though that earns nothing.",
+  },
+];
+
+const business = [
+  {
+    k: "Make the campaign",
+    v: "Upload a video, write the questions and set the reward. An accuracy bonus can be added, capped at 40% of the reward.",
+  },
+  {
+    k: "Set the budget",
+    v: "A total budget and a daily budget. You set the budget and the voucher; you never pay for a view that was not watched.",
+  },
+  {
+    k: "Get verified, then reviewed",
+    v: "A business is verified first, and every campaign is reviewed before it goes live.",
+  },
+  {
+    k: "Aim by interest and place",
+    v: "Target by interests and by districts, from suburb to postcode.",
+  },
+  {
+    k: "Read grouped results",
+    v: "Reports cover completion, accuracy, recall and redemptions. They are always grouped, never individual.",
+  },
+  {
+    k: "Run it as a team",
+    v: "Billing comes with tax invoices and budget alerts at 50, 80 and 100%. Roles are Owner, Admin, Marketer, Merchandiser, Finance and Analyst.",
+  },
+];
+---
+
+<Base
+  title="YourTal: rewards for paying attention | GOD (Global Omni Data)"
+  description="YourTal is a video app for local businesses and the people near them. Viewers watch, answer a question or two, earn points and spend them on vouchers. Currently in staging review on demo data."
+  ogImage="/og/yourtal.png"
+>
+  <BrandHero
+    brand="yourtal"
+    title="Rewards for paying attention, spent where you live"
+    lede="YourTal is a video app for local businesses and the people who live near them. Viewers watch, answer a question or two and earn points they spend on real vouchers. Businesses pay only for videos that were actually watched."
+  >
+    <Phone
+      slot="visual"
+      src={ytHome}
+      alt="The YourTal home screen: “Watch, learn, earn — and spend it where you live”, over a video from a local café"
+      caption="yourtal.gaiada.com · staging, demo data"
+      eager
+    />
+  </BrandHero>
+
+  <section class="sec" id="how">
+    <div class="wrap split">
+      <div data-reveal>
+        <p class="kicker">How it works</p>
+        <h2>Watch, answer, earn</h2>
+        <p class="lede">
+          Three steps, and the rules are stated before the first one. It is a web app, so there is
+          nothing to download from an app store.
+        </p>
+      </div>
+      <ol class="steps" data-reveal="2">
+        {steps.map((s) => (
+          <li>
+            <h3>{s.h}</h3>
+            <p>{s.p}</p>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <section class="sec" id="viewers">
+    <div class="wrap">
+      <div class="sec-head split">
+        <div data-reveal>
+          <p class="kicker">For viewers</p>
+          <h2>Fair terms, stated first</h2>
+        </div>
+        <p class="lede" data-reveal="2">
+          Points are YourTal rewards. They have no cash value and are spent on vouchers at local
+          businesses, in the region where you earned them. Australia and Indonesia are separate
+          regions.
+        </p>
+      </div>
+      <div class="split flip viewers">
+        <div class="vis" data-reveal>
+          <Phone
+            src={ytRewards}
+            alt="The YourTal rewards catalogue: a list of vouchers from local businesses such as Wharf Espresso Co and Cedar Deli Bar, each priced in points"
+            caption="Rewards · staging, demo data"
+          />
+        </div>
+        <ul class="feats two" data-reveal="2">
+          {viewers.map((v) => (
+            <li>
+              <h3>{v.h}</h3>
+              <p>{v.p}</p>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec tint" id="businesses">
+    <div class="wrap split">
+      <div class="vis" data-reveal>
+        <Phone
+          src={ytBusiness}
+          alt="The “YourTal for business” page: put your video in front of people who choose to watch it, and reward them with your own vouchers"
+          caption="YourTal for business · staging, demo data"
+        />
+      </div>
+      <div>
+        <p class="kicker" data-reveal>
+          For businesses
+        </p>
+        <h2 data-reveal>A campaign you control, reviewed before it runs</h2>
+        <ul class="ledger biz" data-reveal="2">
+          {business.map((x) => (
+            <li>
+              <span>{x.k}</span>
+              <span>{x.v}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec night" id="teens">
+    <div class="wrap split">
+      <div data-reveal>
+        <p class="kicker">Teens on YourTal</p>
+        <h2>Younger members get a smaller, quieter version</h2>
+        <p class="lede">
+          People can join from 13. Members aged 13 to 17 need a parent or guardian to approve by
+          email before they can earn, and the guardian can withdraw approval or delete the account
+          at any time.
+        </p>
+      </div>
+      <ul class="ticks" data-reveal="2">
+        <li>Half the daily earning limit</li>
+        <li>Quiet hours from 9pm to 7am, with no notifications and no earning</li>
+        <li>No streaks</li>
+        <li>No area setting</li>
+        <li>No interest profiling</li>
+        <li>Businesses never see a group of teens smaller than 20</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="sec" id="gives">
+    <div class="wrap">
+      <div class="sec-head" data-reveal>
+        <p class="kicker">Inside the group</p>
+        <h2>What YourTal gives GOD, and what it keeps</h2>
+        <p class="lede">
+          Members accept the group privacy notice at sign-up. Nothing flows to GOD until they do,
+          and it reaches brands only as counts.
+        </p>
+      </div>
+      <AddsStays
+        name="YourTal"
+        adds={[
+          "Declared interests",
+          "Area, by postcode only",
+          "Age band",
+          "What people choose to watch, and whether they complete it",
+        ]}
+        stays={[
+          "Passwords and sign-in secrets",
+          "Anything finer than a postcode: it is the only part of “My area” that is kept",
+          "Anything used to choose the ads a teen sees. GOD data is never used for that",
+        ]}
+        addsNote="Optional settings such as “My area” stay optional."
+        staysNote="A ring marks what never leaves."
+      />
+      <p class="small note" data-reveal>
+        Screens on this page come from YourTal's staging app, which runs on demo data. YourTal is in
+        staging review.
+        <a class="go" href="/privacy/">
+          Our privacy standard
+          <Icon name="arrow" />
+        </a>
+      </p>
+    </div>
+  </section>
+
+  <Cta
+    title="Run a campaign when YourTal opens"
+    lede="If you are a local business, or a brand that wants to understand a market, tell us what you want to know. We reply within two business days."
+    primary={{ href: "/contact/", label: "Talk to us" }}
+    secondary={{ href: "/brands/", label: "See all three brands" }}
+  />
+</Base>
+
+<style>
+  .viewers {
+    align-items: start;
+  }
+  .vis {
+    display: grid;
+    justify-items: center;
+    padding: 40px 24px;
+    border-radius: 28px;
+    background: var(--raised);
+    min-width: 0;
+  }
+  .tint .vis {
+    background: var(--paper);
+  }
+  .biz {
+    margin-top: 28px;
+  }
+  .biz > li {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+    padding: 16px 0;
+  }
+  .biz > li > :first-child {
+    font-weight: 580;
+  }
+  .note {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 24px;
+    margin-top: 40px;
+    max-width: 46rem;
+  }
+  @media (max-width: 960px) {
+    .vis {
+      padding: 32px 16px;
+    }
+  }
+</style>

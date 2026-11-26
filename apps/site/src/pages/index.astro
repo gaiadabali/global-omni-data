@@ -1,161 +1,465 @@
 ---
+import { Picture } from "astro:assets";
 import Base from "../layouts/Base.astro";
 import AustraliaMap from "../components/AustraliaMap.astro";
-import FlowGlyph from "../components/FlowGlyph.astro";
+import Standards from "../components/Standards.astro";
+import BrandMark from "../components/BrandMark.astro";
+import Phone from "../components/Phone.astro";
+import Browser from "../components/Browser.astro";
+import Journey from "../components/Journey.astro";
+import SampleReport from "../components/SampleReport.astro";
+import Promises from "../components/Promises.astro";
+import Cta from "../components/Cta.astro";
+import Icon from "../components/Icon.astro";
+import { brand } from "../lib/brands";
+import ytHome from "../assets/screens/yourtal-home.webp";
+import saHome from "../assets/screens/snapapp-home-desktop.webp";
+import ftrWorksheet from "../assets/screens/ftr-worksheet.webp";
+import cafe from "../assets/photos/cafe-espresso-melbourne.jpg";
+import fuel from "../assets/photos/fuel-longreach-dusk.jpg";
+import produce from "../assets/photos/produce-queen-victoria-market.jpg";
+
+const yourtal = brand("yourtal");
+const snapapp = brand("snapapp");
+const ftr = brand("ftr");
+
+const questions = [
+  {
+    q: "Where do my customers actually come from?",
+    a: "Catchments: home and everyday areas, suburb by suburb",
+  },
+  { q: "Who are they?", a: "Age band, occupation and income bracket" },
+  { q: "Who is most likely to buy next?", a: "Segments scored by affinity against the area" },
+  { q: "Where else do they spend?", a: "Also-shops-at, loyalty and switching" },
+  { q: "How often do they come back?", a: "Visit frequency and spend bands" },
+  { q: "How big is the teen market here?", a: "Teen reports, in groups of 20 or more" },
+];
 ---
 
 <Base
-  title="Real-world data for Australian brands | GOD (Global Omni Data)"
-  description="Every receipt snapped, campaign watched and tax return started adds to a picture of how Australians live and spend. GOD joins it up across three apps and gives brands the aggregate. Brands never see a person."
+  title="GOD (Global Omni Data): know your market by what Australians actually do"
+  description="GOD is the group behind YourTal, SnapApp and Free Tax Returns. With people's consent, we count what they do by suburb, age and occupation, so brands can understand a market without seeing a person in it."
 >
-  <section class="block on-brand hero">
+  <section class="night hero">
     <div class="wrap">
-      <div>
-        <h1>Real-world data for Australian brands</h1>
+      <div class="hero-text">
+        <p class="kicker">Global Omni Data · Australia</p>
+        <h1>Know your market by what Australians actually do</h1>
         <p class="lede">
-          Every receipt snapped, campaign watched and tax return started adds to a picture of how
-          Australians live and spend. We join it up across three apps and give brands the aggregate.
-          Brands never see a person.
+          GOD is the group behind YourTal, SnapApp and Free Tax Returns. People use each app for its
+          own reasons. With their consent, we count what they do by suburb, age and occupation, so a
+          brand can understand its market without ever seeing a person in it.
         </p>
         <div class="row">
-          <a class="btn btn-primary" href="/contact/">
-            Talk to us about insight
+          <a class="btn btn-primary" href="/for-brands/">
+            See what brands get
+            <Icon name="arrow" />
           </a>
-          <a class="btn btn-line" href="/brands/">
-            Meet the three apps
+          <a class="btn btn-line" href="/how-it-works/">
+            How it works
           </a>
         </div>
       </div>
-      <div class="mapbox">
+      <figure class="hero-map">
         <AustraliaMap />
-        <p class="mapnote">
-          Each dot is land, not a person. Density follows where Australians live.
-        </p>
-      </div>
+        <figcaption class="meta">
+          Each dot is a patch of land, not a person. Density follows where Australians live.
+        </figcaption>
+      </figure>
     </div>
   </section>
 
-  <section class="block">
+  <Standards />
+
+  <section class="sec" id="group">
     <div class="wrap">
-      <div class="sechead">
-        <h2>Three apps people use for different reasons</h2>
+      <div class="sec-head split">
+        <div>
+          <p class="kicker">The group</p>
+          <h2>Three everyday apps. One careful company.</h2>
+        </div>
         <p class="lede">
-          Each one solves a real job. Together they show brands where customers live, what they buy
-          and who they are.
+          Each GOD brand does one useful job for the people who use it. GOD sits behind all three.
+          It keeps one privacy standard across them and turns what they learn, together, into
+          insight no single app could give.
         </p>
       </div>
-      <div class="brandlist">
-        <div class="brandrow">
-          <div>
-            <h3>YourTal</h3>
-            <span class="tag">Watch, earn, redeem</span>
+
+      <div class="brands">
+        <article class="brand split" data-reveal>
+          <div class="brand-text">
+            <BrandMark brand="yourtal" name={yourtal.name} size="lg" />
+            <p class="said">{yourtal.tagline}</p>
+            <p>{yourtal.summary} Businesses pay only for videos that were actually watched.</p>
+            <ul class="chips">
+              {yourtal.facts.map((f) => (
+                <li class="chip">{f}</li>
+              ))}
+            </ul>
+            <div class="brand-foot">
+              <span class={`status ${yourtal.status.kind}`}>{yourtal.status.label}</span>
+              <a class="go" href={yourtal.page}>
+                About YourTal
+                <Icon name="arrow" />
+              </a>
+            </div>
           </div>
-          <p>
-            People watch short brand campaigns and earn points and vouchers. Businesses run
-            campaigns and reach local viewers by postcode. Teens join with a guardian.
-          </p>
-          <a class="go" href="/brands/#yourtal">
-            About YourTal
-            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-              <path d="M5 12h14M13 6l6 6-6 6"></path>
-            </svg>
-          </a>
-        </div>
-        <div class="brandrow">
-          <div>
-            <h3>SnapApp</h3>
-            <span class="tag">Receipts and deductions</span>
+          <div class="brand-visual">
+            <Phone
+              src={ytHome}
+              alt="The YourTal home screen: “Watch, learn, earn — and spend it where you live”, over a video from a local café"
+              caption="yourtal.gaiada.com · staging, demo data"
+            />
           </div>
-          <p>
-            Snap a receipt and AI reads it, sorts the spending and flags tax deductions. It keeps a
-            car logbook and sends deductions on to Free Tax Returns. Parents can add teens.
-          </p>
-          <a class="go" href="/brands/#snapapp">
-            About SnapApp
-            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-              <path d="M5 12h14M13 6l6 6-6 6"></path>
-            </svg>
-          </a>
-        </div>
-        <div class="brandrow">
-          <div>
-            <h3>Free Tax Returns</h3>
-            <span class="tag">freetaxreturns.com.au</span>
+        </article>
+
+        <article class="brand split flip" data-reveal>
+          <div class="brand-text">
+            <BrandMark brand="snapapp" name={snapapp.name} size="lg" />
+            <p class="said">{snapapp.tagline}</p>
+            <p>{snapapp.summary} Then it shows where the money went.</p>
+            <ul class="chips">
+              {snapapp.facts.map((f) => (
+                <li class="chip">{f}</li>
+              ))}
+            </ul>
+            <div class="brand-foot">
+              <span class={`status ${snapapp.status.kind}`}>{snapapp.status.label}</span>
+              <a class="go" href={snapapp.page}>
+                About SnapApp
+                <Icon name="arrow" />
+              </a>
+            </div>
           </div>
-          <p>
-            Free online tax returns for Australians, built around occupations and the deductions
-            that go with them.
-          </p>
-          <a class="go" href="/brands/#ftr">
-            About Free Tax Returns
-            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-              <path d="M5 12h14M13 6l6 6-6 6"></path>
-            </svg>
-          </a>
-        </div>
+          <div class="brand-visual">
+            <Browser
+              src={saHome}
+              alt="The SnapApp home page: “The receipt app that reads every line”, beside a phone showing a receipt split into GST-free and taxable lines"
+              url="snapapp.gaiada.com"
+            />
+          </div>
+        </article>
+
+        <article class="brand split" data-reveal>
+          <div class="brand-text">
+            <BrandMark brand="ftr" name={ftr.name} size="lg" />
+            <p class="said">{ftr.tagline}</p>
+            <p>{ftr.summary}</p>
+            <ul class="chips">
+              {ftr.facts.map((f) => (
+                <li class="chip">{f}</li>
+              ))}
+            </ul>
+            <div class="brand-foot">
+              <span class={`status ${ftr.status.kind}`}>{ftr.status.label}</span>
+              <a class="go" href={ftr.page}>
+                About Free Tax Returns
+                <Icon name="arrow" />
+              </a>
+            </div>
+          </div>
+          <div class="brand-visual">
+            <Phone
+              src={ftrWorksheet}
+              alt="Free Tax Returns, step 1 of 3: “Let's build your profile”, an empty form for name, email and date of birth"
+              caption="freetaxreturns.com.au/worksheet"
+            />
+          </div>
+        </article>
       </div>
     </div>
   </section>
 
-  <section class="block">
+  <section class="sec tint" id="journey">
     <div class="wrap">
-      <div class="sechead">
-        <h2>How the three apps connect</h2>
-      </div>
-      <div class="flow">
+      <div class="sec-head split">
         <div>
-          <FlowGlyph kind="thread" />
-          <h3>One sign-in</h3>
-          <p>
-            "Sign in with YourTal" works in all three apps. People accept one group privacy notice,
-            once, and know where they stand.
-          </p>
+          <p class="kicker">How it works</p>
+          <h2>From a docket to a decision</h2>
         </div>
-        <div>
-          <FlowGlyph kind="merge" />
-          <h3>One profile</h3>
-          <p>
-            What a person does in each app builds a single profile, held by GOD. Using another app
-            adds to it. It never counts twice.
-          </p>
-        </div>
-        <div>
-          <FlowGlyph kind="grid" />
-          <h3>One aggregate</h3>
-          <p>
-            Brands receive counts by area, age band, occupation and income mix. Any group under 10
-            shows as "&#8288;&lt;10".
-          </p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!--
-    The prototype has a "Reach" band here with three headline figures (people, businesses, postcodes).
-    Those figures are not labelled as samples in the prototype and are not verified, so they are left
-    out until real, dated numbers are supplied.
-  -->
-
-  <section class="block cta">
-    <div class="wrap">
-      <div class="cta-panel">
-        <div>
-          <h2>Ask a question about your market and get the aggregate</h2>
+        <div class="stack">
           <p class="lede">
-            Tell us who you sell to. We reply with what a report would cover, what it would cost and
-            how long it takes.
+            Every GOD app shows the same group privacy notice at sign-up. Nothing reaches GOD until
+            a person accepts it. After that, what they do is counted, never listed.
           </p>
-        </div>
-        <div class="row">
-          <a class="btn btn-primary" href="/contact/">
-            Start a conversation
-          </a>
-          <a class="btn btn-line" href="/for-brands/">
-            What brands get
+          <a class="go" href="/how-it-works/">
+            Follow the whole journey
+            <Icon name="arrow" />
           </a>
         </div>
       </div>
+      <Journey />
     </div>
   </section>
+
+  <section class="sec" id="questions">
+    <div class="wrap split qa">
+      <div>
+        <p class="kicker">For brands</p>
+        <h2>Questions you can finally answer</h2>
+        <p class="lede">
+          Surveys ask people what they remember. GOD counts what they did: the receipts, the videos
+          they chose to watch and the work they claim at tax time.
+        </p>
+        <dl class="questions">
+          {questions.map((x, i) => (
+            <div data-reveal={String((i % 6) + 1)}>
+              <dt>{x.q}</dt>
+              <dd>{x.a}</dd>
+            </div>
+          ))}
+        </dl>
+        <a class="go" href="/for-brands/">
+          Everything brands can ask for
+          <Icon name="arrow" />
+        </a>
+      </div>
+      <div class="qa-report" data-reveal>
+        <SampleReport />
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="everyday">
+    <div class="wrap">
+      <div class="sec-head split">
+        <div>
+          <p class="kicker">Built on everyday life</p>
+          <h2>Every docket tells a small story. Together they describe a market.</h2>
+        </div>
+        <p class="lede">
+          The flat white on the way to work, the fill-up on the drive home, the Saturday market run.
+          Counted together and by suburb, they answer the questions brands in each industry ask.
+        </p>
+      </div>
+      <div class="photos">
+        <figure class="ph-a" data-reveal="1">
+          <div class="photo">
+            <Picture
+              src={cafe}
+              alt="An espresso pouring into a glass at a Melbourne café"
+              widths={[480, 720, 960, 1200]}
+              sizes="(max-width: 720px) 100vw, 40vw"
+              formats={["avif", "webp"]}
+            />
+          </div>
+          <figcaption>
+            <b>Cafés.</b> How far do your regulars travel, and when do they come in?
+          </figcaption>
+        </figure>
+        <figure class="ph-b" data-reveal="2">
+          <div class="photo">
+            <Picture
+              src={fuel}
+              alt="A country service station in Longreach, Queensland, under a red dusk sky"
+              widths={[640, 960, 1280, 1600]}
+              sizes="(max-width: 720px) 100vw, 58vw"
+              formats={["avif", "webp"]}
+            />
+          </div>
+          <figcaption>
+            <b>Fuel.</b> Who fills up twice a week, and what else do they buy at the counter?
+          </figcaption>
+        </figure>
+        <figure class="ph-c" data-reveal="3">
+          <div class="photo">
+            <Picture
+              src={produce}
+              alt="Crates of fresh vegetables and fruit at Queen Victoria Market, Melbourne"
+              widths={[640, 960, 1280, 1600]}
+              sizes="(max-width: 720px) 100vw, 58vw"
+              formats={["avif", "webp"]}
+            />
+          </div>
+          <figcaption>
+            <b>Grocery.</b> Which suburbs shop with you, and what is in the rest of the basket?
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="rules">
+    <div class="wrap">
+      <div class="sec-head split">
+        <div>
+          <p class="kicker">Trust</p>
+          <h2>The rules come first</h2>
+        </div>
+        <div class="stack">
+          <p class="lede">
+            Every count that can reach a brand passes through one threshold. The rules are written
+            into the software, not left to good intentions.
+          </p>
+          <a class="go" href="/privacy/">
+            Read our privacy standard
+            <Icon name="arrow" />
+          </a>
+        </div>
+      </div>
+      <Promises />
+    </div>
+  </section>
+
+  <Cta />
 </Base>
+
+<style>
+  .hero {
+    padding: 96px 0 112px;
+    overflow: hidden;
+    --map-dot: #e8eaff;
+    --map-dim: #4b54ad;
+    --map-city: #e0a14a;
+    --map-label: #9ba1cf;
+  }
+  .hero .wrap {
+    display: grid;
+    grid-template-columns: minmax(0, 6fr) minmax(0, 6fr);
+    gap: 48px;
+    align-items: center;
+  }
+  .hero h1 {
+    max-width: 13ch;
+    font-size: clamp(2.75rem, 1.6rem + 4vw, 4.75rem);
+  }
+  .hero .lede {
+    margin: 28px 0 0;
+  }
+  .hero .row {
+    margin-top: 40px;
+  }
+  .hero-map {
+    margin: 0;
+  }
+  .hero-map .meta {
+    margin-top: 12px;
+    text-align: right;
+  }
+  @media (max-width: 960px) {
+    .hero {
+      padding: 56px 0 64px;
+    }
+    .hero .wrap {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 40px;
+    }
+    .hero-map .meta {
+      text-align: left;
+    }
+  }
+
+  .brands {
+    display: grid;
+    gap: 112px;
+  }
+  .brand {
+    gap: 80px;
+  }
+  .brand-text {
+    display: grid;
+    gap: 20px;
+    justify-items: start;
+  }
+  .brand-text > p:not(.said) {
+    color: var(--ink-2);
+    max-width: 34rem;
+  }
+  .brand-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px 28px;
+    margin-top: 8px;
+  }
+  .brand-visual {
+    display: grid;
+    justify-items: center;
+    padding: 48px 32px;
+    border-radius: 28px;
+    background: var(--raised);
+  }
+  @media (max-width: 960px) {
+    .brands {
+      gap: 80px;
+    }
+    .brand {
+      gap: 32px;
+    }
+    .brand-visual {
+      padding: 32px 16px;
+    }
+  }
+
+  .qa {
+    align-items: start;
+  }
+  .qa h2 {
+    max-width: 14ch;
+  }
+  .qa .lede {
+    margin: 20px 0 32px;
+  }
+  @media (min-width: 961px) {
+    .qa-report {
+      position: sticky;
+      top: 104px;
+    }
+  }
+  .questions {
+    margin: 0 0 28px;
+    border-top: 1px solid var(--line);
+  }
+  .questions div {
+    padding: 16px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .questions dt {
+    font-weight: 580;
+  }
+  .questions dd {
+    margin: 4px 0 0;
+    color: var(--ink-2);
+    font-size: 0.9375rem;
+  }
+
+  .photos {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    grid-template-rows: auto auto;
+    gap: 24px;
+  }
+  .ph-a {
+    grid-row: span 2;
+  }
+  .ph-a .photo {
+    height: calc(100% - 52px);
+    min-height: 420px;
+  }
+  .ph-b .photo,
+  .ph-c .photo {
+    aspect-ratio: 16 / 9;
+  }
+  .photos figcaption {
+    margin-top: 14px;
+    font-size: 0.9375rem;
+    color: var(--ink-2);
+  }
+  .photos figcaption b {
+    font-weight: 580;
+    color: var(--ink);
+  }
+  @media (max-width: 720px) {
+    .photos {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .ph-a {
+      grid-row: auto;
+    }
+    .ph-a .photo {
+      height: auto;
+      min-height: 0;
+      aspect-ratio: 4 / 5;
+    }
+  }
+</style>

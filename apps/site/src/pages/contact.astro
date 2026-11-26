@@ -1,24 +1,47 @@
 ---
 import Base from "../layouts/Base.astro";
-import PageHead from "../components/PageHead.astro";
+import PageHero from "../components/PageHero.astro";
+import Icon from "../components/Icon.astro";
 import { CONTACT_EMAIL } from "../lib/site";
+import { FIELD_LIMITS } from "../lib/contact";
 
 // Where the form POSTs its JSON. Unset means the form says it is not switched on yet and sends nothing.
 const endpoint = (import.meta.env.PUBLIC_CONTACT_ENDPOINT ?? "").trim();
+
+const next = [
+  {
+    h: "You send your question",
+    p: "Tell us who you sell to and what you want to know. A rough idea is enough.",
+  },
+  {
+    h: "We reply within two business days",
+    p: "We tell you what a report would cover, what it would cost and how long it takes.",
+  },
+];
+
+const audience = [
+  "Where your customers live and shop",
+  "Who they are: age band, occupation and income bracket",
+  "What else they buy",
+  "How big a market is for young people, in groups of 20 or more",
+];
 ---
 
 <Base
   title="Contact: tell us what you want to know | GOD (Global Omni Data)"
   description="For brands and partners. Describe your customers or your question, and we reply with what we can answer."
+  ogImage="/og/contact.png"
 >
-  <PageHead
+  <PageHero
+    kicker="Contact"
     title="Tell us what you want to know"
     lede="For brands and partners. Describe your customers or your question, and we reply with what we can answer."
+    crumbs={[{ href: "/", label: "Home" }, { label: "Contact" }]}
   />
 
-  <section class="block">
+  <section class="sec contact-sec" id="form">
     <div class="wrap contact">
-      <div>
+      <div class="card formcard">
         <p class="nojs-note">
           This form needs JavaScript. Without it, please email
           <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
@@ -29,6 +52,7 @@ const endpoint = (import.meta.env.PUBLIC_CONTACT_ENDPOINT ?? "").trim();
               <label for="c-name">Name</label>
               <input
                 id="c-name"
+                maxlength={FIELD_LIMITS.name}
                 name="name"
                 type="text"
                 autocomplete="name"
@@ -41,6 +65,7 @@ const endpoint = (import.meta.env.PUBLIC_CONTACT_ENDPOINT ?? "").trim();
               <label for="c-company">Company</label>
               <input
                 id="c-company"
+                maxlength={FIELD_LIMITS.company}
                 name="company"
                 type="text"
                 autocomplete="organization"
@@ -54,6 +79,7 @@ const endpoint = (import.meta.env.PUBLIC_CONTACT_ENDPOINT ?? "").trim();
             <label for="c-email">Email</label>
             <input
               id="c-email"
+              maxlength={FIELD_LIMITS.email}
               name="email"
               type="email"
               autocomplete="email"
@@ -64,7 +90,13 @@ const endpoint = (import.meta.env.PUBLIC_CONTACT_ENDPOINT ?? "").trim();
           </div>
           <div class="field">
             <label for="c-want">What do you want to know?</label>
-            <textarea id="c-want" name="want" required aria-describedby="c-want-err"></textarea>
+            <textarea
+              id="c-want"
+              name="want"
+              maxlength={FIELD_LIMITS.want}
+              required
+              aria-describedby="c-want-err"
+            ></textarea>
             <p class="field-err" id="c-want-err" hidden></p>
           </div>
           <div class="field">
@@ -96,11 +128,45 @@ const endpoint = (import.meta.env.PUBLIC_CONTACT_ENDPOINT ?? "").trim();
           <p>We have your enquiry. If it is urgent, email the address on this page.</p>
         </div>
       </div>
-      <div class="aside">
-        <h2>Prefer email?</h2>
-        <span class="mail">{CONTACT_EMAIL}</span>
-        <p class="small">We read every message and reply within two business days.</p>
-      </div>
+
+      <aside class="aside" aria-label="Before and after you write">
+        <div class="next">
+          <h2>What happens next</h2>
+          <ol class="steps">
+            {next.map((n) => (
+              <li>
+                <h3>{n.h}</h3>
+                <p>{n.p}</p>
+              </li>
+            ))}
+          </ol>
+          <p class="small private">
+            <Icon name="lock" />
+            <span>Nothing you send is shared outside GOD.</span>
+          </p>
+        </div>
+
+        <div class="who">
+          <h2>Who it is for</h2>
+          <p class="small">
+            Brands and partners who want to understand a market by what Australians actually do. For
+            example:
+          </p>
+          <ul class="ticks">
+            {audience.map((a) => (
+              <li>{a}</li>
+            ))}
+          </ul>
+        </div>
+
+        <div class="mailbox">
+          <h2>Prefer email?</h2>
+          <a class="mail" href={`mailto:${CONTACT_EMAIL}`}>
+            {CONTACT_EMAIL}
+          </a>
+          <p class="small">We read every message and reply within two business days.</p>
+        </div>
+      </aside>
     </div>
   </section>
 
@@ -108,3 +174,73 @@ const endpoint = (import.meta.env.PUBLIC_CONTACT_ENDPOINT ?? "").trim();
     import "../scripts/contact";
   </script>
 </Base>
+
+<style>
+  .contact-sec {
+    padding-top: 0;
+  }
+  .contact {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: 64px;
+    align-items: start;
+  }
+  .formcard {
+    padding: 40px;
+  }
+  .formcard .row {
+    margin-top: 8px;
+  }
+  .formcard .btn {
+    min-width: 180px;
+  }
+  .nojs-note {
+    margin-bottom: 0;
+  }
+
+  .aside {
+    display: grid;
+    gap: 40px;
+  }
+  .aside h2 {
+    margin-bottom: 16px;
+    font-size: 1.625rem;
+    line-height: 1.2;
+  }
+  .aside .steps > li:last-child {
+    border-bottom: 1px solid var(--line);
+  }
+  .private {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  .who .small {
+    margin-bottom: 16px;
+  }
+  .mailbox {
+    padding-top: 28px;
+    border-top: 1px solid var(--line);
+  }
+  .mail {
+    display: inline-block;
+    margin-bottom: 8px;
+    font-family: var(--f-mono);
+    font-size: 1.0625rem;
+    overflow-wrap: anywhere;
+  }
+  .thanks h2 {
+    font-size: 1.75rem;
+  }
+
+  @media (max-width: 960px) {
+    .contact {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 48px;
+    }
+    .formcard {
+      padding: 24px;
+    }
+  }
+</style>

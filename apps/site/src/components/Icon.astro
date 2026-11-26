@@ -1,0 +1,24 @@
+---
+interface Props {
+  name: "arrow" | "external" | "lock" | "check" | "ring" | "dot";
+  class?: string;
+}
+
+const { name, class: className } = Astro.props;
+---
+
+<svg class:list={["ic", className]} viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+  {name === "arrow" && <path d="M5 12h14M13 6l6 6-6 6"></path>}
+  {name === "external" && (
+    <path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"></path>
+  )}
+  {name === "lock" && (
+    <>
+      <rect x="5" y="11" width="14" height="9" rx="2"></rect>
+      <path d="M8 11V8a4 4 0 0 1 8 0v3"></path>
+    </>
+  )}
+  {name === "check" && <path d="M5 12.5 10 17 19 7"></path>}
+  {name === "ring" && <circle cx="12" cy="12" r="6"></circle>}
+  {name === "dot" && <circle class="fill" cx="12" cy="12" r="6"></circle>}
+</svg>
