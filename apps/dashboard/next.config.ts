@@ -24,6 +24,11 @@ const nextConfig: NextConfig = {
   // `next build` runs with this app as the working directory.
   output: "standalone",
   outputFileTracingRoot: join(process.cwd(), "../.."),
+  // MapLibre loads its tile worker from a separate file the route /map/maplibre-worker reads at run time; the
+  // standalone trace cannot see that read, so name it here (without it the live maps said "Worker failed to load").
+  outputFileTracingIncludes: {
+    "/map/maplibre-worker": ["./node_modules/maplibre-gl/dist/maplibre-gl-worker.mjs"],
+  },
   reactStrictMode: true,
   poweredByHeader: false,
   // @god/synthetic and @god/geo ship TypeScript source.
