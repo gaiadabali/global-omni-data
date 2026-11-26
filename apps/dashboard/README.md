@@ -28,6 +28,7 @@ src/
                                  Data quality, Admin. Actions write to the audit seam (server/audit)
     (shell)/forbidden.tsx     the 403 screen (a real 403, via forbidden())
     api/map/influence|summary|area|activity|hotspots|activity-area/route.ts   GET handlers, thin wrappers over src/server/map-api.ts
+    api/public/contact/route.ts   POST: the public site's contact form. The ONLY route that needs no sign-in (below)
   proxy.ts                  Next 16 "middleware": per-request nonce CSP
   instrumentation.ts        refuses to start on a bad dev-auth config; warms the synthetic sample
   lib/                      pure helpers: pages registry, format, theme, csp, period
@@ -38,6 +39,7 @@ src/
     privacy.ts                THE threshold function, presentCount
     data/                     the data seam (types, provider, presentation, legend)
     map-api.ts                query validation and the two map handlers
+    enquiries/                the contact form: validate, rate-limit, notify (email), public-contact (the handler)
   components/ui/            Card, StatTile, Table, Badge, Tabs, Segmented, Select, Modal, Toast, EmptyState, SmallNumber
   components/charts/        LineChart, BarChart (vertical and horizontal), StackedBar, Sparkline
   components/shell/         sidebar, phone bar, theme toggle, dev role switch
@@ -192,6 +194,33 @@ It prints the public JWKS: that goes to YourTal as `/opt/yourtal/secrets/oidc/cl
 (GET navigations), never form posts, so `form-action 'self'` never meets the redirect to YourTal (browsers apply
 `form-action` to a form's redirects too). Sign-out is a form POST to this origin, answered with a redirect to
 `/signin`, also this origin.
+
+## Contact form and Enquiries (`src/server/enquiries/`, migration 0004)
+
+The public site (https://god.gaiada.com, static) posts its contact form to `POST /api/public/contact`. nginx on the site's
+vhost proxies `/api/contact` here (`infra/dashboard/RUNBOOK.md`, "Contact form"), so the browser stays same-origin and
+the site's CSP (`connect-src 'self'`) is unchanged. It is the only unauthenticated write the dashboard has
+(`PUBLIC_ROUTES` in `access.ts`; `public-routes.test.ts` fails if another route skips the viewer check without being listed).
+**Every enquiry is stored first**; the email is a best-effort heads-up sent after, so nothing is lost if mail is down.
+
+Refusals, in order (nothing is stored for any of them): `403` Origin is not `GOD_SITE_ORIGIN` (default
+`https://god.gaiada.com`; localhost too when `GOD_DEPLOYMENT=dev`; no Origin header at all is refused) · `429` over 5 an
+hour per network prefix or 100 an hour in total, with `Retry-After` (in memory) · `415` not `application/json` · `413`
+over 8 KB · `400` not a JSON object · `204` the honeypot `website` is filled (a bot; told it worked) · `422` a field fails
+validation (`{ ok: false, errors }`). Then `201`, no body. The address is `X-Real-IP` only (nginx sets it), and only a coarse
+prefix of it (`203.0.113.x`) is stored. No cookie is read or set, and no CSP is sent (`proxy.ts` skips `/api`).
+
+Validation (`validate.ts`; the same limits are CHECKs on `god_app.enquiries`): name 100, company 120, email 254, message
+4000, budget 60 characters. Single-line fields lose control characters (CR, LF, tab ...); the email is checked, never
+repaired (no spaces, controls, `< > ( ) , ; : " [ ] \`). The email (`notify.ts`, `nodemailer` 10.5.0) goes to
+`GOD_ENQUIRY_TO` through `GOD_SMTP_URL` from `GOD_ENQUIRY_FROM`, plain text with Reply-To the enquirer; if any of the three
+is unset it is skipped and logged once. The response waits at most 2 seconds for it; a failure is logged (reason code only,
+never the enquiry) and the request still answers 201.
+
+Admin, **Enquiries** tab (Owner only: it is part of Admin, and Executive cannot open Admin): newest first, status filter
+(new and read by default, new, read, archived, all), text search, the whole message, Mark as read, Mark as new, Archive and
+Restore. Each change is audited as `enquiry.update` (the id and the change, never what the visitor wrote). The tab label
+shows how many are new. An emergency session can read the tab but not change anything.
 
 ## Emergency Owner access (break-glass, `src/server/breakglass/`)
 
