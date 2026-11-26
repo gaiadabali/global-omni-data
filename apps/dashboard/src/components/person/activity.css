@@ -1,0 +1,381 @@
+/*
+ * Person 360: the activity map and its two lists. Colours come from the app's tokens (--map-bg, --map-land, --ink ...)
+ * and four identity colours picked with the dataviz method (validated in light; the dark steps keep the same hues and
+ * rely on labels, a dashed edge and a hollow ring as well, so colour is never the only cue). No style="" attributes
+ * are sent: positions and sizes are set through the CSSOM by client code.
+ */
+:root {
+  --pa-home: #257de0;
+  --pa-work: #008a17;
+  --pa-weekend: #f2a600;
+  --pa-outlier: #ec4647;
+  --pa-outlier-text: #b41e26;
+}
+:root[data-theme="dark"] {
+  --pa-home: #338ced;
+  --pa-work: #0aac23;
+  --pa-weekend: #f2a600;
+  --pa-outlier: #eb6263;
+  --pa-outlier-text: #ff8d8e;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="system"] {
+    --pa-home: #338ced;
+    --pa-work: #0aac23;
+    --pa-weekend: #f2a600;
+    --pa-outlier: #eb6263;
+    --pa-outlier-text: #ff8d8e;
+  }
+}
+
+.pa {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+.pa-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+}
+.pa-bar p {
+  margin: 0;
+}
+.pa-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 16px;
+  align-items: start;
+}
+.pa-mapcol {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+@media (max-width: 1060px) {
+  .pa-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ---------- the map ---------- */
+.pa-stage,
+.pa-skeleton {
+  position: relative;
+  background: var(--map-bg);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  overflow: hidden;
+  /* A fixed height, not vh: a viewport-relative map would resize (and blank for a frame) with the browser. */
+  height: 520px;
+  min-width: 0;
+}
+.pa-skeleton {
+  display: grid;
+  place-items: center;
+}
+@media (max-width: 640px) {
+  .pa-stage,
+  .pa-skeleton {
+    height: 380px;
+  }
+}
+.pa-canvas {
+  width: 100%;
+  height: 100%;
+}
+.pa-zoom {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.pa-zoom button,
+.pa-card-h button {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--raise);
+  color: var(--ink);
+  font: 600 16px "Inter Variable", system-ui, sans-serif;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+.pa-zoom button:hover,
+.pa-card-h button:hover {
+  border-color: var(--faint);
+}
+.pa-failed {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: grid;
+  place-content: center;
+  gap: 4px;
+  text-align: center;
+  padding: 24px;
+  background: var(--map-bg);
+}
+.pa-tip,
+.pa-card {
+  position: absolute;
+  z-index: 4;
+  background: var(--raise);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  font-size: 12px;
+}
+.pa-tip {
+  pointer-events: none;
+  padding: 8px 12px;
+  max-width: 260px;
+}
+.pa-tip b {
+  display: block;
+  margin-bottom: 4px;
+}
+.pa-tip div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--ink2);
+}
+.pa-tip div span:last-child {
+  text-align: right;
+}
+.pa-card {
+  left: 12px;
+  bottom: 12px;
+  width: min(300px, calc(100% - 24px));
+  padding: 8px 12px 12px;
+  border-left: 4px solid var(--pa-outlier);
+}
+.pa-card[data-kind="home"] {
+  border-left-color: var(--pa-home);
+}
+.pa-card[data-kind="work"] {
+  border-left-color: var(--pa-work);
+}
+.pa-card[data-kind="weekend"] {
+  border-left-color: var(--pa-weekend);
+}
+.pa-card-h {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.pa-card-h b {
+  font-size: 13px;
+}
+.pa-card-h button {
+  width: 24px;
+  height: 24px;
+  font-size: 15px;
+  flex: none;
+}
+.pa-card dl {
+  margin: 0;
+  display: grid;
+  gap: 4px;
+}
+.pa-card dl > div {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 8px;
+}
+.pa-card dt {
+  color: var(--muted);
+}
+.pa-card dd {
+  margin: 0;
+  color: var(--ink);
+}
+
+/* ---------- legend ---------- */
+.pa-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+  color: var(--ink2);
+}
+.pa-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.pa-legend svg {
+  flex: none;
+}
+.pa-sw {
+  stroke-width: 2;
+}
+.pa-sw-home {
+  fill: color-mix(in srgb, var(--pa-home) 22%, transparent);
+  stroke: var(--pa-home);
+}
+.pa-sw-work {
+  fill: color-mix(in srgb, var(--pa-work) 22%, transparent);
+  stroke: var(--pa-work);
+}
+.pa-sw-weekend {
+  fill: color-mix(in srgb, var(--pa-weekend) 26%, transparent);
+  stroke: var(--pa-weekend);
+  stroke-dasharray: 4 3;
+}
+.pa-sw-outlier {
+  fill: var(--map-land);
+  stroke: var(--pa-outlier);
+  stroke-width: 2.5;
+}
+.pa-sw-dot {
+  fill: var(--muted);
+  stroke: var(--map-land);
+  stroke-width: 1.5;
+}
+.pa-hint {
+  margin: 0;
+}
+.pa-link {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: var(--acc);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+/* ---------- the two lists ---------- */
+.pa-side {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+.pa-side h3 {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0 0 8px;
+  font: 600 13px "Inter Variable", system-ui, sans-serif;
+  color: var(--ink);
+}
+.pa-side h3 span {
+  color: var(--muted);
+  font-weight: 500;
+}
+.pa-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.pa-row {
+  appearance: none;
+  display: grid;
+  grid-template-columns: 12px minmax(0, 1fr);
+  gap: 4px 12px;
+  width: 100%;
+  text-align: left;
+  padding: 8px 12px;
+  border: 1px solid var(--line2);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.pa-row:hover,
+.pa-row[data-hover="true"] {
+  background: var(--panel2);
+  border-color: var(--line);
+}
+.pa-row[aria-pressed="true"] {
+  background: var(--panel2);
+  border-color: var(--faint);
+}
+.pa-row:focus-visible {
+  outline: 2px solid var(--acc-solid);
+  outline-offset: 2px;
+}
+.pa-mark {
+  grid-row: 1;
+  width: 12px;
+  height: 12px;
+  margin-top: 4px;
+  border-radius: 3px;
+  border: 2px solid var(--pa-home);
+  background: color-mix(in srgb, var(--pa-home) 24%, transparent);
+}
+.pa-mark[data-kind="work"] {
+  border-color: var(--pa-work);
+  background: color-mix(in srgb, var(--pa-work) 24%, transparent);
+}
+.pa-mark[data-kind="weekend"] {
+  border-color: var(--pa-weekend);
+  border-style: dashed;
+  background: color-mix(in srgb, var(--pa-weekend) 28%, transparent);
+}
+.pa-mark[data-kind="outlier"] {
+  border-color: var(--pa-outlier);
+  border-style: solid;
+  border-radius: 50%;
+  background: var(--map-land);
+}
+.pa-main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0 8px;
+  min-width: 0;
+}
+.pa-main b {
+  font-weight: 600;
+}
+.pa-kind {
+  color: var(--muted);
+  font-size: 12px;
+}
+.pa-sub {
+  grid-column: 2;
+  color: var(--ink2);
+  font-size: 12px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+.pa-sub.muted {
+  color: var(--muted);
+}
+.pa-dist {
+  color: var(--pa-outlier-text);
+  font-weight: 500;
+}
+.pa-empty {
+  margin: 0;
+  padding: 8px 12px;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+}
