@@ -40,7 +40,33 @@ describe("presentCount: adult figures (threshold 10)", () => {
   });
 });
 
-describe.each<CountKind>(["teen", "sensitive"])("presentCount: %s figures (threshold 20)", (kind) => {
+describe("presentCount: teen figures (threshold 20 for every role)", () => {
+  // Teen data standard (pack tab 3, approved 2026-11-26): every teen figure covers 20 or more teens, and no
+  // teen figure under 20 exists for anyone, Owner and Data team included.
+  it.each(roles)("%s: 0, 10 and 19 are <20 with no exact value", (role) => {
+    for (const n of [0, 10, 19]) {
+      expect(presentCount(n, { kind: "teen", viewer: { role } })).toEqual({
+        display: "<20",
+        exact: null,
+        suppressed: true,
+      });
+    }
+  });
+
+  it.each(roles)("%s: 20 is shown as 20", (role) => {
+    expect(presentCount(20, { kind: "teen", viewer: { role } })).toEqual({
+      display: "20",
+      exact: 20,
+      suppressed: false,
+    });
+  });
+
+  it.each(roles)("%s: a small teen count never reaches JSON", (role) => {
+    expect(JSON.stringify(toPNum(17, { kind: "teen", viewer: { role } }))).not.toContain("17");
+  });
+});
+
+describe.each<CountKind>(["sensitive"])("presentCount: %s figures (threshold 20)", (kind) => {
   it.each(restricted)("%s: 19 is <20 and 10 is <20", (role) => {
     for (const n of [0, 10, 19]) {
       expect(presentCount(n, { kind, viewer: { role } })).toEqual({

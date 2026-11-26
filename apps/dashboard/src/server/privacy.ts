@@ -6,7 +6,9 @@ import type { Viewer } from "./types";
  *
  *   adult figures:            under 10 shows as "<10"
  *   teen and sensitive:       under 20 shows as "<20"
- *   owner and data roles:     get the exact value, with suppressed: true so the UI can show a "small number" marker
+ *   owner and data roles:     get the exact value of a small adult or sensitive count, with suppressed: true so
+ *                             the UI can show a "small number" marker. Never a teen count under 20: those exist
+ *                             for nobody (teen data standard, approved 2026-11-26)
  *
  * Brand roles never get the exact value below the threshold, not even in a JSON response (exact is null).
  */
@@ -40,7 +42,8 @@ export function presentCount(
   const value = Math.round(n);
   const threshold = THRESHOLDS[opts.kind];
   if (value >= threshold) return { display: fmtInt(value), exact: value, suppressed: false };
-  if (seesExactSmallNumbers(opts.viewer)) {
+  // Teen figures under 20 exist for nobody, Owner and Data team included (teen data standard, pack tab 3).
+  if (opts.kind !== "teen" && seesExactSmallNumbers(opts.viewer)) {
     return { display: fmtInt(value), exact: value, suppressed: true };
   }
   return { display: `<${threshold}`, exact: null, suppressed: true };
