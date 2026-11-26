@@ -1,3 +1,308 @@
 [
-  { "name": "overview", "path": "/", "role": "owner" }
+  {
+    "name": "home",
+    "path": "/",
+    "role": "owner",
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "widths": [
+      1440,
+      390
+    ],
+    "waitFor": "[data-chart][data-ready=\"1\"]",
+    "delayMs": 500
+  },
+  {
+    "name": "brand-yourtal",
+    "path": "/brands/yourtal",
+    "role": "owner",
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "widths": [
+      1440,
+      390
+    ],
+    "waitFor": "[data-chart][data-ready=\"1\"]",
+    "delayMs": 500
+  },
+  {
+    "name": "brand-snapapp",
+    "path": "/brands/snapapp",
+    "role": "owner",
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "widths": [
+      1440,
+      390
+    ],
+    "waitFor": "[data-chart][data-ready=\"1\"]",
+    "delayMs": 500
+  },
+  {
+    "name": "brand-ftr",
+    "path": "/brands/ftr",
+    "role": "owner",
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "widths": [
+      1440,
+      390
+    ],
+    "waitFor": "[data-chart][data-ready=\"1\"]",
+    "delayMs": 500
+  },
+  {
+    "name": "home-week",
+    "path": "/?period=week",
+    "role": "owner",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440
+    ],
+    "waitFor": "[data-chart][data-ready=\"1\"]",
+    "delayMs": 500
+  },
+  {
+    "name": "brand-yourtal-ytd",
+    "path": "/brands/yourtal?period=ytd",
+    "role": "owner",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440
+    ],
+    "waitFor": "[data-chart][data-ready=\"1\"]",
+    "delayMs": 500
+  },
+  {
+    "name": "stub-map",
+    "path": "/map",
+    "role": "owner",
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "widths": [
+      1440,
+      390
+    ]
+  },
+  {
+    "name": "stub-activity",
+    "path": "/activity",
+    "role": "owner",
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "widths": [
+      1440,
+      390
+    ]
+  },
+  {
+    "name": "stub-insight",
+    "path": "/insight",
+    "role": "owner",
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "widths": [
+      1440,
+      390
+    ]
+  },
+  {
+    "name": "stub-teens",
+    "path": "/teens",
+    "role": "owner",
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "widths": [
+      1440,
+      390
+    ]
+  },
+  {
+    "name": "stub-person",
+    "path": "/person",
+    "role": "owner",
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "widths": [
+      1440,
+      390
+    ]
+  },
+  {
+    "name": "stub-quality",
+    "path": "/quality",
+    "role": "owner",
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "widths": [
+      1440,
+      390
+    ]
+  },
+  {
+    "name": "stub-admin",
+    "path": "/admin",
+    "role": "owner",
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "widths": [
+      1440,
+      390
+    ]
+  },
+  {
+    "name": "lead-yourtal-home",
+    "path": "/",
+    "role": "brand_lead_yourtal",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440,
+      390
+    ]
+  },
+  {
+    "name": "lead-yourtal-brand-yourtal",
+    "path": "/brands/yourtal",
+    "role": "brand_lead_yourtal",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440,
+      390
+    ],
+    "waitFor": "[data-chart][data-ready=\"1\"]",
+    "delayMs": 500
+  },
+  {
+    "name": "lead-yourtal-brand-snapapp",
+    "path": "/brands/snapapp",
+    "role": "brand_lead_yourtal",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440,
+      390
+    ]
+  },
+  {
+    "name": "exec-home",
+    "path": "/",
+    "role": "executive",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440
+    ],
+    "waitFor": "[data-chart][data-ready=\"1\"]",
+    "delayMs": 500
+  },
+  {
+    "name": "data-quality",
+    "path": "/quality",
+    "role": "data",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440
+    ]
+  },
+  {
+    "name": "signin",
+    "path": "/signin",
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "widths": [
+      1440,
+      390
+    ]
+  },
+  {
+    "name": "signin-not-listed",
+    "path": "/signin?reason=not-listed",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440,
+      390
+    ]
+  },
+  {
+    "name": "signin-password",
+    "path": "/signin?reason=password",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440,
+      390
+    ]
+  },
+  {
+    "name": "signin-teen",
+    "path": "/signin?reason=teen",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440,
+      390
+    ]
+  },
+  {
+    "name": "signin-expired",
+    "path": "/signin?reason=expired",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440,
+      390
+    ]
+  },
+  {
+    "name": "no-role-home",
+    "path": "/",
+    "themes": [
+      "light"
+    ],
+    "widths": [
+      1440,
+      390
+    ]
+  }
 ]
