@@ -118,17 +118,21 @@ export class CellIndex {
   private readonly keys = new Map<number, Int32Array>();
   private readonly centreCache = new Map<number, { lat: Float32Array; lon: Float32Array }>();
   private readonly popCache = new Map<number, Float64Array>();
+  /** SA2 index of the first point that fell in each base cell (-1 when none was given). */
+  private readonly sa2Base: number[] = [];
+  private readonly sa2Cache = new Map<number, Int32Array>();
 
   constructor(n: number) {
     this.keyBase = new Int32Array(n).fill(-1);
   }
 
-  add(i: number, lat: number, lon: number): void {
+  add(i: number, lat: number, lon: number, sa2 = -1): void {
     const id = latLngToCell(lat, lon, FINEST_RES);
     let o = this.lookup.get(id);
     if (o === undefined) {
       o = this.idsBase.length;
       this.idsBase.push(id);
+      this.sa2Base.push(sa2);
       this.lookup.set(id, o);
     }
     this.keyBase[i] = o;
@@ -159,6 +163,21 @@ export class CellIndex {
   idsAt(res: number): readonly string[] {
     if (res > FINEST_RES) throw new RangeError(`h3 resolution ${res} is finer than the finest (${FINEST_RES})`);
     return res === FINEST_RES ? this.idsBase : this.parent(res).ids;
+  }
+
+  /** SA2 index of each cell at a resolution, taken from the first point in it (-1: unknown). Home cells only. */
+  sa2sAt(res: number): Int32Array {
+    let out = this.sa2Cache.get(res);
+    if (out) return out;
+    if (res === FINEST_RES) {
+      out = Int32Array.from(this.sa2Base);
+    } else {
+      const { ids, map } = this.parent(res);
+      out = new Int32Array(ids.length).fill(-1);
+      for (let o = 0; o < map.length; o++) if (out[map[o]!] === -1) out[map[o]!] = this.sa2Base[o]!;
+    }
+    this.sa2Cache.set(res, out);
+    return out;
   }
 
   /** One key per point (-1: the point has no cell). */
@@ -257,6 +276,11 @@ export interface World {
   readonly activity: CellIndex;
   /** Sum of weights per key over the points that match the filter. */
   aggregate(filter: PointFilter, keys: ArrayLike<number>, size: number): Float64Array;
+  /**
+   * The running total per key for the `months` months ending at `filter.month`: a Float64Array of size x months,
+   * laid out key by key (key k, month j is at k * months + j). `months` is at most filter.month + 1.
+   */
+  aggregateSeries(filter: PointFilter, keys: ArrayLike<number>, size: number, months: number): Float64Array;
 }
 
 function seasonFactor(brand: number, month: number): number {
@@ -412,7 +436,7 @@ function build(seed: number): World {
     get cells() {
       if (!cells) {
         cells = new CellIndex(n);
-        for (let i = 0; i < n; i++) cells.add(i, lat[i]!, lon[i]!);
+        for (let i = 0; i < n; i++) cells.add(i, lat[i]!, lon[i]!, sa2[i]!);
       }
       return cells;
     },
@@ -446,6 +470,39 @@ function build(seed: number): World {
         const key = keys[i]!;
         if (key < 0) continue;
         out[key] = out[key]! + weight[i]!;
+      }
+      return out;
+    },
+    aggregateSeries(f, keys, size, months) {
+      if (months < 1 || months > f.month + 1) throw new RangeError(`months must be 1..${f.month + 1}`);
+      const out = new Float64Array(size * months);
+      const wantPeople = f.audience !== "businesses";
+      const wantBiz = f.audience !== "people";
+      const bi = f.brand === "all" ? -1 : BRANDS.indexOf(f.brand);
+      const jm = bi < 0 ? joinAny : join[bi]!;
+      const alsoMask = f.alsoBrand ? BRAND_BIT[f.alsoBrand] : 0;
+      const filtersPeople = f.ageBand !== undefined || f.category !== undefined;
+      const start = f.month - months + 1;
+      for (let i = 0; i < n; i++) {
+        const biz = isBusiness[i] === 1;
+        if (biz ? !wantBiz : !wantPeople) continue;
+        const j = jm[i]!;
+        if (j > f.month) continue;
+        if (alsoMask && (mask[i]! & alsoMask) === 0) continue;
+        if (filtersPeople) {
+          if (biz) continue;
+          if (f.ageBand !== undefined && age[i] !== f.ageBand) continue;
+          if (f.category !== undefined && category[i] !== f.category) continue;
+        }
+        const key = keys[i]!;
+        if (key < 0) continue;
+        const at = key * months + (j > start ? j - start : 0);
+        out[at] = out[at]! + weight[i]!;
+      }
+      // Joined months to running totals.
+      for (let k = 0; k < size; k++) {
+        const o = k * months;
+        for (let m = 1; m < months; m++) out[o + m] = out[o + m]! + out[o + m - 1]!;
       }
       return out;
     },

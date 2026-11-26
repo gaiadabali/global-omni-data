@@ -1,6 +1,6 @@
-import areasJson from "../data/areas.json";
-import populationJson from "../data/population.json";
-import suburbsJson from "../data/suburbs.json";
+import areasJson from "../data/areas.js";
+import populationJson from "../data/population.js";
+import suburbsJson from "../data/suburbs.js";
 import manifestJson from "../data/manifest.json";
 import type { Area, BBox, Level, LonLat, Suburb } from "./types";
 

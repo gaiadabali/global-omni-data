@@ -1,4 +1,4 @@
-import sa2TopoJson from "../data/sa2.topo.json";
+import sa2TopoJson from "../data/sa2.topo.js";
 import { parentLabel, parentChain } from "./areas";
 import { getStore } from "./data";
 import { pointInPolygon, ringArea, ringBBox } from "./shape";
@@ -197,7 +197,8 @@ export function nearestSuburb(lon: number, lat: number, maxKm = 80): NearSuburb 
   const gx0 = Math.floor(lon / SCELL);
   const gy0 = Math.floor(lat / SCELL);
   // A cell is at least this wide, in kilometres (longitude cells narrow towards the south of Tasmania).
-  const cellKm = SCELL * KM_LON * Math.cos((lat * Math.PI) / 180);
+  const kmLon = KM_LON * Math.cos((lat * Math.PI) / 180);
+  const cellKm = SCELL * kmLon;
   const maxRing = Math.ceil(maxKm / cellKm) + 1;
   let best: NearSuburb | null = null;
   let bestScore = Infinity;
@@ -210,7 +211,9 @@ export function nearestSuburb(lon: number, lat: number, maxKm = 80): NearSuburb 
         const list = g.get(cellKey(gx0 + dx, gy0 + dy));
         if (!list) continue;
         for (const s of list) {
-          const d = km(lat, lon, s.lat, s.lon);
+          const dy = (s.lat - lat) * KM_LAT;
+          const dx = (s.lon - lon) * kmLon;
+          const d = Math.sqrt(dx * dx + dy * dy);
           if (d > maxKm) continue;
           const radius = Math.min(MAX_RADIUS_KM, Math.sqrt(s.areaKm2 / Math.PI));
           const score = d - radius;

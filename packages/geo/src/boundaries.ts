@@ -1,7 +1,7 @@
-import sa2 from "../data/sa2.topo.json";
-import sa3 from "../data/sa3.topo.json";
-import sa4 from "../data/sa4.topo.json";
-import ste from "../data/ste.topo.json";
+import sa2 from "../data/sa2.topo.js";
+import sa3 from "../data/sa3.topo.js";
+import sa4 from "../data/sa4.topo.js";
+import ste from "../data/ste.topo.js";
 import { getArea } from "./areas";
 import { toFeatureCollection, type GeoFeatureCollection, type Topology } from "./topo";
 import type { Level } from "./types";

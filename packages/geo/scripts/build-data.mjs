@@ -10,11 +10,11 @@
  * checked against the SHA-256 recorded below, so a changed upstream file stops the build instead of changing the data.
  * The output is deterministic: no timestamps, sorted by code.
  *
- * Writes to data/:
- *   ste.topo.json sa4.topo.json sa3.topo.json sa2.topo.json   simplified display boundaries (TopoJSON, ids = area codes)
- *   areas.json        per area: id, name, parents, centroid (a point inside the area), bbox, area in km2
- *   suburbs.json      one point per suburb or locality (SAL): code, name, state, lon, lat, SA2, km2
- *   population.json   estimated resident population by SA2 and 5-year age group, 30 June 2025
+ * Writes to data/ (each .js is `export default <json>;`, with a .d.ts beside it):
+ *   ste.topo.js sa4.topo.js sa3.topo.js sa2.topo.js   simplified display boundaries (TopoJSON, ids = area codes)
+ *   areas.js          per area: id, name, parents, centroid (a point inside the area), bbox, area in km2
+ *   suburbs.js        one point per suburb or locality (SAL): code, name, state, lon, lat, SA2, km2
+ *   population.js    estimated resident population by SA2 and 5-year age group, 30 June 2025
  *   manifest.json     the sources used (URL, bytes, SHA-256), the tool versions and the settings
  */
 import { createHash } from "node:crypto";
@@ -361,12 +361,26 @@ function versionOf(pkg) {
   }
 }
 
+/**
+ * Data files are ES modules (`export default <json>;`) with a one-line .d.ts beside them, not .json: TypeScript would
+ * otherwise infer a type for every number in a 2 MB topology and run out of memory. manifest.json stays JSON (small).
+ */
+function writeData(name, value) {
+  const file = join(OUT, `${name}.js`);
+  writeFileSync(file, `export default ${JSON.stringify(value)};
+`);
+  writeFileSync(join(OUT, `${name}.d.ts`), "declare const data: unknown;
+export default data;
+");
+  const size = statSync(file).size;
+  log("wrote", `${name}.js`, kb(size));
+  return size;
+}
+
 function writeJson(name, value) {
   const file = join(OUT, name);
   writeFileSync(file, JSON.stringify(value));
-  const size = statSync(file).size;
-  log("wrote", name, kb(size));
-  return size;
+  return statSync(file).size;
 }
 
 async function main() {
@@ -385,7 +399,7 @@ async function main() {
     areas[level.key] = records;
     tops[level.key] = topology;
     polysByLevel[level.key] = polys;
-    sizes[`${level.key}.topo.json`] = writeJson(`${level.key}.topo.json`, topology);
+    sizes[`${level.key}.topo.js`] = writeData(`${level.key}.topo`, topology);
     log(level.key, records.length, "areas");
   }
 
@@ -401,23 +415,23 @@ async function main() {
     /** SA2 code: [total, ...one number per age group]. */
     sa2: Object.fromEntries(Object.keys(pop.sa2).sort().map((id) => [id, pop.sa2[id]])),
   };
-  sizes["population.json"] = writeJson("population.json", popOut);
+  sizes["population.js"] = writeData("population", popOut);
 
   const findSa2 = sa2Finder(polysByLevel.sa2, areas.sa2);
   const sal = unpackShapefile("SAL", src.SAL.file, src.SAL.buf);
   const suburbs = await readSuburbs(sal.dbf, sal.shp, findSa2);
-  sizes["suburbs.json"] = writeJson("suburbs.json", {
+  sizes["suburbs.js"] = writeData("suburbs", {
     cols: ["code", "name", "state", "lon", "lat", "sa2", "areaKm2"],
     rows: suburbs,
   });
 
-  sizes["areas.json"] = writeJson("areas.json", areas);
+  sizes["areas.js"] = writeData("areas", areas);
 
   const total = Object.values(sizes).reduce((a, b) => a + b, 0);
   // A short hash of the data files: the dashboard puts it in the URLs of the static boundary files, so a new
   // build of the data is never served from a stale browser cache.
   const hash = createHash("sha256");
-  for (const f of ["ste.topo.json", "sa4.topo.json", "sa3.topo.json", "sa2.topo.json", "areas.json", "suburbs.json", "population.json"]) {
+  for (const f of ["ste.topo.js", "sa4.topo.js", "sa3.topo.js", "sa2.topo.js", "areas.js", "suburbs.js", "population.js"]) {
     hash.update(readFileSync(join(OUT, f)));
   }
   writeJson("manifest.json", {
