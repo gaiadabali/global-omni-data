@@ -5,6 +5,7 @@ import { checkFresh, getSessionState } from "../auth/current";
 import { getViewer } from "../viewer";
 import {
   handleAllowListChange,
+  handleEnquiryUpdate,
   handleExport,
   handleInvite,
   handleOpenProfile,
@@ -12,6 +13,7 @@ import {
   handleRevokeSession,
   type ChangeResult,
   type Deps,
+  type EnquiryUpdateResult,
   type ExportResult,
   type InviteInput,
   type InviteResult,
@@ -70,6 +72,12 @@ export async function revokeSessionAction(input: { sessionId: string }): Promise
 
 export async function revokeAllForPersonAction(input: { personId: string }): Promise<RevokeResult> {
   const res = await handleRevokeAllForPerson(await getViewer(), input, await deps());
+  if (res.ok) revalidatePath("/admin");
+  return res;
+}
+
+export async function enquiryUpdateAction(input: { id: string; status: string }): Promise<EnquiryUpdateResult> {
+  const res = await handleEnquiryUpdate(await getViewer(), input, await deps());
   if (res.ok) revalidatePath("/admin");
   return res;
 }

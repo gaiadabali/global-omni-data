@@ -4,6 +4,7 @@ import "@/components/pages/pages.css";
 import { BreakGlassEnrol } from "@/components/admin/BreakGlassEnrol";
 import { BreakGlassRevokeButton } from "@/components/admin/BreakGlassRevokeButton";
 import { EntryActions } from "@/components/admin/EntryActions";
+import { EnquiryActions } from "@/components/admin/EnquiryActions";
 import { InviteForm } from "@/components/admin/InviteForm";
 import { RevokeButton } from "@/components/admin/RevokeButton";
 import { SignOutEverywhereButton } from "@/components/admin/SignOutEverywhereButton";
@@ -23,6 +24,7 @@ import { readBreakGlassConfig } from "@/server/breakglass/config";
 import { getDashboardData } from "@/server/data";
 import { ORIGINAL_HOLDERS } from "@/server/data/allowlist";
 import { BRAND_LABELS, ROLE_LABELS } from "@/server/types";
+import type { EnquiryFilter, EnquiryStatus } from "@/server/store/types";
 import { getViewer } from "@/server/viewer";
 
 export const metadata: Metadata = { title: PAGES.admin.title };
@@ -34,6 +36,8 @@ type Props = {
     action?: string | string[];
     from?: string | string[];
     to?: string | string[];
+    status?: string | string[];
+    q?: string | string[];
   }>;
 };
 
@@ -59,12 +63,29 @@ const ACTION_TONE: Record<AuditAction, BadgeTone> = {
   "breakglass.revoke": "acc",
   "breakglass.signin": "crit",
   "breakglass.refused": "crit",
+  "enquiry.update": "default",
 };
 
-const TABS = ["allow", "audit", "sessions", "emergency"];
+const ENQUIRY_STATUS: Record<EnquiryStatus, { tone: BadgeTone; text: string }> = {
+  new: { tone: "acc", text: "New" },
+  read: { tone: "default", text: "Read" },
+  archived: { tone: "default", text: "Archived" },
+};
+
+/** What the Enquiries tab can show. The default hides what has been archived. */
+const ENQUIRY_VIEWS: { id: NonNullable<EnquiryFilter["status"]>; label: string }[] = [
+  { id: "open", label: "New and read" },
+  { id: "new", label: "New" },
+  { id: "read", label: "Read" },
+  { id: "archived", label: "Archived" },
+  { id: "all", label: "All" },
+];
+
+const TABS = ["allow", "audit", "sessions", "emergency", "enquiries"];
 
 /**
- * Admin: Owner only. The allow-list, the audit log, active sessions and emergency access. An emergency
+ * Admin: Owner only. The allow-list, the audit log, active sessions, emergency access and the website's enquiries.
+ * Admin is an Owner page, so only an Owner can read or handle enquiries: an Executive cannot open it. An emergency
  * (break-glass) session sees all of it, but the buttons it may not use are not shown, and their handlers refuse.
  */
 export default async function AdminPage({ searchParams }: Props) {
@@ -80,10 +101,14 @@ export default async function AdminPage({ searchParams }: Props) {
   const from = isIsoDate(first(sp.from) ?? "") ? first(sp.from) : undefined;
   const to = isIsoDate(first(sp.to) ?? "") ? first(sp.to) : undefined;
 
+  const statusText = first(sp.status) ?? "";
+  const enquiryStatus = ENQUIRY_VIEWS.find((v) => v.id === statusText)?.id ?? "open";
+  const enquiryQ = (first(sp.q) ?? "").trim().slice(0, 100);
+
   const data = getDashboardData(viewer);
   const session = await getSessionState();
   const emergency = viewer.breakGlass === true;
-  const [allow, sessions, audit, keys] = await Promise.all([
+  const [allow, sessions, audit, keys, enquiries] = await Promise.all([
     data.adminAllowList(),
     data.adminSessions(session.kind === "ok" ? session.session.id : null),
     data.adminAudit({
@@ -93,6 +118,7 @@ export default async function AdminPage({ searchParams }: Props) {
       ...(to ? { to } : {}),
     }),
     data.adminBreakGlass(),
+    data.adminEnquiries({ status: enquiryStatus, ...(enquiryQ ? { q: enquiryQ } : {}) }),
   ]);
   const filtered = Boolean(who || action || from || to);
 
@@ -416,6 +442,95 @@ export default async function AdminPage({ searchParams }: Props) {
     </>
   );
 
+  const enquiriesFiltered = enquiryStatus !== "open" || Boolean(enquiryQ);
+  const enquiriesPanel = (
+    <Card title="Enquiries from the website">
+      <p className="small">
+        What people send through the contact form on god.gaiada.com. Each one is saved here first; the email to
+        hello@god.gaiada.com is only a heads-up, and may be late or missing.
+      </p>
+      <form method="get" action="/admin" className="grid filter-grid">
+        <input type="hidden" name="tab" value="enquiries" />
+        <div className="field">
+          <label htmlFor="eq-status">Show</label>
+          <select id="eq-status" name="status" defaultValue={enquiryStatus}>
+            {ENQUIRY_VIEWS.map((v) => (
+              <option key={v.id} value={v.id}>
+                {v.label}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="field">
+          <label htmlFor="eq-q">Search</label>
+          <input
+            id="eq-q"
+            type="search"
+            name="q"
+            maxLength={100}
+            defaultValue={enquiryQ}
+            placeholder="Name, company, email or message"
+          />
+        </div>
+        <div className="field end">
+          <div className="row">
+            <button type="submit" className="btn primary">
+              Filter
+            </button>
+            {enquiriesFiltered ? (
+              <Link className="btn" href="/admin?tab=enquiries">
+                Clear
+              </Link>
+            ) : null}
+          </div>
+        </div>
+      </form>
+      <p className="xs muted">
+        Newest first. {enquiries.matching} {enquiries.matching === 1 ? "enquiry" : "enquiries"}
+        {enquiriesFiltered ? " match" : ""}
+        {enquiries.rows.length < enquiries.matching ? `, the newest ${enquiries.rows.length} shown` : ""}.{" "}
+        {enquiries.newCount} {enquiries.newCount === 1 ? "is" : "are"} still new.
+      </p>
+      {enquiries.rows.length ? (
+        <ul className="enq-list">
+          {enquiries.rows.map((e) => (
+            <li key={e.id} className={`enq${e.status === "new" ? " is-new" : ""}`}>
+              <div className="enq-head">
+                <div className="enq-who">
+                  <b>{e.name}</b>
+                  <span>{e.company}</span>
+                </div>
+                <div className="row">
+                  <Badge tone={ENQUIRY_STATUS[e.status].tone}>{ENQUIRY_STATUS[e.status].text}</Badge>
+                  <span className="small nowrap">{fmtDateTime(e.receivedAt)}</span>
+                </div>
+              </div>
+              <div className="enq-meta small">
+                <a href={`mailto:${e.email}`} className="mono">
+                  {e.email}
+                </a>
+                <span>{e.budget ? `Budget: ${e.budget}` : <span className="muted">No budget given</span>}</span>
+                {e.status === "new" || !e.handledByName || !e.handledAt ? null : (
+                  <span className="muted">
+                    {e.status === "archived" ? "Archived" : "Read"} by {e.handledByName}, {fmtDateTime(e.handledAt)}
+                  </span>
+                )}
+              </div>
+              <p className="enq-msg">{e.want}</p>
+              {emergency ? null : <EnquiryActions id={e.id} status={e.status} who={e.name} />}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="muted">
+          {enquiriesFiltered
+            ? "No enquiries match this filter."
+            : "No enquiries yet. They appear here as soon as someone sends the contact form."}
+        </p>
+      )}
+    </Card>
+  );
+
   return (
     <div className="page-body">
       <PageHeader
@@ -434,6 +549,11 @@ export default async function AdminPage({ searchParams }: Props) {
           { id: "audit", label: "Audit log", panel: auditPanel },
           { id: "sessions", label: "Sessions", panel: sessionsPanel },
           { id: "emergency", label: "Emergency access", panel: emergencyPanel },
+          {
+            id: "enquiries",
+            label: enquiries.newCount ? `Enquiries (${enquiries.newCount} new)` : "Enquiries",
+            panel: enquiriesPanel,
+          },
         ]}
       />
     </div>
