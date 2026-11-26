@@ -28,6 +28,8 @@ export interface InfluenceLayerInput {
   mode: MapMode;
   /** The value that gets the biggest bubble at this level. The same across months, so a time-lapse shows growth. */
   bubbleRef: number;
+  /** Bubble size multiplier: smaller on a phone. */
+  bubbleScale: number;
 }
 
 /** The brand colour the scale runs to. */
@@ -174,7 +176,7 @@ export function influenceLayers(i: InfluenceLayerInput): LayersList {
   }
 
   if (data && drawing === "bubbles") {
-    const maxPx = bubbleMaxPx(level);
+    const maxPx = bubbleMaxPx(level) * i.bubbleScale;
     // Biggest first, so the small ones are drawn on top and are never buried.
     const cells = [...data.cells].sort((a, b) => b.value - a.value);
     const fillA = tokens.dark ? 0.42 : 0.34;

@@ -51,6 +51,19 @@ export function useReducedMotion(): boolean {
   );
 }
 
+/** True while the screen is a phone: the map keeps its size but circles and controls get smaller. */
+export function useNarrow(): boolean {
+  return useSyncExternalStore(
+    (onChange) => {
+      const media = window.matchMedia("(max-width: 860px)");
+      media.addEventListener("change", onChange);
+      return () => media.removeEventListener("change", onChange);
+    },
+    () => window.matchMedia("(max-width: 860px)").matches,
+    () => false,
+  );
+}
+
 /* ---------------- data ---------------- */
 
 const browserFetcher: Fetcher = (url, init) =>

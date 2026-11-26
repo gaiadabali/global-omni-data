@@ -140,6 +140,20 @@
     "delayMs": 1500
   },
   {
+    "name": "map-sheet-areas",
+    "path": "/map?panel=areas",
+    "role": "owner",
+    "themes": [
+      "dark",
+      "light"
+    ],
+    "widths": [
+      390
+    ],
+    "waitFor": "[data-map-ready=\"true\"]",
+    "delayMs": 1500
+  },
+  {
     "name": "map-sa4-per1000",
     "path": "/map?z=5&lat=-31&lon=146&measure=per1000&mode=shaded&sel=125",
     "role": "owner",
@@ -246,6 +260,20 @@
     ],
     "widths": [
       1440,
+      390
+    ],
+    "waitFor": "[data-map-ready=\"true\"]",
+    "delayMs": 1500
+  },
+  {
+    "name": "activity-sheet-areas",
+    "path": "/activity?panel=areas&z=9.6&lat=-37.81&lon=144.96",
+    "role": "owner",
+    "themes": [
+      "dark",
+      "light"
+    ],
+    "widths": [
       390
     ],
     "waitFor": "[data-map-ready=\"true\"]",

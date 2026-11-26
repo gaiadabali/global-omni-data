@@ -1054,6 +1054,9 @@ main:has(> .pd-page) {
 .pd-sw.heat {
   background: color-mix(in srgb, var(--heat) calc(var(--al, 0.5) * 100%), var(--map-land));
 }
+.gm-stage[data-detail="open"] .pd-legend {
+  max-width: calc(100% - var(--pd-left) - var(--pd-right) - 96px);
+}
 .pd-legend-n {
   margin: 8px 0 0;
   font: 400 12px/16px "Inter Variable", system-ui, sans-serif;
@@ -1182,6 +1185,16 @@ main:has(> .pd-page) {
   }
   .pd:has(.pd-dock[data-open="true"]) .pd-legend {
     display: none;
+  }
+  /* With the sheet open the map keeps every pixel it can: the headline row steps aside until the sheet is lowered. */
+  .pd:has(.pd-dock[data-open="true"]) .pd-head {
+    display: none;
+  }
+  .pd:has(.pd-dock[data-open="true"]) .pd-toolbar {
+    top: 8px;
+  }
+  .pd:has(.pd-dock[data-open="true"]) .gm-zoom {
+    top: 8px;
   }
   .pd-perf,
   .gm-perf {

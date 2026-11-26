@@ -128,7 +128,9 @@ export default function ActivityMap({ initial, meta, basemapUrl, lockedBrandName
   const [search, setSearch] = useState("");
   const [listTab, setListTab] = useState<"hotspots" | "merchants">("hotspots");
   const [sheetTab, setSheetTab] = useState<"areas" | "detail">(initial.sel ? "detail" : "areas");
-  const [sheetOpen, setSheetOpen] = useState(initial.sel !== null);
+  const [sheetOpen, setSheetOpen] = useState(
+    () => initial.sel !== null || new URLSearchParams(window.location.search).get("panel") === "areas",
+  );
   const [filtersOpen, setFiltersOpen] = useState(false);
   // Merchants named by an area's detail, so one can be opened even when it is not in the box on screen yet.
   const [known, setKnown] = useState<Record<string, ActivityMerchant>>({});

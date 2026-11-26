@@ -25,6 +25,7 @@ import {
   useMapLoader,
   useMapQuery,
   useMapTokens,
+  useNarrow,
   useBoundaries,
   useReducedMotion,
   useStateOutlines,
@@ -52,7 +53,7 @@ import {
   type MapMode,
   type Measure,
 } from "./url-state";
-import { MAX_ZOOM, inBBox, levelLabel, type InfluenceLevel } from "./zoom";
+import { HEX_WIDTH_KM, MAX_ZOOM, inBBox, kmLabel, levelLabel, type InfluenceLevel } from "./zoom";
 
 export interface InfluenceMapProps {
   initial: InfluenceState;
@@ -123,6 +124,8 @@ function idOf(info: PickingInfo): string | null {
 export default function InfluenceMap({ initial, meta, basemapUrl, lockedBrand, seesExact }: InfluenceMapProps) {
   const tokens = useMapTokens();
   const reduced = useReducedMotion();
+  const narrow = useNarrow();
+  const bubbleScale = narrow ? 0.72 : 1;
   const fontReady = useFontReady(LABEL_FONT_SPEC);
   const outlines = useStateOutlines();
   const loader = useMapLoader<PresentedInfluence>();
@@ -150,8 +153,11 @@ export default function InfluenceMap({ initial, meta, basemapUrl, lockedBrand, s
   // The panels
   const [search, setSearch] = useState("");
   const [listTab, setListTab] = useState<"ranked" | "movers">("ranked");
+  // ?panel=areas opens the phone sheet on the list (the screenshot tool cannot press the tab).
   const [sheetTab, setSheetTab] = useState<"areas" | "detail">(initial.sel ? "detail" : "areas");
-  const [sheetOpen, setSheetOpen] = useState(initial.sel !== null);
+  const [sheetOpen, setSheetOpen] = useState(
+    () => initial.sel !== null || new URLSearchParams(window.location.search).get("panel") === "areas",
+  );
   const [filtersOpen, setFiltersOpen] = useState(false);
   // The value that gets the biggest bubble, per level and filter, learned from the current month so that a time-lapse
   // through earlier months shows the bubbles growing instead of renormalising every frame.
@@ -273,9 +279,10 @@ export default function InfluenceMap({ initial, meta, basemapUrl, lockedBrand, s
             fontReady,
             mode: ui.mode,
             bubbleRef,
+            bubbleScale,
           })
         : [],
-    [tokens, outlines, areaOutlines, labels, shown, ui.brand, ui.sel, ui.mode, hasBasemap, fontReady, bubbleRef],
+    [tokens, outlines, areaOutlines, labels, shown, ui.brand, ui.sel, ui.mode, hasBasemap, fontReady, bubbleRef, bubbleScale],
   );
 
   const cellsById = useMemo(() => new Map((shown?.cells ?? []).map((c) => [c.id, c])), [shown]);
@@ -457,7 +464,10 @@ export default function InfluenceMap({ initial, meta, basemapUrl, lockedBrand, s
       key: "areas",
       label: "Areas covered",
       value: shown ? fmtInt(inView) : "–",
-      sub: nounKey === "hex" ? `${levelLabel(shownLevel).toLowerCase()}` : `${NOUN[nounKey] ?? "areas"}${stateLevel || nounKey === "sa4" || nounKey === "sa3" ? "" : " in view"}`,
+      sub:
+        typeof shownLevel === "number"
+          ? `${kmLabel(HEX_WIDTH_KM[shownLevel] ?? 5.6)} cells in view`
+          : `${NOUN[nounKey] ?? "areas"}${stateLevel || nounKey === "sa4" || nounKey === "sa3" ? "" : " in view"}`,
     },
   ];
 
@@ -534,7 +544,7 @@ export default function InfluenceMap({ initial, meta, basemapUrl, lockedBrand, s
               legend={shown.legend}
               kind={ui.mode === "bubbles" ? "bubbles" : "scale"}
               brandClass={brandClass}
-              bubble={{ ref: bubbleRef, maxPx: bubbleMaxPx(dataLevel) }}
+              bubble={{ ref: bubbleRef, maxPx: bubbleMaxPx(dataLevel) * bubbleScale }}
               noneLabel={ui.mode !== "bubbles" && !stateLevel ? "None registered" : undefined}
               note={
                 shown.truncated

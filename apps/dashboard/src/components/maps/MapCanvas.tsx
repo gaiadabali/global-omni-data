@@ -272,6 +272,16 @@ export function MapCanvas(props: MapCanvasProps) {
       map.addControl(overlay as unknown as IControl);
       setLoaded(true);
       latest.current.onView(currentView(map));
+      // Once the page around the map has settled, fit Australia into the part the panels leave free (the panels were
+      // measured while the layout was still arriving). Nothing happens if the person has already moved the map.
+      map.once("idle", () => {
+        if (touched) return;
+        const i = readInsets(stage);
+        map.fitBounds(AUSTRALIA_BOUNDS, {
+          padding: { left: i.left + 16, right: i.right + 16, top: i.top + 16, bottom: i.bottom + 16 },
+          duration: 0,
+        });
+      });
     });
     map.on("moveend", () => latest.current.onView(currentView(map)));
     // The canvas settles after the first view was reported (the layout and the fonts arrive after the map loads, so the
