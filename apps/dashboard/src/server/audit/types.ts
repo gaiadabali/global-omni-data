@@ -10,6 +10,9 @@ export const AUDIT_ACTIONS = [
   "allowlist.change",
   "session.revoke",
   "signin.refused",
+  "signin.ok",
+  "signin.fresh",
+  "signout",
 ] as const;
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];
 
@@ -20,6 +23,9 @@ export const AUDIT_ACTION_LABELS: Record<AuditAction, string> = {
   "allowlist.change": "Allow-list change",
   "session.revoke": "Session revoked",
   "signin.refused": "Sign-in refused",
+  "signin.ok": "Signed in",
+  "signin.fresh": "Passkey checked",
+  "signout": "Signed out",
 };
 
 export function isAuditAction(v: string): v is AuditAction {
