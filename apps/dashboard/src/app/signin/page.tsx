@@ -64,7 +64,7 @@ export default async function SignInPage({
             <circle key={i} cx={d.x} cy={d.y} r={d.r} fillOpacity={d.o} />
           ))}
         </svg>
-        <div className="cap">One dot is one registered person or business. Sample data.</div>
+        <div className="cap">A picture of where Australians live. No dot is a person.</div>
       </div>
       <main className="form">
         {/* eslint-disable-next-line @next/next/no-img-element -- a static logo; see Shell */}
