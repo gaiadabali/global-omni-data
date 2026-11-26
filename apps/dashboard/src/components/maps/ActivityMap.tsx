@@ -321,9 +321,15 @@ export default function ActivityMap({ initial, meta, basemapUrl, lockedBrandName
   const onClick = useCallback(
     (info: PickingInfo) => {
       const p = pick(info);
-      if (p) select(p.id);
+      if (!p) return;
+      select(p.id);
+      const at = p.kind === "merchant" ? merchantById.get(p.id) : heatById.get(p.id);
+      const pos: [number, number] | null = !at ? null : "lon" in at ? [at.lon, at.lat] : at.centroid;
+      if (pos && window.matchMedia("(max-width: 1100px)").matches) {
+        window.setTimeout(() => handleRef.current?.flyTo(pos[0], pos[1]), 340);
+      }
     },
-    [select],
+    [select, merchantById, heatById],
   );
 
   const onKeyDown = (e: ReactKeyboardEvent) => {

@@ -377,9 +377,15 @@ export default function InfluenceMap({ initial, meta, basemapUrl, lockedBrand, s
   const onClick = useCallback(
     (info: PickingInfo) => {
       const id = idOf(info);
-      if (id) select(id);
+      if (!id) return;
+      select(id);
+      // On a phone the sheet rises over the lower part of the map: once it has settled, bring the area clear of it.
+      const at = info.object ? (cellsById.get(id)?.centroid ?? null) : null;
+      if (at && window.matchMedia("(max-width: 1100px)").matches) {
+        window.setTimeout(() => handleRef.current?.flyTo(at[0], at[1]), 340);
+      }
     },
-    [select],
+    [select, cellsById],
   );
 
   const zoomToSelection = () => {
