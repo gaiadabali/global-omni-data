@@ -300,9 +300,12 @@ export function MapCanvas(props: MapCanvasProps) {
 
     // Has the person moved the map themselves? Until then a change of canvas size re-fits Australia.
     touchedRef.current = initialView !== null;
-    map.on("movestart", (e) => {
-      if ((e as unknown as { originalEvent?: unknown }).originalEvent) touchedRef.current = true;
-    });
+    // Only the person's own hands count as moving the map. (MapLibre's movestart also fires for its own resizes.)
+    const touch = () => {
+      touchedRef.current = true;
+    };
+    const touchEvents = ["pointerdown", "wheel", "keydown", "touchstart"] as const;
+    for (const ev of touchEvents) container.addEventListener(ev, touch, { passive: true });
     // The panels settle after the map loads (fonts, the list, the sheet), so keep fitting Australia into what they leave
     // free until the view is touched. Watching the panels' own size catches every late change.
     let frame = 0;
@@ -352,6 +355,7 @@ export function MapCanvas(props: MapCanvasProps) {
     return () => {
       watcher.disconnect();
       panelWatcher.disconnect();
+      for (const ev of touchEvents) container.removeEventListener(ev, touch);
       cancelAnimationFrame(frame);
       mapRef.current = null;
       overlayRef.current = null;
