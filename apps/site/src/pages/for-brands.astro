@@ -75,7 +75,6 @@ const rules = [
   description="GOD reports what Australians do in the real world: where they live, where they shop and what else they buy. Every figure is an aggregate."
 >
   <PageHead
-    eyebrow="For brands"
     title="See your market, never the people in it"
     lede="GOD reports what Australians do in the real world: where they live, where they shop and what else they buy. Every figure is an aggregate."
   />
@@ -83,8 +82,7 @@ const rules = [
   <section class="block">
     <div class="wrap">
       <div class="sechead">
-        <p class="eyebrow">What a brand gets</p>
-        <h2>Seven views of your customers</h2>
+        <h2>What a brand gets</h2>
       </div>
       <ul class="gets">
         {gets.map((g) => (
@@ -100,7 +98,6 @@ const rules = [
   <section class="block">
     <div class="wrap">
       <div class="sechead">
-        <p class="eyebrow">Sample report</p>
         <h2>What a catchment report looks like</h2>
         <p class="lede">
           Harbour &amp; Bean is a fictional café group. The figures are made up to show the layout.
@@ -109,7 +106,9 @@ const rules = [
       <article class="rep" aria-label="Sample report for Harbour and Bean">
         <div class="rep-h">
           <h3>Harbour &amp; Bean</h3>
-          <span>Catchment report, last 90 days. Sample data.</span>
+          <p>
+            Catchment report, last 90 days <span class="sample">Sample data</span>
+          </p>
         </div>
         <div class="repgrid">
           <div>
@@ -139,10 +138,9 @@ const rules = [
     </div>
   </section>
 
-  <section class="block on-brand">
+  <section class="block">
     <div class="wrap">
       <div class="sechead">
-        <p class="eyebrow">The rules</p>
         <h2>What every brand agrees to</h2>
       </div>
       <ul class="rules">
