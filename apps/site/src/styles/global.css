@@ -33,9 +33,11 @@
   --night-ink-3: #9ba1cf;
   --night-line: rgb(242 243 251 / 0.14);
 
-  --f-display: "Newsreader Variable", "Iowan Old Style", Georgia, serif;
-  --f-text: "Inter Variable", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --f-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --f-display: "Newsreader Variable", "Newsreader Fallback", "Iowan Old Style", Georgia, serif;
+  --f-text: "Inter Variable", "Inter Fallback", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono:
+    "IBM Plex Mono", "IBM Plex Mono Fallback", ui-monospace, "SFMono-Regular", Menlo, Consolas,
+    monospace;
 
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
   --t-fast: 160ms;
@@ -722,11 +724,13 @@ h4 {
 }
 
 .phero h1 {
-  max-width: 16ch;
+  /* em, not ch: Newsreader's "0" is 14% wider than its fallback's, so a ch limit moved when the font swapped.
+     0.57em is one ch in Newsreader. */
+  max-width: 9.12em;
 }
 
 .phero.solo h1 {
-  max-width: 20ch;
+  max-width: 11.4em;
 }
 
 .phero .lede {
@@ -1283,7 +1287,7 @@ a.framelink:hover {
 }
 
 .cta h2 {
-  max-width: 18ch;
+  max-width: 10.26em;
 }
 
 .cta .lede {

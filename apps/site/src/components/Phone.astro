@@ -28,7 +28,9 @@ const body = { w, widths: [w, w * 2, w * 3].filter((x) => x <= src.width) };
           widths={body.widths}
           sizes={`${body.w}px`}
           formats={["avif", "webp"]}
+          fallbackFormat="webp"
           loading={eager ? "eager" : "lazy"}
+          fetchpriority={eager ? "high" : undefined}
           decoding="async"
         />
       </div>
@@ -41,7 +43,9 @@ const body = { w, widths: [w, w * 2, w * 3].filter((x) => x <= src.width) };
         widths={body.widths}
         sizes={`${body.w}px`}
         formats={["avif", "webp"]}
+        fallbackFormat="webp"
         loading={eager ? "eager" : "lazy"}
+        fetchpriority={eager ? "high" : undefined}
         decoding="async"
       />
     </div>
