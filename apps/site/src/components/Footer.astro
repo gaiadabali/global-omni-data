@@ -11,8 +11,8 @@ import { CONTACT_EMAIL } from "../lib/site";
       <div>
         <Logo height={48} />
         <p>
-          The Australian group behind YourTal, SnapApp and Free Tax Returns. We turn what people do,
-          with their consent, into insight for brands. Brands never see a person.
+          The Australian group behind YourTal, SnapApps, Free Tax Returns and Spambank. We turn what
+          people do, with their consent, into insight for brands. Brands never see a person.
         </p>
       </div>
       <div>
@@ -21,12 +21,16 @@ import { CONTACT_EMAIL } from "../lib/site";
           {BRANDS.map((b) => (
             <li>
               <a href={b.page}>{b.name}</a>
-              <a class="ext" href={b.href} target="_blank" rel="noopener">
-                <span class="visually-hidden">Visit </span>
-                {b.host}
-                <span class="visually-hidden"> (opens {b.name}'s own site in a new tab)</span>
-                <Icon name="external" />
-              </a>
+              {b.href ? (
+                <a class="ext" href={b.href} target="_blank" rel="noopener">
+                  <span class="visually-hidden">Visit </span>
+                  {b.host}
+                  <span class="visually-hidden"> (opens {b.name}'s own site in a new tab)</span>
+                  <Icon name="external" />
+                </a>
+              ) : (
+                <span class="ext">Inside the three apps</span>
+              )}
             </li>
           ))}
         </ul>

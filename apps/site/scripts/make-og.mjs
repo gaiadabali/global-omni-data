@@ -28,13 +28,14 @@ const CARDS = [
     kicker: "Global Omni Data",
     title: "Know your market by what Australians actually do",
   },
-  { file: "og/brands.png", kicker: "Our brands", title: "YourTal, SnapApp and Free Tax Returns" },
+  { file: "og/brands.png", kicker: "Our brands", title: "Four brands, each with its own job" },
   {
     file: "og/yourtal.png",
     kicker: "YourTal",
     title: "Rewards for paying attention, spent where you live",
   },
-  { file: "og/snapapp.png", kicker: "SnapApp", title: "The receipt app that reads every line" },
+  { file: "og/snapapp.png", kicker: "SnapApps", title: "The receipt app that reads every line" },
+  { file: "og/spambank.png", kicker: "Spambank", title: "Your real inbox, kept clean" },
   {
     file: "og/free-tax-returns.png",
     kicker: "Free Tax Returns",
@@ -47,7 +48,7 @@ const CARDS = [
   },
   { file: "og/how-it-works.png", kicker: "How it works", title: "How a receipt becomes a report" },
   { file: "og/privacy.png", kicker: "Trust & privacy", title: "Trust is a rule, not a promise" },
-  { file: "og/about.png", kicker: "About GOD", title: "The company behind three useful apps" },
+  { file: "og/about.png", kicker: "About GOD", title: "The company behind four useful brands" },
   { file: "og/contact.png", kicker: "Talk to us", title: "Ask a question about your market" },
 ];
 
@@ -69,7 +70,10 @@ h1{position:absolute;left:72px;top:280px;width:640px;margin:0;font:420 60px/1.06
 await mkdir(here("../public/og/"), { recursive: true });
 const browser = await chromium.launch();
 const tab = await browser.newPage({ viewport: { width: 1200, height: 630 } });
+// Optional env ONLY=og/brands.png,og/spambank.png redraws just those cards (the rest stay byte-identical).
+const only = process.env.ONLY?.split(",");
 for (const c of CARDS) {
+  if (only && !only.includes(c.file)) continue;
   const tmp = join(tmpdir(), "god-og-card.html");
   await writeFile(tmp, page(c));
   await tab.goto(`file://${tmp}`, { waitUntil: "load" });

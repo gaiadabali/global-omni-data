@@ -1,0 +1,310 @@
+---
+import Base from "../../layouts/Base.astro";
+import BrandHero from "../../components/BrandHero.astro";
+import BrandMark from "../../components/BrandMark.astro";
+import AddsStays from "../../components/AddsStays.astro";
+import MailMock from "../../components/MailMock.astro";
+import AddressCard from "../../components/AddressCard.astro";
+import OneMailbox from "../../components/OneMailbox.astro";
+import Cta from "../../components/Cta.astro";
+import Icon from "../../components/Icon.astro";
+import { brand, sitesFor } from "../../lib/brands";
+
+const spambank = brand("spambank");
+const where = sitesFor(spambank);
+
+const steps = [
+  {
+    h: "Get your address",
+    p: "Create it in SnapApps, YourTal or Free Tax Returns. Spambank gives you a short generated name, such as quickloris@yourtal.gaiada.com (an example). You get one address, and it is free.",
+  },
+  {
+    h: "Use it for sign-ups",
+    p: "Give it to shops, newsletters and anything else that asks for an email. Your own inbox never has to meet them.",
+  },
+  {
+    h: "Read it in any GOD app",
+    p: "The Mail screen in SnapApps, YourTal and Free Tax Returns shows the same mailbox, so the same mail is waiting wherever you open it.",
+  },
+];
+
+const filtered = [
+  {
+    k: "Spam and bulk mail go to Junk",
+    v: "Spam and bulk mail are filtered out of your inbox into Junk automatically. You can still open Junk and read what is in it.",
+  },
+  {
+    k: "One-tap unsubscribe",
+    v: "Press Unsubscribe next to a newsletter and Spambank asks the sender to stop. No hunting for a tiny link at the bottom of the email.",
+  },
+  {
+    k: "Read, write and search",
+    v: "Spambank is a normal mailbox. Read what arrives, write and reply, and search across everything you keep.",
+  },
+];
+
+const more = [
+  {
+    h: "One mailbox in three apps",
+    p: "There is one mailbox per person, not one per app. Open Mail in SnapApps, YourTal or Free Tax Returns and the same messages are there.",
+  },
+  {
+    h: "Works in your phone's mail app",
+    p: "Add the address to the mail app on your phone over IMAP. YourTal sign-in uses codes, not a mail password, so you make an app password in Settings for each phone or computer.",
+  },
+  {
+    h: "Statements into SnapApps, if you choose",
+    p: "Mail a bank or card statement to your Spambank address and SnapApps can import it. It is opt-in and off until you turn it on.",
+  },
+];
+
+const promises = [
+  "GOD never reads or uses the contents of anyone's email",
+  "Delete your YourTal account and your mailbox is erased with it",
+  "Adults only: teen accounts do not get a mailbox",
+  "Spambank adds nothing from your mail to what GOD counts",
+];
+---
+
+<Base
+  brand="spambank"
+  ogImage="/og/spambank.png"
+  title="Spambank: a free address that keeps your real inbox clean | GOD (Global Omni Data)"
+  description="Spambank is one free email address per person, shared across SnapApps, YourTal and Free Tax Returns. Use it for sign-ups and newsletters; spam and bulk mail go to Junk on their own. GOD never reads or uses what is in your email."
+>
+  <BrandHero
+    brand="spambank"
+    title="A free address for sign-ups, so your real inbox stays clean"
+    lede="Spambank gives each person one free email address, shared across SnapApps, YourTal and Free Tax Returns. Use it for sign-ups and newsletters. Spam and bulk mail goes to Junk on its own."
+  >
+    <MailMock slot="visual" view="inbox" />
+  </BrandHero>
+
+  <section class="sec" id="how">
+    <div class="wrap split">
+      <div data-reveal>
+        <p class="kicker">How it works</p>
+        <h2>Get it, use it, read it anywhere</h2>
+        <p class="lede">
+          Spambank has no site or app of its own. It lives inside the three GOD apps, and this page
+          is its home.
+        </p>
+        <div class="gap">
+          <AddressCard />
+        </div>
+      </div>
+      <ol class="steps" data-reveal="2">
+        {steps.map((s) => (
+          <li>
+            <h3>{s.h}</h3>
+            <p>{s.p}</p>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <section class="sec tint" id="filtered">
+    <div class="wrap split flip filtered">
+      <div class="vis" data-reveal>
+        <MailMock view="junk" />
+      </div>
+      <div>
+        <p class="kicker" data-reveal>
+          Filtered for you
+        </p>
+        <h2 data-reveal>Spam goes to Junk. You stay in charge</h2>
+        <ul class="ledger biz" data-reveal="2">
+          {filtered.map((x) => (
+            <li>
+              <span>{x.k}</span>
+              <span>{x.v}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="everywhere">
+    <div class="wrap">
+      <div class="sec-head split">
+        <div data-reveal>
+          <p class="kicker">One mailbox</p>
+          <h2>The same mail in every GOD app</h2>
+        </div>
+        <p class="lede" data-reveal="2">
+          The three apps share one mailbox. Each app shows it in its own colours.
+        </p>
+      </div>
+      <div data-reveal>
+        <OneMailbox />
+      </div>
+      <ul class="feats" data-reveal="1">
+        {more.map((m) => (
+          <li>
+            <h3>{m.h}</h3>
+            <p>{m.p}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <section class="sec night" id="privacy">
+    <div class="wrap split">
+      <div data-reveal>
+        <p class="kicker">Privacy and safety</p>
+        <h2>Your mail is yours</h2>
+        <p class="lede">
+          Spambank exists to keep your inbox clean, not to learn from it. These are its rules.
+        </p>
+      </div>
+      <ul class="ticks" data-reveal="2">
+        {promises.map((p) => (
+          <li>{p}</li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <section class="sec" id="gives">
+    <div class="wrap">
+      <div class="sec-head" data-reveal>
+        <p class="kicker">Inside the group</p>
+        <h2>What Spambank gives GOD: nothing from your mail</h2>
+        <p class="lede">
+          Spambank is a GOD brand, and it is the only one that adds nothing to GOD's picture of a
+          market.
+        </p>
+      </div>
+      <AddsStays
+        name="Spambank"
+        adds={["Nothing from your mail"]}
+        stays={[
+          "The contents of your email: GOD never reads or uses them",
+          "Your mailbox itself, which is erased when you delete your YourTal account",
+        ]}
+        addsNote="Spambank keeps your real inbox clean. That is all it is for."
+        staysNote="A ring marks what never leaves."
+      />
+      <p class="small note" data-reveal>
+        <a class="go" href="/privacy/">
+          Our privacy standard
+          <Icon name="arrow" />
+        </a>
+      </p>
+    </div>
+  </section>
+
+  <section class="sec tint" id="where">
+    <div class="wrap">
+      <div class="sec-head split">
+        <div data-reveal>
+          <p class="kicker">Where to get it</p>
+          <h2>Open it in any of the three apps</h2>
+        </div>
+        <p class="lede" data-reveal="2">
+          Pick an app below and look for Mail. They all open the same mailbox.
+        </p>
+      </div>
+      <ul class="where" data-reveal>
+        {where.map((w) => {
+          return (
+            <li data-brand={w.key}>
+              <BrandMark brand={w.key} name={w.name} />
+              <a class="go" href={w.href} target="_blank" rel="noopener">
+                {w.host}
+                <span class="visually-hidden"> (opens {w.name}'s own site in a new tab)</span>
+                <Icon name="external" />
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+      <div class="status-box" data-reveal>
+        <span class={`status ${spambank.status.kind}`}>{spambank.status.label}</span>
+        <p>
+          Spambank is not open to the public yet. It works on Android and on the web, and an iPhone
+          version comes later. The screens on this page are drawings with sample mail, not real
+          messages.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <Cta
+    title="Ask about Spambank"
+    lede="If you are a brand and want to know how Spambank fits with the rest of GOD, or you want to be told when it opens, get in touch. We reply within two business days."
+    primary={{ href: "/contact/", label: "Talk to us" }}
+    secondary={{ href: "/brands/", label: "See all our brands" }}
+  />
+</Base>
+
+<style>
+  .gap {
+    margin-top: 32px;
+  }
+  .vis {
+    display: grid;
+    justify-items: center;
+    padding: 40px 24px;
+    border-radius: 28px;
+    background: var(--paper);
+    min-width: 0;
+  }
+  .filtered {
+    align-items: center;
+  }
+  .biz {
+    margin-top: 28px;
+  }
+  .biz > li {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+    padding: 16px 0;
+  }
+  .biz > li > :first-child {
+    font-weight: 580;
+  }
+  .feats {
+    margin-top: 48px;
+  }
+  .note {
+    margin-top: 40px;
+  }
+  .where {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .where li {
+    display: grid;
+    gap: 16px;
+    padding: 24px;
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    background: var(--card);
+  }
+  .status-box {
+    display: grid;
+    gap: 12px;
+    max-width: 46rem;
+    margin-top: 40px;
+  }
+  .status-box p {
+    margin: 0;
+    color: var(--ink-2);
+  }
+  @media (max-width: 960px) {
+    .vis {
+      padding: 32px 16px;
+    }
+    .where {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>
