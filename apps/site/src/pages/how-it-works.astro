@@ -5,6 +5,7 @@ import PageHero from "../components/PageHero.astro";
 import DotField from "../components/DotField.astro";
 import Cta from "../components/Cta.astro";
 import Icon from "../components/Icon.astro";
+import { NOTICE } from "../lib/notice";
 import receipt from "../assets/photos/receipt-terminal.jpg";
 
 const stages = [
@@ -56,8 +57,8 @@ const deleting = [
     p: "YourTal, SnapApp and Free Tax Returns all already have export and delete. Use the one you have.",
   },
   {
-    h: "GOD follows at the next sync",
-    p: "The deletion flows through. GOD removes the person from the shared profile at the next sync.",
+    h: `GOD follows within ${NOTICE.deletionWindow}`,
+    p: `The deletion flows through. GOD removes the person from the shared profile within ${NOTICE.deletionWindow}.`,
   },
   {
     h: "The counts carry on without you",
@@ -210,8 +211,8 @@ const deleting = [
         <p class="kicker">Deletion</p>
         <h2>Deleting flows through</h2>
         <p class="lede">
-          Delete your account in any of the three apps and GOD removes you at the next sync. You do
-          not have to ask GOD separately.
+          Delete your account in any of the three apps and GOD removes you within{" "}
+          {NOTICE.deletionWindow}. You do not have to ask GOD separately.
         </p>
       </div>
       <ol class="steps">

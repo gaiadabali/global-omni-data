@@ -9,6 +9,7 @@ import Browser from "../../components/Browser.astro";
 import Cta from "../../components/Cta.astro";
 import Icon from "../../components/Icon.astro";
 import { BRANDS, brand } from "../../lib/brands";
+import { NOTICE } from "../../lib/notice";
 import ytHome from "../../assets/screens/yourtal-home.webp";
 import saHome from "../../assets/screens/snapapp-home-desktop.webp";
 import ftrWorksheet from "../../assets/screens/ftr-worksheet.webp";
@@ -32,7 +33,7 @@ const connect = [
   },
   {
     k: "One way out",
-    v: "Delete your account in any app and GOD removes you at the next sync.",
+    v: `Delete your account in any app and GOD removes you within ${NOTICE.deletionWindow}.`,
   },
 ];
 

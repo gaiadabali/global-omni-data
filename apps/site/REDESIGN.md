@@ -220,7 +220,7 @@ buttons.
    level, teens in groups of 20 or more) → report.
 3. **What stops at the source**: GOD copies only the fields it needs, at the source. Passwords, tax file numbers,
    bank details, identity documents and receipt images are never copied.
-4. **Deleting flows through**: delete your account in any of the three apps and GOD removes you at the next sync.
+4. **Deleting flows through**: delete your account in any of the three apps and GOD removes you within 1 hour (`NOTICE.deletionWindow`).
 5. **The public site holds nothing**: god.gaiada.com is a static site with no access to data.
 6. Call to action.
 
@@ -343,7 +343,7 @@ PLAN = `god/god-holding/PLAN.md`, CL = this repo's `CLAUDE.md`. Read 2026-11-27.
 | TFN, bank details, identity documents and return lines never leave FTR; occupation, income bracket, return status flow                                  | PLAN §3                                                                                     |
 | Staff access invitation-only, passkey, logged; pseudonymous by default                                                                                  | PLAN §6.3; founder brief; existing site copy                                                |
 | Maps stop at suburb level                                                                                                                               | PLAN §4.4, §6.2                                                                             |
-| Deletion removes the person from GOD within one sync                                                                                                    | PLAN §3                                                                                     |
+| Deletion removes the person from GOD within 1 hour (`NOTICE.deletionWindow`)                                                                            | PLAN §3                                                                                     |
 | GOD copies rows, not files (no receipt images); secrets dropped at the source                                                                           | PLAN §4.1, §4.3                                                                             |
 | Sign in with YourTal across the apps; verified-email exact matching, no fuzzy matching                                                                  | PLAN §2, §4.2                                                                               |
 | Public site has no data access                                                                                                                          | PLAN §4 diagram                                                                             |
