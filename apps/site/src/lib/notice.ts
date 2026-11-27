@@ -13,7 +13,7 @@ export const NOTICE: {
   privacyEmail: string | null;
   deletionWindow: string;
 } = {
-  version: "1.0",
+  version: "1.1",
   effective: "2026-11-27",
   // MOCK (founder, 2026-11-27): replace with the registered entity name and its ABN before launch.
   // The ABN stays null on purpose: an invented ABN could belong to a real business.
