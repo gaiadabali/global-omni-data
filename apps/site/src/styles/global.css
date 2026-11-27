@@ -35,7 +35,9 @@
 
   --f-display: "Newsreader Variable", "Newsreader Fallback", "Iowan Old Style", Georgia, serif;
   --f-text: "Inter Variable", "Inter Fallback", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --f-mono: "IBM Plex Mono", "IBM Plex Mono Fallback", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --f-mono:
+    "IBM Plex Mono", "IBM Plex Mono Fallback", ui-monospace, "SFMono-Regular", Menlo, Consolas,
+    monospace;
 
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
   --t-fast: 160ms;
