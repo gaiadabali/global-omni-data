@@ -2,3 +2,5 @@ dist
 .astro
 node_modules
 scripts/audit.mjs
+scripts/audit-extras.mjs
+AUDIT.md
