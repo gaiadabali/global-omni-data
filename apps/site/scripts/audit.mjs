@@ -27,7 +27,7 @@ const PAGES = [
   ["home", "/"], ["brands", "/brands/"], ["yourtal", "/brands/yourtal/"], ["snapapp", "/brands/snapapp/"],
   ["free-tax-returns", "/brands/free-tax-returns/"], ["for-brands", "/for-brands/"],
   ["how-it-works", "/how-it-works/"], ["privacy", "/privacy/"], ["privacy-notice", "/privacy-notice/"],
-  ["about", "/about/"], ["contact", "/contact/"], ["404", "/404.html"],
+  ["about", "/about/"], ["responsibility", "/responsibility/"], ["contact", "/contact/"], ["404", "/404.html"],
 ].filter(([n]) => !only.length || only.includes(n));
 
 const CSP = "default-src 'self'; script-src 'self' 'sha256-4yqhSqf81ppW8/WsfavaexVCHZqxjBRJWiLRdsj8inY='; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self'; manifest-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; frame-ancestors 'none'";

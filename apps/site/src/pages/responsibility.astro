@@ -1,0 +1,345 @@
+---
+import Base from "../layouts/Base.astro";
+import PageHero from "../components/PageHero.astro";
+import Cta from "../components/Cta.astro";
+import Icon from "../components/Icon.astro";
+import { NOTICE } from "../lib/notice";
+
+/**
+ * Every statement here is either a fact checked in the repos or on the live sites, or a "We commit to" line.
+ * apps/site/CSR-CLAIMS.md lists each one with its source or its approval status. Change the two together.
+ */
+
+const people = [
+  {
+    h: "Free Tax Returns costs nothing",
+    p: "No fees, and no sign-up to start. It helps Australian workers find the deductions for their occupation. It never lodges a return and sends nothing to the ATO: you copy the totals into your own return.",
+  },
+  {
+    h: "SnapApps says its price up front",
+    p: "Ten free scans when you join, then 10 cents a scan, GST included. Credits never expire and there is no subscription.",
+  },
+  {
+    h: "YourTal does not take points away",
+    p: "Points don’t expire and missing a day never costs points. The terms shown before you press play never change.",
+  },
+];
+
+const privacy = [
+  "Brands get totals for groups of people, never a name, an email, a phone number or a list.",
+  "A group under 10 is never shown to a business.",
+  "Teens are counted only with a guardian’s approval and only in groups of 20 or more.",
+  "Alcohol, vape, gambling and sensitive categories never appear in teen figures.",
+  "Staff access is by invitation, with a passkey, and every time a profile is opened the reason is recorded.",
+  `Delete your account in any of the three apps and GOD removes you within ${NOTICE.deletionWindow}.`,
+];
+
+const today = [
+  {
+    h: "The website is light",
+    p: "The whole built site is about 12 MB, down from 32 MB on 27 November 2026, after we moved its images to WebP. It loads no analytics, no tag managers and no third-party scripts, and serves its own fonts.",
+  },
+  {
+    h: "No code runs to show a page",
+    p: "god.gaiada.com is a static site. It has no access to data and nothing is computed when you visit.",
+  },
+  {
+    h: "We run on a shared server",
+    p: "GOD’s website and dashboard are served from a server shared with other work, not from hardware bought for GOD alone. We have not measured what that saves, and we make no claim about how the host is powered.",
+  },
+  {
+    h: "SnapApps keeps a digital record",
+    p: "It keeps the photo of a docket exactly as taken, as a true copy, for five years: the period the ATO asks for records. SnapApps reads paper dockets. It does not stop them being printed.",
+  },
+  {
+    h: "YourTal vouchers are digital",
+    p: "A voucher is redeemed by showing a QR code, or reading a code to the cashier. The code refreshes itself and cannot be used twice.",
+  },
+  {
+    h: "Free Tax Returns is done on screen",
+    p: "You complete the worksheet online and can export the result as a PDF.",
+  },
+];
+
+const commitments = [
+  {
+    b: "Measure our hosting footprint",
+    s: "We commit to measuring the energy our hosting uses and to publishing the result on this page, whatever it shows.",
+  },
+  {
+    b: "Choose renewable-powered hosting",
+    s: "We commit to preferring renewable-powered hosting the next time we move servers, and to saying what we found out about each option.",
+  },
+  {
+    b: "Keep pages light",
+    s: "We commit to checking the weight of the site every time we change it, so it does not grow without us noticing.",
+  },
+  {
+    b: "Reuse before we replace",
+    s: "We commit to keeping working devices in use, and to reusing or recycling retired ones instead of throwing them away.",
+  },
+];
+
+const community = [
+  {
+    h: "YourTal sends the reward to the business next door",
+    p: "Viewers spend their points on vouchers at the local businesses whose videos they watched. A business pays only for videos that were actually watched, and every campaign is reviewed before it goes live.",
+  },
+  {
+    h: "Charity auctions",
+    p: "In YourTal, members aged 18 and over can bid on vouchers that people have given up for a charity. The winning bid is paid to the charity’s own account. YourTal never holds it.",
+  },
+  {
+    h: "Businesses learn about their market without being handed the people in it",
+    p: "A GOD report is about groups, such as where a café’s customers live and what age they are. It is never a list.",
+    href: "/for-brands/",
+    link: "What a report contains",
+  },
+];
+
+const governance = [
+  {
+    h: "One notice for the whole group",
+    p: "Every GOD app shows the same Group Privacy Notice, with a required tick box at sign-up. People who joined earlier see it the next time they sign in.",
+  },
+  {
+    h: "Written agreements for staff",
+    p: "Each person who can open a profile signs a written confidentiality agreement first. The signed copies are kept in the company archive, apart from the apps.",
+  },
+  {
+    h: "A record of every look",
+    p: "The log of who opened what, and why, can only be added to. Role checks run on the server, not in the browser.",
+  },
+  {
+    h: "A lawyer reads the notice",
+    p: "We commit to having a lawyer read the Group Privacy Notice before any brand sees a report.",
+  },
+];
+---
+
+<Base
+  title="Our responsibility: CSR and sustainability | GOD (Global Omni Data)"
+  description="What GOD does today on fairness, privacy, the environment and local business, and what it is working towards. Facts we have checked, and commitments marked as commitments."
+  ogImage="/og/responsibility.png"
+>
+  <PageHero
+    kicker="CSR and sustainability"
+    title="Our responsibility"
+    lede="What the GOD group does today about fairness, privacy, the environment and the community, and what we are working towards. We keep the two apart. What we do now is stated as fact. What we have not done yet starts with “We commit to”."
+    crumbs={[{ href: "/", label: "Home" }, { label: "Responsibility" }]}
+  >
+    <a class="btn btn-primary" href="#sustainability">
+      Sustainability
+      <Icon name="arrow" />
+    </a>
+    <a class="btn btn-line" href="/privacy/">
+      Trust and privacy
+    </a>
+  </PageHero>
+
+  <section class="sec" id="people">
+    <div class="wrap split">
+      <div>
+        <p class="kicker">People and fairness</p>
+        <h2>Fair prices, stated plainly</h2>
+        <p class="lede">
+          Each GOD app does one useful job. What it costs, or does not cost, is written where you
+          can see it before you start.
+        </p>
+      </div>
+      <ul class="ledger">
+        {people.map((x) => (
+          <li data-reveal>
+            <span>{x.h}</span>
+            <span>{x.p}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <section class="sec tint" id="privacy">
+    <div class="wrap split">
+      <div>
+        <p class="kicker">Privacy and safety</p>
+        <h2>Privacy is a responsibility, not a feature</h2>
+        <p class="lede">
+          The rules that protect people are written into the software. This is the short version.
+          The full text is in the notice.
+        </p>
+        <p class="links">
+          <a class="go" href="/privacy/">
+            Trust and privacy
+            <Icon name="arrow" />
+          </a>
+          <a class="go" href="/privacy-notice/">
+            Group Privacy Notice
+            <Icon name="arrow" />
+          </a>
+        </p>
+      </div>
+      <div class="card" data-reveal>
+        <ul class="ticks">
+          {privacy.map((x) => (
+            <li>{x}</li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="sustainability">
+    <div class="wrap">
+      <div class="sec-head split">
+        <div>
+          <p class="kicker">Sustainability</p>
+          <h2>The environment: what is true, and what we have not measured</h2>
+        </div>
+        <p class="lede">
+          GOD makes software. Its footprint is mostly the servers it runs on and the devices its
+          people use. We have not measured either, so this page makes no claim about carbon, energy
+          or offsets. It lists the things that are true today and what we are working on.
+        </p>
+      </div>
+      <ul class="feats">
+        {today.map((x) => (
+          <li data-reveal>
+            <h3>{x.h}</h3>
+            <p>{x.p}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <section class="sec tint" id="working-on">
+    <div class="wrap split">
+      <div>
+        <p class="kicker">What we are working on</p>
+        <h2>Four commitments</h2>
+        <p class="lede">
+          These are promises about the future, not things we have done. When one is done we will
+          move it to the list above, with the evidence.
+        </p>
+      </div>
+      <ol class="steps">
+        {commitments.map((c, i) => (
+          <li data-reveal={String((i % 6) + 1)}>
+            <h3>{c.b}</h3>
+            <p>{c.s}</p>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <section class="sec" id="community">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="kicker">Community and local business</p>
+        <h2>Money and insight that stay close to home</h2>
+      </div>
+      <ul class="feats">
+        {community.map((x) => (
+          <li data-reveal>
+            <h3>{x.h}</h3>
+            <p>{x.p}</p>
+            {x.href && (
+              <p class="more">
+                <a class="go" href={x.href}>
+                  {x.link}
+                  <Icon name="arrow" />
+                </a>
+              </p>
+            )}
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <section class="sec tint" id="governance">
+    <div class="wrap split">
+      <div>
+        <p class="kicker">Governance</p>
+        <h2>One standard, written down</h2>
+        <p class="lede">
+          A holding company means the rules are written once and every app follows them. These are
+          the parts you can check.
+        </p>
+      </div>
+      <ul class="ledger">
+        {governance.map((x) => (
+          <li data-reveal>
+            <span>{x.h}</span>
+            <span>{x.p}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+    <div class="wrap">
+      <p class="site-note small">
+        Status today: Free Tax Returns is live, SnapApps is in Android beta and YourTal is in
+        staging review. Where we describe how an app works, we describe what it is built to do. Last
+        checked 27 November 2026.
+      </p>
+    </div>
+  </section>
+
+  <Cta
+    title="Spotted something we should fix?"
+    lede="If a line on this page is wrong, or you want to know more about how we work, tell us. We reply within two business days."
+    primary={{ href: "/contact/", label: "Talk to us" }}
+    secondary={{ href: "/privacy-notice/", label: "Group Privacy Notice" }}
+  />
+</Base>
+
+<style>
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 28px;
+    margin-top: 24px;
+  }
+
+  .feats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0 40px;
+    list-style: none;
+    border-top: 1px solid var(--line);
+  }
+  .feats > li {
+    padding: 28px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .feats h3 {
+    margin-bottom: 8px;
+    font-family: var(--f-display);
+    font-weight: 420;
+    font-size: 1.375rem;
+  }
+  .feats p {
+    color: var(--ink-2);
+  }
+  .feats .more {
+    margin-top: 12px;
+  }
+  @media (max-width: 960px) {
+    .feats {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 620px) {
+    .feats {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  .site-note {
+    max-width: 44rem;
+    margin-top: 56px;
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
+  }
+</style>

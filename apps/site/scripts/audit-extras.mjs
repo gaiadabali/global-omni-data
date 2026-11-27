@@ -22,7 +22,7 @@ function serve(dir) {
 let base = process.argv[2];
 let stop = () => {};
 if (!/^https?:/.test(base)) ({ base, stop } = await serve(base));
-const PAGES = ["/", "/brands/", "/brands/yourtal/", "/brands/snapapp/", "/brands/free-tax-returns/", "/for-brands/", "/how-it-works/", "/privacy/", "/privacy-notice/", "/about/", "/contact/", "/404.html"];
+const PAGES = ["/", "/brands/", "/brands/yourtal/", "/brands/snapapp/", "/brands/free-tax-returns/", "/for-brands/", "/how-it-works/", "/privacy/", "/privacy-notice/", "/about/", "/responsibility/", "/contact/", "/404.html"];
 const b = await chromium.launch();
 const titles = new Map();
 const problems = [];
