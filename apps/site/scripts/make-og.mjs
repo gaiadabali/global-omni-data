@@ -48,6 +48,7 @@ const CARDS = [
   { file: "og/how-it-works.png", kicker: "How it works", title: "How a receipt becomes a report" },
   { file: "og/privacy.png", kicker: "Trust & privacy", title: "Trust is a rule, not a promise" },
   { file: "og/about.png", kicker: "About GOD", title: "The company behind three useful apps" },
+  { file: "og/responsibility.png", kicker: "CSR and sustainability", title: "Our responsibility" },
   { file: "og/contact.png", kicker: "Talk to us", title: "Ask a question about your market" },
 ];
 
