@@ -9,9 +9,15 @@ describe("privacy notice facts", () => {
   });
 
   it("falls back without a placeholder while entity, ABN and email are unset", () => {
-    expect(groupLabel()).toBe("the GOD group (Global Omni Data)");
+    const unset = { ...NOTICE, entity: null, abn: null, privacyEmail: null };
+    expect(groupLabel(unset)).toBe("the GOD group (Global Omni Data)");
+    expect(groupLabel(unset)).not.toMatch(/[[\]]/);
+    expect(privacyEmail(unset)).toBe(CONTACT_EMAIL);
+  });
+
+  it("renders the current values without a placeholder", () => {
     expect(groupLabel()).not.toMatch(/[[\]]/);
-    expect(privacyEmail()).toBe(CONTACT_EMAIL);
+    expect(privacyEmail()).toBe("hello@god.gaiada.com");
   });
 
   it("uses the real values once they are set", () => {

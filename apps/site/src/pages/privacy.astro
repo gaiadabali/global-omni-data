@@ -5,6 +5,7 @@ import PageHero from "../components/PageHero.astro";
 import Promises from "../components/Promises.astro";
 import Cta from "../components/Cta.astro";
 import Icon from "../components/Icon.astro";
+import { NOTICE } from "../lib/notice";
 import aerial from "../assets/photos/suburb-sydney-aerial.jpg";
 
 const consent = [
@@ -67,7 +68,7 @@ const choices = [
   },
   {
     h: "Delete your account",
-    p: "Delete in any of the three apps and GOD removes you at the next sync.",
+    p: `Delete in any of the three apps and GOD removes you within ${NOTICE.deletionWindow}.`,
   },
   {
     h: "Read the notice",
