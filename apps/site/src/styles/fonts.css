@@ -78,15 +78,16 @@
 /* Fallback faces with the web fonts' metrics. The text is first drawn in a local font, so each fallback is scaled
    (size-adjust) and given the web font's ascent and descent. When the real font arrives the lines break in the same
    places and nothing moves (no layout shift). Measured in Chromium against the built fonts on 2026-11-27: the width
-   of real sentences in the web font divided by the same sentences in the local font. The local names are the
+   of real sentences in the web font divided by the same sentences in the local font. Newsreader is then tuned by
+   sweeping size-adjust and counting headings whose line count differs between the two fonts (105.25% is the best). The local names are the
    Windows/macOS fonts and their metric-identical Linux twins; where none exists the next font in the stack is used. */
 
 @font-face {
   font-family: "Newsreader Fallback";
   src: local("Times New Roman"), local("Liberation Serif");
-  size-adjust: 104.53%;
-  ascent-override: 70.32%;
-  descent-override: 25.35%;
+  size-adjust: 105.25%;
+  ascent-override: 69.83%;
+  descent-override: 25.18%;
   line-gap-override: 0%;
 }
 
