@@ -724,11 +724,13 @@ h4 {
 }
 
 .phero h1 {
-  max-width: 16ch;
+  /* em, not ch: Newsreader's "0" is 14% wider than its fallback's, so a ch limit moved when the font swapped.
+     0.57em is one ch in Newsreader. */
+  max-width: 9.12em;
 }
 
 .phero.solo h1 {
-  max-width: 20ch;
+  max-width: 11.4em;
 }
 
 .phero .lede {
@@ -1285,7 +1287,7 @@ a.framelink:hover {
 }
 
 .cta h2 {
-  max-width: 18ch;
+  max-width: 10.26em;
 }
 
 .cta .lede {
