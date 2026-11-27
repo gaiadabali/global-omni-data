@@ -54,7 +54,7 @@ export const BRANDS: Brand[] = [
     page: "/brands/snapapp/",
     href: "https://snapapp.gaiada.com",
     host: "snapapp.gaiada.com",
-    webApp: { href: "https://snapapp.app.gaiada.com", host: "snapapp.app.gaiada.com" },
+    webApp: { href: "https://app.snapapps.gaiada.com", host: "app.snapapps.gaiada.com" },
     tagline: "The receipt app that reads every line.",
     summary:
       "Photograph a docket and SnapApp reads each line, splits GST-free from taxable, checks it is a valid tax invoice and keeps a true copy for five years.",
