@@ -7,12 +7,14 @@ import Phone from "../../components/Phone.astro";
 import Browser from "../../components/Browser.astro";
 import Cta from "../../components/Cta.astro";
 import Icon from "../../components/Icon.astro";
+import { brand } from "../../lib/brands";
 import saHome from "../../assets/screens/snapapp-home-desktop.webp";
 import saHow from "../../assets/screens/snapapp-how.webp";
 import saFeatures from "../../assets/screens/snapapp-features.webp";
 import saPricing from "../../assets/screens/snapapp-pricing.webp";
 import terminal from "../../assets/photos/receipt-terminal.jpg";
 
+const snapapp = brand("snapapp");
 const steps = [
   {
     h: "Snap it",
@@ -73,6 +75,7 @@ const deductions = [
 ---
 
 <Base
+  brand="snapapp"
   title="SnapApp: the receipt app that reads every line | GOD (Global Omni Data)"
   description="SnapApp reads every line of a receipt, splits GST-free from taxable, checks it is a valid tax invoice and keeps the original for five years. Android beta now, iPhone in development."
   ogImage="/og/snapapp.png"
@@ -298,7 +301,7 @@ const deductions = [
   <Cta
     title="Try SnapApp on Android"
     lede="The Android beta is open now, with 10 free scans and no card needed. Brands that want to understand where people shop can talk to GOD."
-    primary={{ href: "https://snapapp.gaiada.com", label: "Visit snapapp.gaiada.com" }}
+    primary={{ href: snapapp.href, label: `Visit ${snapapp.host}`, external: true }}
     secondary={{ href: "/contact/", label: "Talk to GOD" }}
   />
 </Base>

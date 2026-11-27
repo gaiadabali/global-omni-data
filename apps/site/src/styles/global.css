@@ -1,4 +1,5 @@
 @import "./fonts.css";
+@import "./brands.css";
 
 /* GOD site v2. Tokens first, then base, layout, type, components and motion. See REDESIGN.md for the direction.
    Light is the default; dark applies from the OS setting unless the visitor picked light, or when they picked dark. */
@@ -424,7 +425,7 @@ h4 {
 }
 
 .btn-primary:hover {
-  background: #0a1278;
+  background: var(--btn-hover, #0a1278);
   text-decoration: none;
 }
 
@@ -1045,29 +1046,6 @@ h2 + .lede {
 
 .said::after {
   content: "\201D";
-}
-
-/* ---------- Brand marks ---------- */
-
-.mark {
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-  font-weight: 600;
-  font-size: 1.0625rem;
-  color: var(--ink);
-}
-
-.mark img {
-  width: 36px;
-  height: 36px;
-  border-radius: 9px;
-}
-
-.mark.lg img {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
 }
 
 /* ---------- Device frames (pure CSS) ---------- */

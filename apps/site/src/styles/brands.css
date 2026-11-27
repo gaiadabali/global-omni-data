@@ -1,0 +1,327 @@
+/* The three brands' colours and the pieces built from them. The only place a brand colour is written.
+   Source: god/brand-assets (GOD-Ecosystem-Brand-Guidelines.pdf, section "Colour System" and "Contrast &
+   Accessibility", plus the founder's rules of 2026-11-27). Where the guide and the logo files differ the logo files
+   win, so Free Tax Returns green is #54BE92 (the file) and not #34D399 (the guide).
+
+   GOD's own indigo stays the frame of the site: header, footer, closing bands and every page that is not about one
+   brand. A brand colour appears only inside a `[data-brand]` scope (a brand page's <main>, or one brand card), and
+   there it replaces the indigo accent (links, kickers, step numbers, focus ring, primary button) and nothing else.
+
+   Contrast rules, all AA, checked against the page papers (#F5F6FA light, #0A0C17 dark):
+   - SnapApp: orange fill with Ink text (4.9:1). White on orange only for large text. Orange as text on light is
+     #B2300F (5.8:1); on dark #FF8A66.
+   - YourTal: Play Yellow fill with Ink text (13:1). The yellow is line art in the logos: never recoloured, never
+     filled, always on Charcoal. Accent text on light is #705700 (6.4:1). Yellow is never text on a light ground.
+   - Free Tax Returns: Navy with white text. Green only as a fill, or as text on navy or dark. Green text on light
+     is #1B7352 (5.4:1). Navy text sits on green. */
+
+:root {
+  /* Shared neutrals from the guide. Ink, Charcoal and Mist are used by the pieces below. */
+  --b-ink: #0f172a;
+  --b-charcoal: #363636;
+  --b-mist: #e4e3dc;
+  --b-paper: #f6f5f0;
+
+  --snapapp-fill: #ea542d;
+  --snapapp-on-fill: #0f172a;
+  --snapapp-text: #b2300f;
+  --snapapp-soft: #fbe0d9;
+  --snapapp-plate: #ffffff;
+  --snapapp-edge: rgb(15 23 42 / 0.14);
+  --snapapp-stage: #ea542d;
+  --snapapp-on-stage: #0f172a;
+  --snapapp-stage-rule: #0f172a;
+
+  --yourtal-fill: #ffda00;
+  --yourtal-on-fill: #0f172a;
+  --yourtal-text: #705700;
+  --yourtal-soft: #fff8d1;
+  --yourtal-plate: #363636;
+  --yourtal-edge: #363636;
+  --yourtal-stage: #363636;
+  --yourtal-on-stage: #f6f5f0;
+  --yourtal-stage-rule: #ffda00;
+
+  --ftr-fill: #101529;
+  --ftr-on-fill: #ffffff;
+  --ftr-green: #54be92;
+  --ftr-text: #1b7352;
+  --ftr-soft: #daf7ed;
+  --ftr-plate: #101529;
+  --ftr-edge: #101529;
+  --ftr-stage: #101529;
+  --ftr-on-stage: #ffffff;
+  --ftr-stage-rule: #54be92;
+}
+
+/* Dark values. Only what changes. Same two selectors the base tokens use for dark mode. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --snapapp-text: #ff8a66;
+    --snapapp-soft: #2b1711;
+    --snapapp-plate: #0f172a;
+    --snapapp-edge: rgb(238 240 248 / 0.18);
+    --yourtal-text: #ffda00;
+    --yourtal-soft: #1f1c0a;
+    --yourtal-edge: rgb(238 240 248 / 0.18);
+    --ftr-fill: #54be92;
+    --ftr-on-fill: #101529;
+    --ftr-text: #54be92;
+    --ftr-soft: #0f2a22;
+    --ftr-edge: rgb(238 240 248 / 0.18);
+  }
+}
+
+:root[data-theme="dark"] {
+  --snapapp-text: #ff8a66;
+  --snapapp-soft: #2b1711;
+  --snapapp-plate: #0f172a;
+  --snapapp-edge: rgb(238 240 248 / 0.18);
+  --yourtal-text: #ffda00;
+  --yourtal-soft: #1f1c0a;
+  --yourtal-edge: rgb(238 240 248 / 0.18);
+  --ftr-fill: #54be92;
+  --ftr-on-fill: #101529;
+  --ftr-text: #54be92;
+  --ftr-soft: #0f2a22;
+  --ftr-edge: rgb(238 240 248 / 0.18);
+}
+
+/* ---------- Scope: one brand's accent ---------- */
+
+[data-brand="snapapp"] {
+  --b-fill: var(--snapapp-fill);
+  --b-on-fill: var(--snapapp-on-fill);
+  --b-text: var(--snapapp-text);
+  --b-soft: var(--snapapp-soft);
+  --b-plate: var(--snapapp-plate);
+  --b-edge: var(--snapapp-edge);
+  --b-stage: var(--snapapp-stage);
+  --b-on-stage: var(--snapapp-on-stage);
+  --b-stage-rule: var(--snapapp-stage-rule);
+  --b-tile: transparent;
+}
+
+[data-brand="yourtal"] {
+  --b-fill: var(--yourtal-fill);
+  --b-on-fill: var(--yourtal-on-fill);
+  --b-text: var(--yourtal-text);
+  --b-soft: var(--yourtal-soft);
+  --b-plate: var(--yourtal-plate);
+  --b-edge: var(--yourtal-edge);
+  --b-stage: var(--yourtal-stage);
+  --b-on-stage: var(--yourtal-on-stage);
+  --b-stage-rule: var(--yourtal-stage-rule);
+  --b-tile: var(--b-charcoal);
+}
+
+[data-brand="ftr"] {
+  --b-fill: var(--ftr-fill);
+  --b-on-fill: var(--ftr-on-fill);
+  --b-text: var(--ftr-text);
+  --b-soft: var(--ftr-soft);
+  --b-plate: var(--ftr-plate);
+  --b-edge: var(--ftr-edge);
+  --b-stage: var(--ftr-stage);
+  --b-on-stage: var(--ftr-on-stage);
+  --b-stage-rule: var(--ftr-stage-rule);
+  /* The mark's arrow is navy, so its small tile is always light. */
+  --b-tile: var(--b-paper);
+}
+
+/* Inside a brand scope the indigo accent becomes the brand's. Header, footer and the night bands set their own
+   colours and are not touched. */
+[data-brand] {
+  --indigo-ink: var(--b-text);
+  --focus: var(--b-text);
+  --indigo: var(--b-fill);
+  --on-indigo: var(--b-on-fill);
+  --indigo-soft: var(--b-soft);
+  --btn-hover: color-mix(in srgb, var(--b-fill) 86%, #000);
+}
+
+[data-brand] .kicker::before {
+  background: var(--b-text);
+}
+
+/* ---------- Lockup on its plate ---------- */
+
+/* The logo files carry each brand's own type, so there is no web font here. The plate is the ground the logo is
+   drawn for: white or ink for SnapApp, Charcoal for YourTal (the yellow line art is invisible on light), navy
+   for Free Tax Returns (reversed logo). Width, not height, is set, so the logo shrinks on a phone. */
+.lockup {
+  --w: 200px;
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  padding: 18px 24px;
+  border: 1px solid var(--b-edge);
+  border-radius: 16px;
+  background: var(--b-plate);
+}
+
+.lockup img {
+  display: block;
+  width: var(--w);
+  max-width: 100%;
+  height: auto;
+}
+
+.lockup[data-brand="snapapp"] {
+  --w: 168px;
+}
+.lockup[data-brand="yourtal"] {
+  --w: 232px;
+}
+.lockup[data-brand="ftr"] {
+  --w: 224px;
+}
+
+.lockup.lg[data-brand="snapapp"] {
+  --w: 208px;
+}
+.lockup.lg[data-brand="yourtal"] {
+  --w: 296px;
+}
+.lockup.lg[data-brand="ftr"] {
+  --w: 288px;
+}
+
+.lockup.lg {
+  padding: 22px 30px;
+  border-radius: 20px;
+}
+
+@media (max-width: 480px) {
+  .lockup.lg[data-brand="yourtal"] {
+    --w: 252px;
+  }
+  .lockup.lg[data-brand="ftr"] {
+    --w: 240px;
+  }
+}
+
+/* ---------- Small mark, with or without the name ---------- */
+
+.mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 600;
+  font-size: 1.0625rem;
+  color: var(--ink);
+}
+
+.mark .tile {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex: none;
+  border-radius: 9px;
+  background: var(--b-tile);
+}
+
+.mark .tile img {
+  display: block;
+  width: 26px;
+  height: auto;
+}
+
+/* The SnapApp mark is its own rounded square. */
+.mark[data-brand="snapapp"] .tile img {
+  width: 36px;
+  border-radius: 9px;
+}
+
+/* ---------- Brand stage: the plate behind a device on a brand page ---------- */
+
+.stage {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  min-width: 0;
+  padding: 56px 24px 48px;
+  border: 1px solid var(--b-edge);
+  border-radius: 28px;
+  background: var(--b-stage);
+  color: var(--b-on-stage);
+}
+
+.stage::before {
+  content: "";
+  position: absolute;
+  top: 24px;
+  left: 28px;
+  width: 40px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--b-stage-rule);
+}
+
+.stage .cap {
+  color: var(--b-on-stage);
+}
+
+/* On a card the plate is the brand's quiet tint, not the full stage. */
+.tinted {
+  background: var(--b-soft);
+}
+
+@media (max-width: 960px) {
+  .stage {
+    padding: 52px 16px 32px;
+  }
+  .stage::before {
+    left: 20px;
+  }
+}
+
+/* ---------- Links to the brand's own site ---------- */
+
+.brand-links {
+  gap: 12px 28px;
+  margin-top: 4px;
+}
+
+.ext-note {
+  margin: 20px 0 0;
+  font-family: var(--f-mono);
+  font-size: 0.8125rem;
+  color: var(--ink-3);
+}
+
+.ext-note a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--b-text);
+}
+
+/* Footer list: the brand page, with its own site under it. */
+.ftr .brandlist {
+  gap: 14px;
+}
+
+.ftr .brandlist li {
+  display: grid;
+  gap: 2px;
+}
+
+.ftr .brandlist .ext {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--f-mono);
+  font-size: 0.8125rem;
+  color: var(--ink-3);
+}
+
+.ftr .brandlist .ext:hover {
+  color: var(--ink);
+}
+
+/* "What each adds": a brand's rule on top of its entry. */
+.feats > li[data-brand] {
+  border-top: 2px solid var(--b-text);
+}

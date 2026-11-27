@@ -103,6 +103,23 @@ try {
           entry.status = res?.status() ?? 0;
           if (r.waitFor) await page.waitForSelector(r.waitFor, { timeout: 20_000 });
           await page.waitForTimeout(r.delayMs ?? 300);
+          if (app === "site") {
+            // Scroll the whole page once so lazy images load, then check that no image is empty: a device frame
+            // with nothing in it must fail the run, not slip into a screenshot.
+            await page.evaluate(async () => {
+              for (let y = 0; y < document.body.scrollHeight; y += 500) {
+                window.scrollTo(0, y);
+                await new Promise((ok) => setTimeout(ok, 50));
+              }
+              window.scrollTo(0, 0);
+            });
+            await page.waitForLoadState("networkidle");
+            await page.evaluate(() => Promise.all([...document.images].map((i) => i.decode().catch(() => {}))));
+            const empty = await page.evaluate(() =>
+              [...document.images].filter((i) => !i.complete || i.naturalWidth === 0).map((i) => i.currentSrc || i.src),
+            );
+            for (const src of empty) entry.failed.push(`EMPTY IMAGE ${src}`.slice(0, 300));
+          }
           await page.screenshot({ path: join(out, `${r.name}-${width}-${theme}.png`), fullPage: r.fullPage ?? true });
         } catch (e) {
           entry.pageErrors.push(`SHOT FAILED: ${String(e).slice(0, 300)}`);

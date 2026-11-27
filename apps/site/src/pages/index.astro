@@ -3,7 +3,8 @@ import { Picture } from "astro:assets";
 import Base from "../layouts/Base.astro";
 import AustraliaMap from "../components/AustraliaMap.astro";
 import Standards from "../components/Standards.astro";
-import BrandMark from "../components/BrandMark.astro";
+import BrandLockup from "../components/BrandLockup.astro";
+import BrandLinks from "../components/BrandLinks.astro";
 import Phone from "../components/Phone.astro";
 import Browser from "../components/Browser.astro";
 import Journey from "../components/Journey.astro";
@@ -86,9 +87,9 @@ const questions = [
       </div>
 
       <div class="brands">
-        <article class="brand split" data-reveal>
+        <article data-brand="yourtal" class="brand split" data-reveal>
           <div class="brand-text">
-            <BrandMark brand="yourtal" name={yourtal.name} size="lg" />
+            <BrandLockup brand="yourtal" name={yourtal.name} />
             <p class="said">{yourtal.tagline}</p>
             <p>{yourtal.summary} Businesses pay only for videos that were actually watched.</p>
             <ul class="chips">
@@ -96,13 +97,8 @@ const questions = [
                 <li class="chip">{f}</li>
               ))}
             </ul>
-            <div class="brand-foot">
-              <span class={`status ${yourtal.status.kind}`}>{yourtal.status.label}</span>
-              <a class="go" href={yourtal.page}>
-                About YourTal
-                <Icon name="arrow" />
-              </a>
-            </div>
+            <span class={`status ${yourtal.status.kind}`}>{yourtal.status.label}</span>
+            <BrandLinks brand="yourtal" />
           </div>
           <div class="brand-visual">
             <Phone
@@ -113,9 +109,9 @@ const questions = [
           </div>
         </article>
 
-        <article class="brand split flip" data-reveal>
+        <article data-brand="snapapp" class="brand split flip" data-reveal>
           <div class="brand-text">
-            <BrandMark brand="snapapp" name={snapapp.name} size="lg" />
+            <BrandLockup brand="snapapp" name={snapapp.name} />
             <p class="said">{snapapp.tagline}</p>
             <p>{snapapp.summary} Then it shows where the money went.</p>
             <ul class="chips">
@@ -123,13 +119,8 @@ const questions = [
                 <li class="chip">{f}</li>
               ))}
             </ul>
-            <div class="brand-foot">
-              <span class={`status ${snapapp.status.kind}`}>{snapapp.status.label}</span>
-              <a class="go" href={snapapp.page}>
-                About SnapApp
-                <Icon name="arrow" />
-              </a>
-            </div>
+            <span class={`status ${snapapp.status.kind}`}>{snapapp.status.label}</span>
+            <BrandLinks brand="snapapp" />
           </div>
           <div class="brand-visual">
             <Browser
@@ -140,9 +131,9 @@ const questions = [
           </div>
         </article>
 
-        <article class="brand split" data-reveal>
+        <article data-brand="ftr" class="brand split" data-reveal>
           <div class="brand-text">
-            <BrandMark brand="ftr" name={ftr.name} size="lg" />
+            <BrandLockup brand="ftr" name={ftr.name} />
             <p class="said">{ftr.tagline}</p>
             <p>{ftr.summary}</p>
             <ul class="chips">
@@ -150,13 +141,8 @@ const questions = [
                 <li class="chip">{f}</li>
               ))}
             </ul>
-            <div class="brand-foot">
-              <span class={`status ${ftr.status.kind}`}>{ftr.status.label}</span>
-              <a class="go" href={ftr.page}>
-                About Free Tax Returns
-                <Icon name="arrow" />
-              </a>
-            </div>
+            <span class={`status ${ftr.status.kind}`}>{ftr.status.label}</span>
+            <BrandLinks brand="ftr" />
           </div>
           <div class="brand-visual">
             <Phone
@@ -368,19 +354,12 @@ const questions = [
     color: var(--ink-2);
     max-width: 34rem;
   }
-  .brand-foot {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 16px 28px;
-    margin-top: 8px;
-  }
   .brand-visual {
     display: grid;
     justify-items: center;
     padding: 48px 32px;
     border-radius: 28px;
-    background: var(--raised);
+    background: var(--b-soft);
   }
   @media (max-width: 960px) {
     .brands {

@@ -1,0 +1,33 @@
+---
+import { Image } from "astro:assets";
+import yourtal from "../assets/brands/yourtal-lockup.svg";
+import snapapp from "../assets/brands/snapapp-lockup.svg";
+import ftr from "../assets/brands/ftr-logo-reversed.svg";
+import type { BrandKey } from "../lib/brands";
+
+/**
+ * A brand's full logo on the ground it was drawn for (see `styles/brands.css`): the plate is part of the logo's
+ * use, not decoration. Free Tax Returns always uses the reversed logo, on navy. The artwork may spell the name
+ * differently from the site's text (SnapApp's logo reads "SNAP APPS"); the alt text is the name the site uses.
+ */
+interface Props {
+  brand: BrandKey;
+  name: string;
+  size?: "md" | "lg";
+  /** Eager-load when the logo is in the first viewport (brand page heroes). */
+  eager?: boolean;
+}
+
+const { brand, name, size = "md", eager = false } = Astro.props;
+const src = { yourtal, snapapp, ftr }[brand];
+---
+
+<span class:list={["lockup", { lg: size === "lg" }]} data-brand={brand}>
+  <Image
+    src={src}
+    alt={name}
+    width={src.width}
+    height={src.height}
+    loading={eager ? "eager" : "lazy"}
+  />
+</span>
