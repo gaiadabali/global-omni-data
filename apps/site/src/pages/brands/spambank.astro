@@ -8,10 +8,10 @@ import AddressCard from "../../components/AddressCard.astro";
 import OneMailbox from "../../components/OneMailbox.astro";
 import Cta from "../../components/Cta.astro";
 import Icon from "../../components/Icon.astro";
-import { brand, sitesFor } from "../../lib/brands";
+import { appsFor, brand } from "../../lib/brands";
 
 const spambank = brand("spambank");
-const where = sitesFor(spambank);
+const where = appsFor(spambank);
 
 const steps = [
   {
@@ -86,8 +86,8 @@ const promises = [
         <p class="kicker">How it works</p>
         <h2>Get it, use it, read it anywhere</h2>
         <p class="lede">
-          Spambank has no site or app of its own. It lives inside the three GOD apps, and this page
-          is its home.
+          Spambank lives inside the three GOD apps, so there is nothing separate to install. It has
+          its own site as well, at spambank.gaiada.com.
         </p>
         <div class="gap">
           <AddressCard />

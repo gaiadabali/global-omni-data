@@ -1,6 +1,6 @@
 ---
 import Icon from "./Icon.astro";
-import { brand, sitesFor, type BrandKey } from "../lib/brands";
+import { appsFor, brand, type BrandKey } from "../lib/brands";
 
 /**
  * The links every brand card carries: this site's page about the brand, and the brand's own site. The second opens
@@ -12,7 +12,7 @@ interface Props {
 }
 
 const b = brand(Astro.props.brand);
-const sites = sitesFor(b);
+const apps = appsFor(b);
 ---
 
 <div class="row brand-links">
@@ -28,10 +28,10 @@ const sites = sitesFor(b);
     </a>
   )}
 </div>
-{!b.href && sites.length > 0 && (
+{apps.length > 0 && (
   <p class="use-in">
     <span>Use it in</span>
-    {sites.map((s) => (
+    {apps.map((s) => (
       <a class="go" href={s.href} target="_blank" rel="noopener">
         {s.host}
         <span class="visually-hidden"> (opens {s.name}'s own site in a new tab)</span>

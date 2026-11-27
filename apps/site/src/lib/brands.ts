@@ -13,15 +13,15 @@ export interface Brand {
   name: string;
   /**
    * "app" is a product with its own site and its own data that feeds GOD (YourTal, SnapApps, Free Tax Returns).
-   * "feature" lives inside the apps and has no site of its own (Spambank): its page on this site is its website.
+   * "feature" lives inside the apps (Spambank): it has its own site too, and its card also lists the apps it lives in.
    */
   kind: "app" | "feature";
   /** This site's page about the brand. */
   page: string;
-  /** The brand's own site, or null for a feature that has none (then see `availableIn`). */
+  /** The brand's own site, or null if it has none yet. */
   href: string | null;
   host: string | null;
-  /** For a feature with no site: the brands it can be used in. */
+  /** For a feature: the apps it lives in, which its card and page list. */
   availableIn?: BrandKey[];
   /** A second address that is the product itself rather than its marketing site (SnapApps' web app). */
   webApp?: { href: string; host: string };
@@ -95,9 +95,9 @@ export const BRANDS: Brand[] = [
     name: "Spambank",
     kind: "feature",
     page: "/brands/spambank/",
-    // No site of its own: this page is its website. It is used inside the three apps.
-    href: null,
-    host: null,
+    // Its own site, live on staging from 2026-11-27. The apps it lives in are still listed on its card and page.
+    href: "https://spambank.gaiada.com",
+    host: "spambank.gaiada.com",
     availableIn: ["snapapp", "yourtal", "ftr"],
     // Draft tagline, written for this site: founder to approve (REDESIGN.md section 8).
     tagline: "Your real inbox, kept clean.",
@@ -114,6 +114,14 @@ export function brand(key: BrandKey): Brand {
   const b = BRANDS.find((x) => x.key === key);
   if (!b) throw new Error(`unknown brand ${key}`);
   return b;
+}
+
+/** The apps a feature lives in, with their sites. Empty for a brand that is not a feature. */
+export function appsFor(b: Brand): { key: BrandKey; name: string; href: string; host: string }[] {
+  return (b.availableIn ?? []).flatMap((k) => {
+    const a = brand(k);
+    return a.href && a.host ? [{ key: a.key, name: a.name, href: a.href, host: a.host }] : [];
+  });
 }
 
 /** Where a brand can be reached on the web: its own site, or the apps a feature lives in. */

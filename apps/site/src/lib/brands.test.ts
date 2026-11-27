@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { BRANDS, sitesFor } from "./brands";
+import { BRANDS, appsFor } from "./brands";
 
 /** The brand colour rules are binding (AA). This reads the tokens from styles/brands.css and checks each pairing. */
 const css = readFileSync(new URL("../styles/brands.css", import.meta.url), "utf8");
@@ -87,13 +87,15 @@ describe("brand links", () => {
     }
   });
 
-  it("sends a brand with no site of its own to the apps it lives in", () => {
-    const none = BRANDS.filter((b) => !b.href);
-    expect(none.map((b) => b.key)).toEqual(["spambank"]);
-    for (const b of none) {
-      expect(b.host).toBeNull();
+  it("lists, for a feature, the apps it lives in, each with its own site", () => {
+    const features = BRANDS.filter((b) => b.kind === "feature");
+    expect(features.map((b) => b.key)).toEqual(["spambank"]);
+    for (const b of features) {
       expect(b.availableIn?.length).toBeGreaterThan(0);
-      expect(sitesFor(b).map((s) => s.key)).toEqual(b.availableIn);
+      expect(appsFor(b).map((s) => s.key)).toEqual(b.availableIn);
+      for (const a of appsFor(b)) expect(a.href.startsWith("https://")).toBe(true);
+      // A feature without a site of its own has both fields null; with one, both are set.
+      expect(b.href === null).toBe(b.host === null);
     }
   });
 

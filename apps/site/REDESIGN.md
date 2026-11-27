@@ -310,7 +310,7 @@ place a brand colour is written, with light and dark values, checked by `src/lib
   `target="_blank"`, `rel="noopener"` and a hidden note in the accessible name ("opens YourTal's own site in a new tab").
   The visible text is contained in the accessible name (WCAG 2.5.3). The addresses are written only in
   `src/lib/brands.ts`. SnapApps and YourTal are staging hosts today, so their final domains may change in that one file.
-  SnapApps' page also notes its web app, `snapapp.app.gaiada.com`.
+  SnapApps' page also notes its web app, `app.snapapps.gaiada.com`.
 
 ### Colour tokens (hex; contrast checked against the page papers `#F5F6FA` and `#0A0C17`)
 
@@ -332,11 +332,15 @@ place a brand colour is written, with light and dark values, checked by `src/lib
 
 ## 8. Spambank, the fourth brand (added 2026-11-27)
 
-Founder, 2026-11-27: Spambank is its own brand even though it lives inside the apps. It has no site of its own, so its page
-here, `/brands/spambank/`, is its website. It is listed in `src/lib/brands.ts` with `kind: "feature"`, no `href`, and
-`availableIn: [snapapp, yourtal, ftr]`; its card and page send people to the three apps instead of to a site.
+Founder, 2026-11-27: Spambank is its own brand even though it lives inside the apps. Its own site, https://spambank.gaiada.com (staging, live 2026-11-27), is listed in `src/lib/brands.ts` (`href` and `host`), so its
+card, page hero and footer carry a "Visit spambank.gaiada.com" link. It is a `kind: "feature"` with `availableIn: [snapapp,
+yourtal, ftr]`, so the card and page also list the three apps it lives in. `public/brands.json` points to the same site.
 
-### Spambank identity v1, created 2026-11-27 for the GOD site, founder to approve
+### Spambank identity v1, 2026-11-27, provisional, founder to approve
+
+Drawn for this site on 2026-11-27 and adopted by the brands session for spambank.gaiada.com, so the two sites do not
+diverge: the files are in `god/brand-assets/svg/spambank-*.svg`, with `spambank-palette.md`; the hex values and contrast
+checks are in `src/lib/palette.ts` of `gaiadabali/spambank-website`. Nothing here is approved.
 
 - **Mark.** A rounded tile, a white envelope with a flap line, and a small check dot at the corner: a clean inbox. It reads
   at 24 px. No padlock or shield, so it does not look like a bank or an antivirus.
