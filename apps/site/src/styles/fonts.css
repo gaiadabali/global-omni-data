@@ -93,7 +93,7 @@
 
 @font-face {
   font-family: "Inter Fallback";
-  font-weight: 100 500;
+  font-weight: 100 450;
   src: local("Arial"), local("Liberation Sans");
   size-adjust: 106.59%;
   ascent-override: 90.91%;
@@ -101,13 +101,28 @@
   line-gap-override: 0%;
 }
 
+/* Weight 500 (nav links, a few labels) is wider than 400 in Inter, so it gets its own scale. */
 @font-face {
   font-family: "Inter Fallback";
-  font-weight: 501 900;
-  src: local("Arial Bold"), local("Arial-BoldMT"), local("Liberation Sans Bold");
-  size-adjust: 100.5%;
-  ascent-override: 96.42%;
-  descent-override: 23.98%;
+  font-weight: 451 540;
+  src: local("Arial"), local("Liberation Sans");
+  size-adjust: 108.77%;
+  ascent-override: 89.09%;
+  descent-override: 22.16%;
+  line-gap-override: 0%;
+}
+
+/* Weights 560 to 600 (buttons, h3, labels) map to the bold local font. Tuned on button rows: 103.25% leaves the
+   fewest rows that wrap differently (3 of 72 page and width pairs; they sit within 3px of the wrap point). */
+@font-face {
+  font-family: "Inter Fallback";
+  font-weight: 541 900;
+  src:
+    local("Arial Bold"), local("Arial-BoldMT"), local("Liberation Sans Bold"),
+    local("LiberationSans-Bold");
+  size-adjust: 103.25%;
+  ascent-override: 93.85%;
+  descent-override: 23.34%;
   line-gap-override: 0%;
 }
 
