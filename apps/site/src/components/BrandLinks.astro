@@ -1,16 +1,18 @@
 ---
 import Icon from "./Icon.astro";
-import { brand, type BrandKey } from "../lib/brands";
+import { appsFor, brand, type BrandKey } from "../lib/brands";
 
 /**
- * The two links every brand card carries: this site's page about the brand, and the brand's own site. The second
- * opens in a new tab, says so in its accessible name, and uses `rel="noopener"`. Addresses come from `lib/brands.ts`.
+ * The links every brand card carries: this site's page about the brand, and the brand's own site. The second opens
+ * in a new tab, says so in its accessible name, and uses `rel="noopener"`. A feature with no site of its own
+ * (Spambank) lists the apps it can be used in instead. Addresses come from `lib/brands.ts`.
  */
 interface Props {
   brand: BrandKey;
 }
 
 const b = brand(Astro.props.brand);
+const apps = appsFor(b);
 ---
 
 <div class="row brand-links">
@@ -18,9 +20,23 @@ const b = brand(Astro.props.brand);
     About {b.name}
     <Icon name="arrow" />
   </a>
-  <a class="go" href={b.href} target="_blank" rel="noopener">
-    Visit {b.host}
-    <span class="visually-hidden"> (opens {b.name}'s own site in a new tab)</span>
-    <Icon name="external" />
-  </a>
+  {b.href && b.host && (
+    <a class="go" href={b.href} target="_blank" rel="noopener">
+      Visit {b.host}
+      <span class="visually-hidden"> (opens {b.name}'s own site in a new tab)</span>
+      <Icon name="external" />
+    </a>
+  )}
 </div>
+{apps.length > 0 && (
+  <p class="use-in">
+    <span>Use it in</span>
+    {apps.map((s) => (
+      <a class="go" href={s.href} target="_blank" rel="noopener">
+        {s.host}
+        <span class="visually-hidden"> (opens {s.name}'s own site in a new tab)</span>
+        <Icon name="external" />
+      </a>
+    ))}
+  </p>
+)}

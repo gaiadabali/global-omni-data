@@ -7,6 +7,7 @@ import BrandLockup from "../components/BrandLockup.astro";
 import BrandLinks from "../components/BrandLinks.astro";
 import Phone from "../components/Phone.astro";
 import Browser from "../components/Browser.astro";
+import MailMock from "../components/MailMock.astro";
 import Journey from "../components/Journey.astro";
 import SampleReport from "../components/SampleReport.astro";
 import Promises from "../components/Promises.astro";
@@ -23,6 +24,7 @@ import produce from "../assets/photos/produce-queen-victoria-market.jpg";
 const yourtal = brand("yourtal");
 const snapapp = brand("snapapp");
 const ftr = brand("ftr");
+const spambank = brand("spambank");
 
 const questions = [
   {
@@ -39,7 +41,7 @@ const questions = [
 
 <Base
   title="GOD (Global Omni Data): know your market by what Australians actually do"
-  description="GOD is the group behind YourTal, SnapApp and Free Tax Returns. With people's consent, we count what they do by suburb, age and occupation, so brands can understand a market without seeing a person in it."
+  description="GOD is the group behind YourTal, SnapApps, Free Tax Returns and Spambank. With people's consent, we count what they do by suburb, age and occupation, so brands can understand a market without seeing a person in it."
 >
   <section class="night hero">
     <div class="wrap">
@@ -47,9 +49,9 @@ const questions = [
         <p class="kicker">Global Omni Data · Australia</p>
         <h1>Know your market by what Australians actually do</h1>
         <p class="lede">
-          GOD is the group behind YourTal, SnapApp and Free Tax Returns. People use each app for its
-          own reasons. With their consent, we count what they do by suburb, age and occupation, so a
-          brand can understand its market without ever seeing a person in it.
+          GOD is the group behind YourTal, SnapApps, Free Tax Returns and Spambank. People use each
+          one for its own reasons. With their consent, we count what they do by suburb, age and
+          occupation, so a brand can understand its market without ever seeing a person in it.
         </p>
         <div class="row">
           <a class="btn btn-primary" href="/for-brands/">
@@ -77,11 +79,11 @@ const questions = [
       <div class="sec-head split">
         <div>
           <p class="kicker">The group</p>
-          <h2>Three everyday apps. One careful company.</h2>
+          <h2>Four brands. One careful company.</h2>
         </div>
         <p class="lede">
-          Each GOD brand does one useful job for the people who use it. GOD sits behind all three.
-          It keeps one privacy standard across them and turns what they learn, together, into
+          Each GOD brand does one useful job for the people who use it. GOD sits behind all four. It
+          keeps one privacy standard across them and turns what the apps learn, together, into
           insight no single app could give.
         </p>
       </div>
@@ -125,7 +127,7 @@ const questions = [
           <div class="brand-visual">
             <Browser
               src={saHome}
-              alt="The SnapApp home page: “The receipt app that reads every line”, beside a phone showing a receipt split into GST-free and taxable lines"
+              alt="The SnapApps home page: “The receipt app that reads every line”, beside a phone showing a receipt split into GST-free and taxable lines"
               url="snapapp.gaiada.com"
             />
           </div>
@@ -150,6 +152,24 @@ const questions = [
               alt="Free Tax Returns, step 1 of 3: “Let's build your profile”, an empty form for name, email and date of birth"
               caption="freetaxreturns.com.au/worksheet"
             />
+          </div>
+        </article>
+
+        <article data-brand="spambank" class="brand split flip" data-reveal>
+          <div class="brand-text">
+            <BrandLockup brand="spambank" name={spambank.name} />
+            <p class="said">{spambank.tagline}</p>
+            <p>{spambank.summary} GOD never reads or uses the contents of anyone's email.</p>
+            <ul class="chips">
+              {spambank.facts.map((f) => (
+                <li class="chip">{f}</li>
+              ))}
+            </ul>
+            <span class={`status ${spambank.status.kind}`}>{spambank.status.label}</span>
+            <BrandLinks brand="spambank" />
+          </div>
+          <div class="brand-visual">
+            <MailMock view="inbox" />
           </div>
         </article>
       </div>

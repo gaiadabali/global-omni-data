@@ -1,0 +1,79 @@
+---
+/**
+ * An example Spambank address on a card, for step one. The name is an example: every person gets their own short
+ * generated name. Drawn in HTML, no real address.
+ */
+---
+
+<figure
+  class="ac"
+  role="img"
+  aria-label="An example Spambank address: quickloris at yourtal.gaiada.com"
+>
+  <p class="k">
+    Your Spambank address
+    <span class="badge">Example</span>
+  </p>
+  <p class="addr">
+    quickloris<span>@yourtal.gaiada.com</span>
+  </p>
+  <ul>
+    <li>Shop sign-ups</li>
+    <li>Newsletters</li>
+    <li>Anything that asks for an email</li>
+  </ul>
+</figure>
+
+<style>
+  .ac {
+    margin: 0;
+    padding: 28px;
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    background: var(--card);
+    box-shadow: var(--shadow-lg);
+  }
+  .k {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 14px;
+    font-family: var(--f-mono);
+    font-size: 0.8125rem;
+    color: var(--ink-3);
+  }
+  .badge {
+    padding: 2px 8px;
+    border-radius: 6px;
+    background: var(--b-soft);
+    color: var(--b-text);
+  }
+  .addr {
+    margin: 0 0 22px;
+    font-family: var(--f-mono);
+    font-size: 1.375rem;
+    font-weight: 500;
+    line-height: 1.35;
+    color: var(--ink);
+    overflow-wrap: anywhere;
+  }
+  .addr span {
+    color: var(--b-text);
+  }
+  ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  li {
+    padding: 6px 12px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    font-size: 0.875rem;
+    color: var(--ink-2);
+  }
+</style>

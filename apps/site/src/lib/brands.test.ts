@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { BRANDS } from "./brands";
+import { BRANDS, appsFor } from "./brands";
 
 /** The brand colour rules are binding (AA). This reads the tokens from styles/brands.css and checks each pairing. */
 const css = readFileSync(new URL("../styles/brands.css", import.meta.url), "utf8");
@@ -39,7 +39,7 @@ function tok(t: Record<string, string>, name: string): string {
 }
 
 describe("brand colour tokens", () => {
-  const brands = ["snapapp", "yourtal", "ftr"] as const;
+  const brands = ["snapapp", "yourtal", "ftr", "spambank"] as const;
 
   for (const [mode, t] of [
     ["light", light],
@@ -73,19 +73,35 @@ describe("brand colour tokens", () => {
     expect(light["--yourtal-plate"]).toBe("#363636");
     expect(light["--ftr-fill"]).toBe("#101529");
     expect(light["--ftr-green"]).toBe("#54be92");
+    expect(light["--spambank-fill"]).toBe("#0b7285");
   });
 });
 
 describe("brand links", () => {
   it("gives every brand an https site whose host matches the label", () => {
     for (const b of BRANDS) {
+      if (!b.href) continue;
       expect(new URL(b.href).protocol).toBe("https:");
       expect(new URL(b.href).host).toBe(b.host);
       if (b.webApp) expect(new URL(b.webApp.href).host).toBe(b.webApp.host);
     }
   });
 
-  it("has exactly one brand key per brand and no Spambank card", () => {
-    expect(BRANDS.map((b) => b.key)).toEqual(["yourtal", "snapapp", "ftr"]);
+  it("lists, for a feature, the apps it lives in, each with its own site", () => {
+    const features = BRANDS.filter((b) => b.kind === "feature");
+    expect(features.map((b) => b.key)).toEqual(["spambank"]);
+    for (const b of features) {
+      expect(b.availableIn?.length).toBeGreaterThan(0);
+      expect(appsFor(b).map((s) => s.key)).toEqual(b.availableIn);
+      for (const a of appsFor(b)) expect(a.href.startsWith("https://")).toBe(true);
+      // A feature without a site of its own has both fields null; with one, both are set.
+      expect(b.href === null).toBe(b.host === null);
+    }
+  });
+
+  it("has exactly one brand key per brand, three apps and one feature", () => {
+    expect(BRANDS.map((b) => b.key)).toEqual(["yourtal", "snapapp", "ftr", "spambank"]);
+    expect(BRANDS.filter((b) => b.kind === "app")).toHaveLength(3);
+    expect(BRANDS.filter((b) => b.kind === "feature").map((b) => b.key)).toEqual(["spambank"]);
   });
 });

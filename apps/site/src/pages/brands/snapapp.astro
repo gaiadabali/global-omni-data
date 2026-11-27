@@ -7,7 +7,7 @@ import Phone from "../../components/Phone.astro";
 import Browser from "../../components/Browser.astro";
 import Cta from "../../components/Cta.astro";
 import Icon from "../../components/Icon.astro";
-import { brand } from "../../lib/brands";
+import { brand, sitesFor } from "../../lib/brands";
 import saHome from "../../assets/screens/snapapp-home-desktop.webp";
 import saHow from "../../assets/screens/snapapp-how.webp";
 import saFeatures from "../../assets/screens/snapapp-features.webp";
@@ -15,6 +15,7 @@ import saPricing from "../../assets/screens/snapapp-pricing.webp";
 import terminal from "../../assets/photos/receipt-terminal.jpg";
 
 const snapapp = brand("snapapp");
+const [site] = sitesFor(snapapp);
 const steps = [
   {
     h: "Snap it",
@@ -22,7 +23,7 @@ const steps = [
   },
   {
     h: "It reads every line",
-    p: "SnapApp reads the item, the price and the GST flag on each line, and splits GST-free from taxable to the cent.",
+    p: "SnapApps reads the item, the price and the GST flag on each line, and splits GST-free from taxable to the cent.",
   },
   {
     h: "It's sorted",
@@ -76,19 +77,19 @@ const deductions = [
 
 <Base
   brand="snapapp"
-  title="SnapApp: the receipt app that reads every line | GOD (Global Omni Data)"
-  description="SnapApp reads every line of a receipt, splits GST-free from taxable, checks it is a valid tax invoice and keeps the original for five years. Android beta now, iPhone in development."
+  title="SnapApps: the receipt app that reads every line | GOD (Global Omni Data)"
+  description="SnapApps reads every line of a receipt, splits GST-free from taxable, checks it is a valid tax invoice and keeps the original for five years. Android beta now, iPhone in development."
   ogImage="/og/snapapp.png"
 >
   <BrandHero
     brand="snapapp"
     title="The receipt app that reads every line"
-    lede="Photograph a docket. SnapApp reads each line, splits GST-free from taxable, checks it is a valid tax invoice and keeps a true copy for five years. Then it shows you where the money went."
+    lede="Photograph a docket. SnapApps reads each line, splits GST-free from taxable, checks it is a valid tax invoice and keeps a true copy for five years. Then it shows you where the money went."
   >
     <Browser
       slot="visual"
       src={saHome}
-      alt="The SnapApp home page: “The receipt app that reads every line”, beside a phone showing a receipt split into GST-free and taxable lines"
+      alt="The SnapApps home page: “The receipt app that reads every line”, beside a phone showing a receipt split into GST-free and taxable lines"
       url="snapapp.gaiada.com"
       eager
     />
@@ -99,7 +100,7 @@ const deductions = [
       <div class="vis" data-reveal>
         <Phone
           src={saHow}
-          alt="A paper receipt from a roadhouse beside the SnapApp record of it: a $32.20 total marked as a valid tax invoice, $16.80 GST-free and $15.40 taxable, with six lines read"
+          alt="A paper receipt from a roadhouse beside the SnapApps record of it: a $32.20 total marked as a valid tax invoice, $16.80 GST-free and $15.40 taxable, with six lines read"
           caption="Demo workspace, illustrative figures"
         />
       </div>
@@ -126,7 +127,7 @@ const deductions = [
         <p class="kicker">What it checks</p>
         <h2>Five checks on every tax invoice</h2>
         <p class="lede">
-          When one fails, SnapApp suggests a fix. When it cannot read a figure, it leaves a blank
+          When one fails, SnapApps suggests a fix. When it cannot read a figure, it leaves a blank
           rather than guessing. A confident wrong number is worse than a blank one.
         </p>
       </div>
@@ -146,7 +147,7 @@ const deductions = [
           <h2>Everything that happens once the receipt is read</h2>
         </div>
         <p class="lede" data-reveal="2">
-          A receipt is only useful if you can find it and use it. These are the parts of SnapApp
+          A receipt is only useful if you can find it and use it. These are the parts of SnapApps
           that do that work.
         </p>
       </div>
@@ -162,7 +163,7 @@ const deductions = [
         <div class="vis" data-reveal="2">
           <Phone
             src={saFeatures}
-            alt="The SnapApp features page: “Snap the docket. The paperwork's done.”, with buttons to get the Android app and a note that iPhone is in development"
+            alt="The SnapApps features page: “Snap the docket. The paperwork's done.”, with buttons to get the Android app and a note that iPhone is in development"
             caption="Demo workspace, illustrative figures"
           />
         </div>
@@ -219,7 +220,7 @@ const deductions = [
       <div class="vis" data-reveal>
         <Phone
           src={saPricing}
-          alt="The SnapApp pricing page: “Pay for scans, not subscriptions”, with 10 free scans to start and 10 cents a scan after that"
+          alt="The SnapApps pricing page: “Pay for scans, not subscriptions”, with 10 free scans to start and 10 cents a scan after that"
           caption="Demo workspace, illustrative figures"
         />
       </div>
@@ -268,15 +269,15 @@ const deductions = [
     <div class="wrap">
       <div class="sec-head" data-reveal>
         <p class="kicker">Inside the group</p>
-        <h2>What SnapApp gives GOD, and what it keeps</h2>
+        <h2>What SnapApps gives GOD, and what it keeps</h2>
         <p class="lede">
           People accept the group privacy notice first. After that, only counts reach brands. Teens
-          aged 13 to 17 can use SnapApp only when a parent invites them; the parent can view the
+          aged 13 to 17 can use SnapApps only when a parent invites them; the parent can view the
           teen space, and the teen is told.
         </p>
       </div>
       <AddsStays
-        name="SnapApp"
+        name="SnapApps"
         adds={[
           "Where people shop, by the suburb and postcode printed on the receipt",
           "What they buy, by category",
@@ -289,7 +290,7 @@ const deductions = [
         ]}
       />
       <p class="small note" data-reveal>
-        SnapApp is in Android beta, with a direct download. An iPhone app is in development.
+        SnapApps is in Android beta, with a direct download. An iPhone app is in development.
         <a class="go" href="/privacy/">
           Our privacy standard
           <Icon name="arrow" />
@@ -299,9 +300,13 @@ const deductions = [
   </section>
 
   <Cta
-    title="Try SnapApp on Android"
+    title="Try SnapApps on Android"
     lede="The Android beta is open now, with 10 free scans and no card needed. Brands that want to understand where people shop can talk to GOD."
-    primary={{ href: snapapp.href, label: `Visit ${snapapp.host}`, external: true }}
+    primary={
+      site
+        ? { href: site.href, label: `Visit ${site.host}`, external: true }
+        : { href: "/contact/", label: "Talk to GOD" }
+    }
     secondary={{ href: "/contact/", label: "Talk to GOD" }}
   />
 </Base>

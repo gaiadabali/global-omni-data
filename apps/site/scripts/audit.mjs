@@ -25,7 +25,7 @@ const doAxe = !args.includes("--no-axe");
 
 const PAGES = [
   ["home", "/"], ["brands", "/brands/"], ["yourtal", "/brands/yourtal/"], ["snapapp", "/brands/snapapp/"],
-  ["free-tax-returns", "/brands/free-tax-returns/"], ["for-brands", "/for-brands/"],
+  ["free-tax-returns", "/brands/free-tax-returns/"], ["spambank", "/brands/spambank/"],["for-brands", "/for-brands/"],
   ["how-it-works", "/how-it-works/"], ["privacy", "/privacy/"], ["privacy-notice", "/privacy-notice/"],
   ["about", "/about/"], ["responsibility", "/responsibility/"], ["contact", "/contact/"], ["404", "/404.html"],
 ].filter(([n]) => !only.length || only.includes(n));

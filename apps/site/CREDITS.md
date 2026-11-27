@@ -13,14 +13,23 @@ at 2000 px wide and are served through Astro's image pipeline (AVIF and WebP, re
 | `cafe-espresso-melbourne.jpg`       | https://unsplash.com/photos/a-espresso-machine-making-a-cup-of-coffee-t_c-1QokeJE                      | Alex Duong (@alexd_228)                | Melbourne VIC, Australia                        | Home, For brands (cafés)    |
 | `fuel-longreach-dusk.jpg`           | https://unsplash.com/photos/gray-and-white-gasoline-station-during-golden-hour-2Fli_d8TnVc             | Cameron McPhee (@camthaman)            | Longreach QLD, Australia                        | Home, For brands (fuel)     |
 | `produce-queen-victoria-market.jpg` | https://unsplash.com/photos/6DsMsaoFmqY                                                                | Somi Jaiswal (@somijaiswal_fotografia) | Queen Victoria Market, Melbourne VIC, Australia | Home, For brands (grocery)  |
-| `receipt-terminal.jpg`              | https://unsplash.com/photos/a-person-holding-a-cell-phone-and-a-receipt-KnDM23QuRMI                    | Nathana Rebouças (@nathanareboucas)    | not stated                                      | How it works, SnapApp       |
+| `receipt-terminal.jpg`              | https://unsplash.com/photos/a-person-holding-a-cell-phone-and-a-receipt-KnDM23QuRMI                    | Nathana Rebouças (@nathanareboucas)    | not stated                                      | How it works, SnapApps      |
 | `suburb-sydney-aerial.jpg`          | https://unsplash.com/photos/aerial-view-of-a-suburban-neighborhood-with-houses-and-streets-MXR6DAo8NCo | Shanjir H, Photo4life AU (@shanjir)    | Sydney NSW, Australia                           | For brands, Trust & privacy |
 | `desk-calculator.jpg`               | https://unsplash.com/photos/a-calculator-sitting-on-top-of-a-table-next-to-a-laptop-8wLZi9OhsWU        | Jakub Żerdzicki (@jakubzerdzicki)      | not stated                                      | Free Tax Returns            |
 
 ## Product screens
 
-`src/assets/screens/` holds screenshots of the GOD brands' own public pages, captured with Playwright 1.65.1 on
-server-f on 2026-11-27. They are GOD's own products, so no third-party licence applies.
+`src/assets/screens/` holds screenshots of the GOD brands' own public pages, captured with Playwright 1.65.1 (Chromium
+159.0.8154.6) on server-f on 2026-11-27 with `scripts/capture-screens.mjs`, encoded as WebP at quality 82. Phone shots are
+390 px wide at 3x, desktop shots 1440 px at 2x. They are GOD's own products, so no third-party licence applies.
+
+**The eight SnapApps and Free Tax Returns screens were re-taken at 13:53 (UTC+8) on 2026-11-27, after both sites went live
+with their new logos and the SnapApps name.** Each was opened and checked after capture. The three YourTal screens
+(`yourtal-home.webp`, `yourtal-rewards.webp`, `yourtal-business.webp`) are the earlier captures and still show YourTal's old
+branding: its rebrand is not live (`/brand/yourtal-mark.svg` and `/brand/yourtal-lockup.svg` returned 404 on 2026-11-27), so
+a fresh capture would show a broken logo. Re-take them with `ONLY=yourtal-home,yourtal-rewards,yourtal-business` once
+YourTal ships its new logo. (`yourtal-home` also has a hero video poster with a face-like image; the script hides it for that
+shot.)
 
 | File                                                                | Captured from                                                                                 |
 | ------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
@@ -33,6 +42,12 @@ server-f on 2026-11-27. They are GOD's own products, so no third-party licence a
 | `ftr-car.webp`, `ftr-worksheet.webp`                                | https://freetaxreturns.com.au/claim-your-car, /worksheet (390 px, empty form)                 |
 
 No screen shows a real person's data: they are public marketing pages, an empty form and YourTal's seeded demo world.
+SnapApps' own fictional demo user ("Kate Marsh") and its cartoon mascot appear in a few SnapApps shots; no photo of a person
+is in any shot. The Spambank page uses no screenshot: its Mail screens are drawn in HTML with made-up sample mail. The
+Spambank page uses no screenshot: its Mail screens are drawn in HTML with made-up sample mail.
+
+**Re-capture pending (founder, 2026-11-27):** every screen predates the rebrands, so all of them are being re-taken from the
+rebranded live sites in a separate change.
 
 ## Brand logos
 
@@ -58,10 +73,32 @@ Free Tax Returns logo on its navy plate, so only the reversed file is needed).
 
 Ground rules that follow from the guide and are built into `src/styles/brands.css`: the YourTal logos are yellow line art
 and always sit on Charcoal `#363636`; the Free Tax Returns marks sit on navy (hero, cards) or a light tile (small mark,
-whose arrow is navy); SnapApp's orange logo sits on white, or on Ink `#0F172A` in dark mode.
+whose arrow is navy); SnapApps' orange logo sits on white, or on Ink `#0F172A` in dark mode.
 
-Names: SnapApp's artwork reads "SNAP APPS". The site keeps the text name "SnapApp" and uses it as the image's alt text.
+Names: the founder renamed the brand "SnapApps" on 2026-11-27 to match its logo, which reads "SNAP APPS". The site's text
+name is "SnapApps" and is the logo's alt text. Addresses (snapapp.gaiada.com), the page path (/brands/snapapp/) and code
+keys stay "snapapp".
 The Free Tax Returns logo includes the line "Bigger refund guaranteed". It is part of the approved artwork, so it appears
 with the logo; the site's own copy makes no such claim (see REDESIGN.md section 7).
 
 The GOD logo is `src/assets/god-logo.png`.
+
+### Spambank identity v1 (created 2026-11-27 for the GOD site, founder to approve)
+
+Spambank had no logo, so a provisional one was drawn on 2026-11-27. It is not an approved brand asset until the founder
+says so. The brands session shares the same files for spambank.gaiada.com: they are in `god/brand-assets/svg/spambank-*.svg`
+(with `spambank-palette.md`), and the hex values and contrast checks live in `src/lib/palette.ts` of the
+`gaiadabali/spambank-website` repo. The files on this site are byte-for-byte those files, except that the reversed
+ones are written `#fff` instead of `#ffffff`.
+
+| File (`src/assets/brands/`)                         | What it is                                                           | Used for                                        |
+| --------------------------------------------------- | -------------------------------------------------------------------- | ----------------------------------------------- |
+| `spambank-mark.svg`                                 | Rounded tile in `#0B7285`, white envelope, small check dot           | Small mark (diagram, About, cards)              |
+| `spambank-lockup-reversed.svg`                      | Mark in `#67D4EA` and the wordmark in white, for the deep teal plate | Brand page hero, brand cards                    |
+| `spambank-lockup.svg`, `spambank-mark-reversed.svg` | Light-ground lockup, and the reversed mark                           | Supplied for later use, not shipped by the site |
+
+The wordmark "Spambank" is outlined from **Nunito ExtraBold** (Vernon Adams, Jacques Le Bailly and contributors;
+SIL Open Font License 1.1, which allows the outlines in a logo). Taken from `@fontsource/nunito` 5.2.7
+(`nunito-latin-800-normal.woff`, font version 3.602) and converted to paths with opentype.js 1.3.4 on server-f. No font is
+loaded by the site. The paths were tidied with SVGO 3.3.2 on server-f (`convertPathData` off, because it fails on this
+outline).

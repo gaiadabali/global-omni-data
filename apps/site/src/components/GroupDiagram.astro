@@ -3,10 +3,10 @@ import BrandMark from "./BrandMark.astro";
 import { BRANDS } from "../lib/brands";
 
 /**
- * How the group fits together, as a static flow: three apps, each adding one part of the picture, into one
+ * How the group fits together, as a static flow: three apps (Spambank lives inside them and adds nothing), each adding one part of the picture, into one
  * profile held by GOD, out to brands as counts for groups. The last row repeats the dot-and-ring signature.
  */
-const adds: Record<string, string> = {
+const adds: Partial<Record<string, string>> = {
   yourtal: "Interests, area and age band",
   snapapp: "Where people shop and what they buy",
   ftr: "Occupation and income bracket",
@@ -18,7 +18,7 @@ const adds: Record<string, string> = {
   aria-label="Three apps feed one profile held by GOD, which brands see only as counts for groups"
 >
   <ul class="gd-apps">
-    {BRANDS.map((b) => (
+    {BRANDS.filter((b) => b.kind === "app").map((b) => (
       <li>
         <BrandMark brand={b.key} name={b.name} />
         <span class="meta">{adds[b.key]}</span>

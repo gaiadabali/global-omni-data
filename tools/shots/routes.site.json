@@ -4,6 +4,7 @@
   { "name": "yourtal", "path": "/brands/yourtal/", "widths": [1440, 390], "themes": ["light", "dark"] },
   { "name": "snapapp", "path": "/brands/snapapp/", "widths": [1440, 390], "themes": ["light", "dark"] },
   { "name": "free-tax-returns", "path": "/brands/free-tax-returns/", "widths": [1440, 390], "themes": ["light", "dark"] },
+  { "name": "spambank", "path": "/brands/spambank/", "widths": [1440, 390], "themes": ["light", "dark"] },
   { "name": "for-brands", "path": "/for-brands/", "widths": [1440, 390], "themes": ["light", "dark"] },
   { "name": "how-it-works", "path": "/how-it-works/", "widths": [1440, 390], "themes": ["light", "dark"] },
   { "name": "privacy", "path": "/privacy/", "widths": [1440, 390], "themes": ["light", "dark"] },

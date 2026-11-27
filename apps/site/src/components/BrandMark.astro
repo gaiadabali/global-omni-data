@@ -3,12 +3,13 @@ import { Image } from "astro:assets";
 import yourtal from "../assets/brands/yourtal-mark.svg";
 import snapapp from "../assets/brands/snapapp-mark.svg";
 import ftr from "../assets/brands/ftr-mark.svg";
+import spambank from "../assets/brands/spambank-mark.svg";
 import type { BrandKey } from "../lib/brands";
 
 /**
  * A brand's own mark, as its master file (never redrawn), with its name beside it as text. The yellow YourTal line
  * art sits on a Charcoal tile and the Free Tax Returns arrow on a light one, because neither shows on every page
- * ground; the SnapApp mark is a rounded square that needs none. Colours are in `styles/brands.css`.
+ * ground; the SnapApps mark is a rounded square that needs none. Colours are in `styles/brands.css`.
  */
 interface Props {
   brand: BrandKey;
@@ -16,7 +17,7 @@ interface Props {
 }
 
 const { brand, name } = Astro.props;
-const src = { yourtal, snapapp, ftr }[brand];
+const src = { yourtal, snapapp, ftr, spambank }[brand];
 ---
 
 <span class="mark" data-brand={brand}>
