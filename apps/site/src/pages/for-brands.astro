@@ -143,7 +143,9 @@ const rules = [
           widths={[480, 720, 960, 1280]}
           sizes="(max-width: 960px) 100vw, 44vw"
           formats={["avif", "webp"]}
+          fallbackFormat="webp"
           loading="eager"
+          fetchpriority="high"
         />
       </div>
       <figcaption class="meta">Suburb level is as close as GOD's maps get.</figcaption>
@@ -207,6 +209,7 @@ const rules = [
                 widths={[400, 640, 960]}
                 sizes="(max-width: 960px) 100vw, 33vw"
                 formats={["avif", "webp"]}
+                fallbackFormat="webp"
               />
             </div>
             <h3>{x.name}</h3>
