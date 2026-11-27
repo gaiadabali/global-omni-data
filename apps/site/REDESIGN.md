@@ -47,8 +47,9 @@ All three faces are self-hosted from `@fontsource` (latin and latin-ext subsets 
 | `--night`        | `#070A33`              | `#060820`                      | The deep indigo bands (hero, closing call to action)                       |
 | `--ochre`        | `#B8792A` (fills only) | `#E0A14A`                      | Data highlight inside moments only: a city on the map, the highlighted bar |
 
-The three brand colours (YourTal gold `#FFC53D`, SnapApp blue `#1878D8`, FTR navy `#0F172A` and emerald `#10B981`)
-appear only in each brand's own mark and as a thin rule on its brand page. GOD's chrome stays indigo.
+Each brand has its own colour set, defined once in `src/styles/brands.css` (see section 7). It appears only inside
+that brand's page or card; GOD's chrome (header, footer, closing bands, every other page) stays indigo. The old
+placeholder colours (gold `#FFC53D`, blue `#1878D8`, navy `#0F172A` and emerald `#10B981`) are retired.
 
 ### Layout
 
@@ -277,10 +278,56 @@ buttons.
 - **Photographs**: six Unsplash photos under the Unsplash License (free for commercial use, no attribution
   required), recorded in `CREDITS.md`. Downloaded on server-f, stored in `src/assets/photos/`, served through
   `astro:assets`.
-- **Brand marks**: copied from each brand's repo (`icon.svg`, `snap-icon.png`).
+- **Brand logos**: the founder-approved SVGs from `god/brand-assets/svg/`, optimised (section 7, `CREDITS.md`).
 - **Data visuals**: the dotted Australia (build-time SVG), the docket, dot fields, the sample report and the hex
   catchment map, all static SVG or CSS. No chart library at runtime.
 - **og-image.png**: regenerated with sharp on server-f: indigo field, the logo in white, the dotted map.
+
+## 7. Brand identity on the site (added 2026-11-27)
+
+Founder request, 2026-11-27: "the god website need to use the new brands logos and its brand color. and each brands
+should have its own page and link it to its own website." The three brand pages already existed; this section records
+how the new logos and colours are applied. Logos and sources: `CREDITS.md`. Colours: `src/styles/brands.css`, the only
+place a brand colour is written, with light and dark values, checked by `src/lib/brands.test.ts`.
+
+### Rules
+
+- **GOD stays the frame.** Indigo `#0C158E`, Newsreader, Inter and Plex Mono are unchanged. No brand font was added: the
+  logo files carry each brand's own type, so the build ships no new web font.
+- **Scope.** A brand colour applies inside a `[data-brand="..."]` element: the `<main>` of a brand page (`Base` takes a
+  `brand` prop) or one brand card. In that scope the indigo accent (links, kickers, step numbers, focus ring, primary
+  button) becomes the brand's. Header, footer, the night bands and the other pages are untouched.
+- **A logo sits on the ground it was drawn for.** YourTal (yellow line art): always Charcoal `#363636`. Free Tax Returns:
+  the reversed logo on navy `#101529`. SnapApp: white in light mode, Ink `#0F172A` in dark mode. The small marks use the
+  same logic: a Charcoal tile for YourTal, a light tile for the Free Tax Returns arrow, and none for SnapApp's rounded
+  square.
+- **Brand page hero.** Logo plate above the h1; a "stage" plate in the brand colour behind the device frame (orange for
+  SnapApp with Ink captions, Charcoal for YourTal, navy for Free Tax Returns, each with a short accent rule inside); a
+  primary "Visit <host>" button in the brand fill. Brand cards (home, /brands/) use the quiet tint of the brand colour
+  behind the device instead of the full stage.
+- **Links to each brand's own site.** Every brand card, every brand hero and the footer carry a "Visit <host>" link with
+  `target="_blank"`, `rel="noopener"` and a hidden note in the accessible name ("opens YourTal's own site in a new tab").
+  The visible text is contained in the accessible name (WCAG 2.5.3). The addresses are written only in
+  `src/lib/brands.ts`. SnapApp and YourTal are staging hosts today, so their final domains may change in that one file.
+  SnapApp's page also notes its web app, `snapapp.app.gaiada.com`.
+
+### Colour tokens (hex; contrast checked against the page papers `#F5F6FA` and `#0A0C17`)
+
+| Brand            | Fill, text on fill                                      | Accent text on light | Accent text on dark | Notes                                                                                                             |
+| ---------------- | ------------------------------------------------------- | -------------------- | ------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| SnapApp          | `#EA542D`, Ink `#0F172A` (4.9:1)                        | `#B2300F` (5.8:1)    | `#FF8A66`           | White on orange only for large text. Orange is never body text on light.                                          |
+| YourTal          | `#FFDA00`, Ink `#0F172A` (13:1)                         | `#705700` (6.4:1)    | `#FFDA00`           | Yellow is never text on a light ground. Plate Charcoal `#363636`.                                                 |
+| Free Tax Returns | navy `#101529`, white; dark mode: green `#54BE92`, navy | `#1B7352` (5.4:1)    | `#54BE92`           | Green only as a fill, or as text on navy or dark. The guide lists `#34D399`; the logo file is `#54BE92` and wins. |
+
+`src/lib/brands.test.ts` fails if any of these pairs drops below 4.5:1 in either theme.
+
+### Decisions to confirm
+
+- The Free Tax Returns logo contains "Bigger refund guaranteed". The site's copy deliberately avoids guarantee claims
+  (section 6, "Deliberately left out"). The logo is shown as approved, at a size where the line can be read. If the
+  founder or the brand's lawyer would rather not show it on GOD's site, the fix is to supply a logo version without the
+  line; nothing in the code needs to change except the file.
+- YourTal's mascot, SnapApp's wordmark and poster, and the navy Free Tax Returns logo were supplied but are not used.
 
 ## 6. Content sources
 

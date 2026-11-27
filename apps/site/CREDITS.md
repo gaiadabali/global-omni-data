@@ -34,8 +34,34 @@ server-f on 2026-11-27. They are GOD's own products, so no third-party licence a
 
 No screen shows a real person's data: they are public marketing pages, an empty form and YourTal's seeded demo world.
 
-## Brand marks
+## Brand logos
 
-`src/assets/brands/`: `yourtal-mark.svg` (yourtal `apps/web/app/icon.svg`), `snapapp-mark.png` (snap-apps
-`apps/web/public/brand/snap-icon.png`), `ftr-mark.svg` (free-tax-return-preview `src/app/icon.svg`). The GOD logo is
-`src/assets/god-logo.png`.
+`src/assets/brands/`: the founder-approved logos, merged into `god/brand-assets/svg/` on 2026-11-27 (guide:
+`god/brand-assets/GOD-Ecosystem-Brand-Guidelines.pdf`; where the guide and a logo file differ, the file wins). They are
+the brands' own artwork, used as supplied: never recoloured, redrawn, stretched or re-set in a web font. Each was
+checked before it was added (no script, event handler, `<image>`, `<use>`, `<style>`, link, `data:` URI or external
+reference; only `<svg>` and `<path>`), then optimised with SVGO 3.3.2 on server-f (`multipass`, `floatPrecision: 1`,
+`removeViewBox` off; the paths are traced outlines, so the output was compared with the originals in Chromium).
+
+| File (`src/assets/brands/`) | Source in `brand-assets/svg/` | Brand repo at the time of the approval | Size (original, optimised) | Used for                               |
+| --------------------------- | ----------------------------- | -------------------------------------- | -------------------------- | -------------------------------------- |
+| `snapapp-lockup.svg`        | `snapapp-lockup.svg`          | snap-app@736168d                       | 78.7 KB, 23.0 KB           | Brand page hero, brand cards           |
+| `snapapp-mark.svg`          | `snapapp-mark.svg`            | snap-app@736168d                       | 61.6 KB, 16.6 KB           | Small mark (diagram, About)            |
+| `yourtal-lockup.svg`        | `yourtal-lockup.svg`          | yourtal@efefb214                       | 6.7 KB, 3.7 KB             | Brand page hero, brand cards           |
+| `yourtal-mark.svg`          | `yourtal-mark.svg`            | yourtal@efefb214                       | 2.1 KB, 1.4 KB             | Small mark                             |
+| `ftr-logo-reversed.svg`     | `ftr-logo-reversed.svg`       | free-tax-return@81344d5                | 21.8 KB, 11.4 KB           | Brand page hero, brand cards (on navy) |
+| `ftr-mark.svg`              | `ftr-mark.svg`                | free-tax-return@81344d5                | 7.5 KB, 4.3 KB             | Small mark                             |
+
+Not used on the site, on purpose: `snapapp-wordmark.svg`, `snapper-poster.webp`, `yourtal-mascot.svg` (the mascot is
+YourTal's, line art for dark ground; the pages already have a hero) and `ftr-logo.svg` (navy on light; the site shows the
+Free Tax Returns logo on its navy plate, so only the reversed file is needed).
+
+Ground rules that follow from the guide and are built into `src/styles/brands.css`: the YourTal logos are yellow line art
+and always sit on Charcoal `#363636`; the Free Tax Returns marks sit on navy (hero, cards) or a light tile (small mark,
+whose arrow is navy); SnapApp's orange logo sits on white, or on Ink `#0F172A` in dark mode.
+
+Names: SnapApp's artwork reads "SNAP APPS". The site keeps the text name "SnapApp" and uses it as the image's alt text.
+The Free Tax Returns logo includes the line "Bigger refund guaranteed". It is part of the approved artwork, so it appears
+with the logo; the site's own copy makes no such claim (see REDESIGN.md section 7).
+
+The GOD logo is `src/assets/god-logo.png`.

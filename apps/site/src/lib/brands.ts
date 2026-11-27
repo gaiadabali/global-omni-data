@@ -1,6 +1,8 @@
 /**
  * The three GOD brands, in one place for the home page, the brands overview, the brand pages and the footer.
  * Every line here comes from the brand's own repo or live site; REDESIGN.md §6 lists the source of each.
+ * This file is also the only place a brand's own web address is written. SnapApp and YourTal are staging hosts
+ * today, so a final domain is a one-line change here. Brand colours live in `styles/brands.css`.
  */
 export type BrandKey = "yourtal" | "snapapp" | "ftr";
 
@@ -14,6 +16,8 @@ export interface Brand {
   /** The brand's own site. */
   href: string;
   host: string;
+  /** A second address that is the product itself rather than its marketing site (SnapApp's web app). */
+  webApp?: { href: string; host: string };
   /** The brand's own tagline, quoted as it writes it. */
   tagline: string;
   /** Two plain sentences on what it does. */
@@ -50,6 +54,7 @@ export const BRANDS: Brand[] = [
     page: "/brands/snapapp/",
     href: "https://snapapp.gaiada.com",
     host: "snapapp.gaiada.com",
+    webApp: { href: "https://snapapp.app.gaiada.com", host: "snapapp.app.gaiada.com" },
     tagline: "The receipt app that reads every line.",
     summary:
       "Photograph a docket and SnapApp reads each line, splits GST-free from taxable, checks it is a valid tax invoice and keeps a true copy for five years.",

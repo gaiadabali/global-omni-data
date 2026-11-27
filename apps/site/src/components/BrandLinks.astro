@@ -1,0 +1,26 @@
+---
+import Icon from "./Icon.astro";
+import { brand, type BrandKey } from "../lib/brands";
+
+/**
+ * The two links every brand card carries: this site's page about the brand, and the brand's own site. The second
+ * opens in a new tab, says so in its accessible name, and uses `rel="noopener"`. Addresses come from `lib/brands.ts`.
+ */
+interface Props {
+  brand: BrandKey;
+}
+
+const b = brand(Astro.props.brand);
+---
+
+<div class="row brand-links">
+  <a class="go" href={b.page}>
+    About {b.name}
+    <Icon name="arrow" />
+  </a>
+  <a class="go" href={b.href} target="_blank" rel="noopener">
+    Visit {b.host}
+    <span class="visually-hidden"> (opens {b.name}'s own site in a new tab)</span>
+    <Icon name="external" />
+  </a>
+</div>

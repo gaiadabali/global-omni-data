@@ -2,7 +2,8 @@
 import Base from "../../layouts/Base.astro";
 import PageHero from "../../components/PageHero.astro";
 import GroupDiagram from "../../components/GroupDiagram.astro";
-import BrandMark from "../../components/BrandMark.astro";
+import BrandLockup from "../../components/BrandLockup.astro";
+import BrandLinks from "../../components/BrandLinks.astro";
 import Phone from "../../components/Phone.astro";
 import Browser from "../../components/Browser.astro";
 import Cta from "../../components/Cta.astro";
@@ -60,9 +61,9 @@ const stays = [
     <div class="wrap">
       <h2 class="visually-hidden">The three brands</h2>
       <div class="panels">
-        <article class="panel split" data-reveal>
+        <article data-brand="yourtal" class="panel split" data-reveal>
           <div class="panel-text">
-            <BrandMark brand="yourtal" name={yourtal.name} size="lg" />
+            <BrandLockup brand="yourtal" name={yourtal.name} />
             <p class="said">{yourtal.tagline}</p>
             <p>{yourtal.summary}</p>
             <p class="small">
@@ -74,17 +75,7 @@ const stays = [
               ))}
             </ul>
             <span class={`status ${yourtal.status.kind}`}>{yourtal.status.label}</span>
-            <div class="row">
-              <a class="go" href={yourtal.page}>
-                About YourTal
-                <Icon name="arrow" />
-              </a>
-              <a class="go" href={yourtal.href} target="_blank" rel="noopener">
-                {yourtal.host}
-                <span class="visually-hidden"> (opens in a new tab)</span>
-                <Icon name="external" />
-              </a>
-            </div>
+            <BrandLinks brand="yourtal" />
           </div>
           <div class="panel-visual">
             <Phone
@@ -95,9 +86,9 @@ const stays = [
           </div>
         </article>
 
-        <article class="panel split flip" data-reveal>
+        <article data-brand="snapapp" class="panel split flip" data-reveal>
           <div class="panel-text">
-            <BrandMark brand="snapapp" name={snapapp.name} size="lg" />
+            <BrandLockup brand="snapapp" name={snapapp.name} />
             <p class="said">{snapapp.tagline}</p>
             <p>{snapapp.summary}</p>
             <p class="small">
@@ -109,17 +100,7 @@ const stays = [
               ))}
             </ul>
             <span class={`status ${snapapp.status.kind}`}>{snapapp.status.label}</span>
-            <div class="row">
-              <a class="go" href={snapapp.page}>
-                About SnapApp
-                <Icon name="arrow" />
-              </a>
-              <a class="go" href={snapapp.href} target="_blank" rel="noopener">
-                {snapapp.host}
-                <span class="visually-hidden"> (opens in a new tab)</span>
-                <Icon name="external" />
-              </a>
-            </div>
+            <BrandLinks brand="snapapp" />
           </div>
           <div class="panel-visual">
             <Browser
@@ -130,9 +111,9 @@ const stays = [
           </div>
         </article>
 
-        <article class="panel split" data-reveal>
+        <article data-brand="ftr" class="panel split" data-reveal>
           <div class="panel-text">
-            <BrandMark brand="ftr" name={ftr.name} size="lg" />
+            <BrandLockup brand="ftr" name={ftr.name} />
             <p class="said">{ftr.tagline}</p>
             <p>{ftr.summary}</p>
             <p class="small">
@@ -144,17 +125,7 @@ const stays = [
               ))}
             </ul>
             <span class={`status ${ftr.status.kind}`}>{ftr.status.label}</span>
-            <div class="row">
-              <a class="go" href={ftr.page}>
-                About Free Tax Returns
-                <Icon name="arrow" />
-              </a>
-              <a class="go" href={ftr.href} target="_blank" rel="noopener">
-                {ftr.host}
-                <span class="visually-hidden"> (opens in a new tab)</span>
-                <Icon name="external" />
-              </a>
-            </div>
+            <BrandLinks brand="ftr" />
           </div>
           <div class="panel-visual">
             <Phone
@@ -203,7 +174,7 @@ const stays = [
       </div>
       <ul class="feats" data-reveal="1">
         {BRANDS.map((b) => (
-          <li>
+          <li data-brand={b.key}>
             <h3>{b.name}</h3>
             <p>{b.adds}</p>
             <p class="small">
@@ -261,16 +232,12 @@ const stays = [
     color: var(--ink-2);
     max-width: 34rem;
   }
-  .panel-text .row {
-    gap: 12px 28px;
-    margin-top: 4px;
-  }
   .panel-visual {
     display: grid;
     justify-items: center;
     padding: 48px 32px;
     border-radius: 28px;
-    background: var(--raised);
+    background: var(--b-soft);
     min-width: 0;
   }
   @media (max-width: 960px) {

@@ -4,7 +4,8 @@ import Icon from "./Icon.astro";
 interface Props {
   title?: string;
   lede?: string;
-  primary?: { href: string; label: string };
+  /** `external` opens the link in a new tab, with a hidden note for screen readers (a brand's own site). */
+  primary?: { href: string; label: string; external?: boolean };
   secondary?: { href: string; label: string };
 }
 
@@ -23,9 +24,15 @@ const {
       <p class="lede">{lede}</p>
     </div>
     <div class="row" data-reveal="2">
-      <a class="btn btn-primary" href={primary.href}>
+      <a
+        class="btn btn-primary"
+        href={primary.href}
+        target={primary.external ? "_blank" : undefined}
+        rel={primary.external ? "noopener" : undefined}
+      >
         {primary.label}
-        <Icon name="arrow" />
+        {primary.external && <span class="visually-hidden"> (opens in a new tab)</span>}
+        <Icon name={primary.external ? "external" : "arrow"} />
       </a>
       {secondary && (
         <a class="btn btn-line" href={secondary.href}>

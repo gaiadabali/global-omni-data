@@ -6,6 +6,7 @@ import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import { canonicalUrl, SITE_NAME, SITE_URL } from "../lib/site";
 import { themeBootstrap } from "../lib/theme-bootstrap";
+import type { BrandKey } from "../lib/brands";
 
 interface Props {
   /** The full <title>. */
@@ -16,6 +17,8 @@ interface Props {
   ogAlt?: string;
   /** Pages that should never be indexed, such as the 404. They also get no canonical or og:url. */
   noindex?: boolean;
+  /** A brand page sets this so its colour accent applies to the page body (not the header or footer). */
+  brand?: BrandKey;
 }
 
 const {
@@ -24,6 +27,7 @@ const {
   ogImage = "/og-image.png",
   ogAlt = "GOD, Global Omni Data: insight from what Australians actually do",
   noindex = false,
+  brand,
 } = Astro.props;
 const hideFromSearch = noindex || import.meta.env.PUBLIC_NOINDEX === "1";
 const canonical = noindex ? undefined : canonicalUrl(Astro.url.pathname);
@@ -73,7 +77,7 @@ const ogUrl = new URL(ogImage, SITE_URL).toString();
       Skip to content
     </a>
     <Header />
-    <main id="main" tabindex="-1">
+    <main id="main" tabindex="-1" data-brand={brand}>
       <slot />
     </main>
     <Footer />

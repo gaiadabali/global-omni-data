@@ -1,5 +1,6 @@
 ---
 import Logo from "./Logo.astro";
+import Icon from "./Icon.astro";
 import { BRANDS } from "../lib/brands";
 import { CONTACT_EMAIL } from "../lib/site";
 ---
@@ -16,10 +17,16 @@ import { CONTACT_EMAIL } from "../lib/site";
       </div>
       <div>
         <h2>Our brands</h2>
-        <ul>
+        <ul class="brandlist">
           {BRANDS.map((b) => (
             <li>
               <a href={b.page}>{b.name}</a>
+              <a class="ext" href={b.href} target="_blank" rel="noopener">
+                <span class="visually-hidden">Visit </span>
+                {b.host}
+                <span class="visually-hidden"> (opens {b.name}'s own site in a new tab)</span>
+                <Icon name="external" />
+              </a>
             </li>
           ))}
         </ul>

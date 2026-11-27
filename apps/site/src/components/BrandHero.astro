@@ -1,12 +1,13 @@
 ---
-import BrandMark from "./BrandMark.astro";
+import BrandLockup from "./BrandLockup.astro";
 import Icon from "./Icon.astro";
 import { brand, type BrandKey } from "../lib/brands";
 
 /**
- * The head of a brand page: breadcrumbs, the brand's own mark, the h1, a lede, its honest status, a link to
- * the live site and one to GOD's contact page, and a device frame in the "visual" slot. A thin rule in the
- * brand's own colour sits above the mark (the only place a brand colour appears outside its mark).
+ * The head of a brand page: breadcrumbs, the brand's logo on its own ground, the h1, a lede, its honest status, a
+ * button to the brand's own site and one to GOD's contact page. A device frame goes in the "visual" slot, on the
+ * brand's stage plate. The page's `<main>` carries `data-brand`, so the accent colour is already in scope here
+ * (tokens in `styles/brands.css`).
  */
 interface Props {
   brand: BrandKey;
@@ -24,7 +25,7 @@ const {
 const b = brand(key);
 ---
 
-<section class="phero bhero" data-brand={key}>
+<section class="phero bhero">
   <div class="wrap">
     <div>
       <nav aria-label="Breadcrumb">
@@ -41,8 +42,7 @@ const b = brand(key);
         </ol>
       </nav>
       <div class="bh-id">
-        <span class="bh-rule" aria-hidden="true"></span>
-        <BrandMark brand={key} name={b.name} size="lg" />
+        <BrandLockup brand={key} name={b.name} size="lg" eager />
       </div>
       <h1>{title}</h1>
       <p class="lede">{lede}</p>
@@ -52,15 +52,25 @@ const b = brand(key);
       <div class="row">
         <a class="btn btn-primary" href={b.href} target="_blank" rel="noopener">
           Visit {b.host}
-          <span class="visually-hidden"> (opens in a new tab)</span>
+          <span class="visually-hidden"> (opens {b.name}'s own site in a new tab)</span>
           <Icon name="external" />
         </a>
         <a class="btn btn-line" href={secondary.href}>
           {secondary.label}
         </a>
       </div>
+      {b.webApp && (
+        <p class="ext-note">
+          The web app:{" "}
+          <a href={b.webApp.href} target="_blank" rel="noopener">
+            {b.webApp.host}
+            <span class="visually-hidden"> (opens the {b.name} web app in a new tab)</span>
+            <Icon name="external" />
+          </a>
+        </p>
+      )}
     </div>
-    <div class="phero-visual bh-visual">
+    <div class="phero-visual stage">
       <slot name="visual" />
     </div>
   </div>
@@ -68,41 +78,9 @@ const b = brand(key);
 
 <style>
   .bh-id {
-    display: grid;
-    gap: 16px;
-    justify-items: start;
     margin-bottom: 28px;
-  }
-  .bh-rule {
-    display: block;
-    width: 48px;
-    height: 3px;
-    border-radius: 2px;
-    background: var(--indigo-ink);
-  }
-  [data-brand="yourtal"] .bh-rule {
-    background: #ffc53d;
-  }
-  [data-brand="snapapp"] .bh-rule {
-    background: #1878d8;
-  }
-  [data-brand="ftr"] .bh-rule {
-    background: #10b981;
   }
   .bh-status {
     margin: 20px 0 0;
-  }
-  .bh-visual {
-    display: grid;
-    justify-items: center;
-    padding: 48px 24px;
-    border-radius: 28px;
-    background: var(--raised);
-    min-width: 0;
-  }
-  @media (max-width: 960px) {
-    .bh-visual {
-      padding: 32px 16px;
-    }
   }
 </style>
