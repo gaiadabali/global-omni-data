@@ -3,12 +3,13 @@ import { Image } from "astro:assets";
 import yourtal from "../assets/brands/yourtal-lockup.svg";
 import snapapp from "../assets/brands/snapapp-lockup.svg";
 import ftr from "../assets/brands/ftr-logo-reversed.svg";
+import spambank from "../assets/brands/spambank-lockup-reversed.svg";
 import type { BrandKey } from "../lib/brands";
 
 /**
  * A brand's full logo on the ground it was drawn for (see `styles/brands.css`): the plate is part of the logo's
- * use, not decoration. Free Tax Returns always uses the reversed logo, on navy. The artwork may spell the name
- * differently from the site's text (SnapApp's logo reads "SNAP APPS"); the alt text is the name the site uses.
+ * use, not decoration. Free Tax Returns and Spambank always use the reversed logo, on navy and deep teal. The artwork may spell the name
+ * differently from the site's text; the alt text is the name the site uses (SnapApps).
  */
 interface Props {
   brand: BrandKey;
@@ -19,7 +20,7 @@ interface Props {
 }
 
 const { brand, name, size = "md", eager = false } = Astro.props;
-const src = { yourtal, snapapp, ftr }[brand];
+const src = { yourtal, snapapp, ftr, spambank }[brand];
 ---
 
 <span class:list={["lockup", { lg: size === "lg" }]} data-brand={brand}>

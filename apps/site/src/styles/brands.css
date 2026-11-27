@@ -8,7 +8,7 @@
    there it replaces the indigo accent (links, kickers, step numbers, focus ring, primary button) and nothing else.
 
    Contrast rules, all AA, checked against the page papers (#F5F6FA light, #0A0C17 dark):
-   - SnapApp: orange fill with Ink text (4.9:1). White on orange only for large text. Orange as text on light is
+   - SnapApps: orange fill with Ink text (4.9:1). White on orange only for large text. Orange as text on light is
      #B2300F (5.8:1); on dark #FF8A66.
    - YourTal: Play Yellow fill with Ink text (13:1). The yellow is line art in the logos: never recoloured, never
      filled, always on Charcoal. Accent text on light is #705700 (6.4:1). Yellow is never text on a light ground.
@@ -52,6 +52,29 @@
   --ftr-stage: #101529;
   --ftr-on-stage: #ffffff;
   --ftr-stage-rule: #54be92;
+
+  /* Spambank identity v1, created 2026-11-27 for the GOD site. Founder to approve. A calm cerulean teal, apart
+     from SnapApps orange, YourTal yellow, Free Tax Returns navy and green, and GOD indigo. White on the fill is 5.6:1;
+     the plate and stage are deep teal with white text (9.8:1). */
+  --spambank-fill: #0b7285;
+  --spambank-on-fill: #ffffff;
+  --spambank-text: #0a6275;
+  --spambank-soft: #d9f1f6;
+  --spambank-plate: #0a4a5a;
+  --spambank-edge: #0a4a5a;
+  --spambank-stage: #0a4a5a;
+  --spambank-on-stage: #ffffff;
+  --spambank-stage-rule: #67d4ea;
+
+  /* The Spambank Mail screen as an illustration. It draws the app's own light screen, so these do not change with
+     the site's theme. Sample mail only. */
+  --sbui-bg: #ffffff;
+  --sbui-ink: #0f172a;
+  --sbui-muted: #5b6375;
+  --sbui-line: #e4e3dc;
+  --sbui-wash: #f6f5f0;
+  --sbui-accent: #0b7285;
+  --sbui-accent-soft: #d9f1f6;
 }
 
 /* Dark values. Only what changes. Same two selectors the base tokens use for dark mode. */
@@ -69,6 +92,11 @@
     --ftr-text: #54be92;
     --ftr-soft: #0f2a22;
     --ftr-edge: rgb(238 240 248 / 0.18);
+    --spambank-fill: #67d4ea;
+    --spambank-on-fill: #06303b;
+    --spambank-text: #67d4ea;
+    --spambank-soft: #0a2730;
+    --spambank-edge: rgb(238 240 248 / 0.18);
   }
 }
 
@@ -85,6 +113,11 @@
   --ftr-text: #54be92;
   --ftr-soft: #0f2a22;
   --ftr-edge: rgb(238 240 248 / 0.18);
+  --spambank-fill: #67d4ea;
+  --spambank-on-fill: #06303b;
+  --spambank-text: #67d4ea;
+  --spambank-soft: #0a2730;
+  --spambank-edge: rgb(238 240 248 / 0.18);
 }
 
 /* ---------- Scope: one brand's accent ---------- */
@@ -129,6 +162,19 @@
   --b-tile: var(--b-paper);
 }
 
+[data-brand="spambank"] {
+  --b-fill: var(--spambank-fill);
+  --b-on-fill: var(--spambank-on-fill);
+  --b-text: var(--spambank-text);
+  --b-soft: var(--spambank-soft);
+  --b-plate: var(--spambank-plate);
+  --b-edge: var(--spambank-edge);
+  --b-stage: var(--spambank-stage);
+  --b-on-stage: var(--spambank-on-stage);
+  --b-stage-rule: var(--spambank-stage-rule);
+  --b-tile: transparent;
+}
+
 /* Inside a brand scope the indigo accent becomes the brand's. Header, footer and the night bands set their own
    colours and are not touched. */
 [data-brand] {
@@ -147,7 +193,7 @@
 /* ---------- Lockup on its plate ---------- */
 
 /* The logo files carry each brand's own type, so there is no web font here. The plate is the ground the logo is
-   drawn for: white or ink for SnapApp, Charcoal for YourTal (the yellow line art is invisible on light), navy
+   drawn for: white or ink for SnapApps, Charcoal for YourTal (the yellow line art is invisible on light), navy
    for Free Tax Returns (reversed logo). Width, not height, is set, so the logo shrinks on a phone. */
 .lockup {
   --w: 200px;
@@ -176,6 +222,9 @@
 .lockup[data-brand="ftr"] {
   --w: 224px;
 }
+.lockup[data-brand="spambank"] {
+  --w: 216px;
+}
 
 .lockup.lg[data-brand="snapapp"] {
   --w: 208px;
@@ -185,6 +234,9 @@
 }
 .lockup.lg[data-brand="ftr"] {
   --w: 288px;
+}
+.lockup.lg[data-brand="spambank"] {
+  --w: 280px;
 }
 
 .lockup.lg {
@@ -228,8 +280,9 @@
   height: auto;
 }
 
-/* The SnapApp mark is its own rounded square. */
-.mark[data-brand="snapapp"] .tile img {
+/* The SnapApps and Spambank marks are their own rounded squares. */
+.mark[data-brand="snapapp"] .tile img,
+.mark[data-brand="spambank"] .tile img {
   width: 36px;
   border-radius: 9px;
 }
@@ -282,6 +335,21 @@
 .brand-links {
   gap: 12px 28px;
   margin-top: 4px;
+}
+
+.use-in {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 20px;
+  margin: 0;
+  font-family: var(--f-mono);
+  font-size: 0.8125rem;
+  color: var(--ink-3);
+}
+
+.use-in .go {
+  font-weight: 500;
 }
 
 .ext-note {

@@ -1,22 +1,29 @@
 /**
- * The three GOD brands, in one place for the home page, the brands overview, the brand pages and the footer.
+ * The four GOD brands, in one place for the home page, the brands overview, the brand pages and the footer.
  * Every line here comes from the brand's own repo or live site; REDESIGN.md §6 lists the source of each.
- * This file is also the only place a brand's own web address is written. SnapApp and YourTal are staging hosts
+ * This file is also the only place a brand's own web address is written. SnapApps and YourTal are staging hosts
  * today, so a final domain is a one-line change here. Brand colours live in `styles/brands.css`.
  */
-export type BrandKey = "yourtal" | "snapapp" | "ftr";
+export type BrandKey = "yourtal" | "snapapp" | "ftr" | "spambank";
 
 export type BrandStatus = "live" | "beta" | "review";
 
 export interface Brand {
   key: BrandKey;
   name: string;
+  /**
+   * "app" is a product with its own site and its own data that feeds GOD (YourTal, SnapApps, Free Tax Returns).
+   * "feature" lives inside the apps and has no site of its own (Spambank): its page on this site is its website.
+   */
+  kind: "app" | "feature";
   /** This site's page about the brand. */
   page: string;
-  /** The brand's own site. */
-  href: string;
-  host: string;
-  /** A second address that is the product itself rather than its marketing site (SnapApp's web app). */
+  /** The brand's own site, or null for a feature that has none (then see `availableIn`). */
+  href: string | null;
+  host: string | null;
+  /** For a feature with no site: the brands it can be used in. */
+  availableIn?: BrandKey[];
+  /** A second address that is the product itself rather than its marketing site (SnapApps' web app). */
   webApp?: { href: string; host: string };
   /** The brand's own tagline, quoted as it writes it. */
   tagline: string;
@@ -34,6 +41,7 @@ export const BRANDS: Brand[] = [
   {
     key: "yourtal",
     name: "YourTal",
+    kind: "app",
     page: "/brands/yourtal/",
     href: "https://yourtal.gaiada.com",
     host: "yourtal.gaiada.com",
@@ -50,14 +58,15 @@ export const BRANDS: Brand[] = [
   },
   {
     key: "snapapp",
-    name: "SnapApp",
+    name: "SnapApps",
+    kind: "app",
     page: "/brands/snapapp/",
     href: "https://snapapp.gaiada.com",
     host: "snapapp.gaiada.com",
     webApp: { href: "https://app.snapapps.gaiada.com", host: "app.snapapps.gaiada.com" },
     tagline: "The receipt app that reads every line.",
     summary:
-      "Photograph a docket and SnapApp reads each line, splits GST-free from taxable, checks it is a valid tax invoice and keeps a true copy for five years.",
+      "Photograph a docket and SnapApps reads each line, splits GST-free from taxable, checks it is a valid tax invoice and keeps a true copy for five years.",
     serves: "People and households",
     facts: [
       "10 free scans, then 10 cents a scan",
@@ -69,6 +78,7 @@ export const BRANDS: Brand[] = [
   {
     key: "ftr",
     name: "Free Tax Returns",
+    kind: "app",
     page: "/brands/free-tax-returns/",
     href: "https://freetaxreturns.com.au",
     host: "freetaxreturns.com.au",
@@ -80,10 +90,37 @@ export const BRANDS: Brand[] = [
     status: { kind: "live", label: "Live at freetaxreturns.com.au" },
     adds: "Occupation, income bracket and return status. Never a tax file number or bank details",
   },
+  {
+    key: "spambank",
+    name: "Spambank",
+    kind: "feature",
+    page: "/brands/spambank/",
+    // No site of its own: this page is its website. It is used inside the three apps.
+    href: null,
+    host: null,
+    availableIn: ["snapapp", "yourtal", "ftr"],
+    // Draft tagline, written for this site: founder to approve (REDESIGN.md section 8).
+    tagline: "Your real inbox, kept clean.",
+    summary:
+      "One free email address per person, shared across SnapApps, YourTal and Free Tax Returns. Use it for sign-ups and newsletters, and spam and bulk mail goes to Junk on its own.",
+    serves: "Adults who sign up for things online",
+    facts: ["One address, the same mail in all three apps", "Adults only"],
+    status: { kind: "review", label: "In staging testing" },
+    adds: "Nothing from your mail. Spambank keeps your real inbox clean; GOD never reads email contents",
+  },
 ];
 
 export function brand(key: BrandKey): Brand {
   const b = BRANDS.find((x) => x.key === key);
   if (!b) throw new Error(`unknown brand ${key}`);
   return b;
+}
+
+/** Where a brand can be reached on the web: its own site, or the apps a feature lives in. */
+export function sitesFor(b: Brand): { key: BrandKey; name: string; href: string; host: string }[] {
+  if (b.href && b.host) return [{ key: b.key, name: b.name, href: b.href, host: b.host }];
+  return (b.availableIn ?? []).flatMap((k) => {
+    const a = brand(k);
+    return a.href && a.host ? [{ key: a.key, name: a.name, href: a.href, host: a.host }] : [];
+  });
 }

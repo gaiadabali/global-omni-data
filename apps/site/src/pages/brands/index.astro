@@ -6,6 +6,7 @@ import BrandLockup from "../../components/BrandLockup.astro";
 import BrandLinks from "../../components/BrandLinks.astro";
 import Phone from "../../components/Phone.astro";
 import Browser from "../../components/Browser.astro";
+import MailMock from "../../components/MailMock.astro";
 import Cta from "../../components/Cta.astro";
 import Icon from "../../components/Icon.astro";
 import { BRANDS, brand } from "../../lib/brands";
@@ -17,6 +18,7 @@ import ftrWorksheet from "../../assets/screens/ftr-worksheet.webp";
 const yourtal = brand("yourtal");
 const snapapp = brand("snapapp");
 const ftr = brand("ftr");
+const spambank = brand("spambank");
 
 const connect = [
   {
@@ -41,17 +43,18 @@ const stays = [
   "Tax file numbers, bank details, identity documents and the lines of a return never leave Free Tax Returns",
   "Receipt images are never copied to GOD",
   "Passwords are never copied to GOD",
+  "The contents of your email are never read or used by GOD",
 ];
 ---
 
 <Base
-  title="Our brands: YourTal, SnapApp and Free Tax Returns | GOD (Global Omni Data)"
-  description="GOD is the group behind three apps: YourTal for rewards from local businesses, SnapApp for receipts that file themselves, and Free Tax Returns for a deduction worksheet. One sign-in, one privacy notice, one standard."
+  title="Our brands: YourTal, SnapApps, Free Tax Returns and Spambank | GOD (Global Omni Data)"
+  description="GOD is the group behind four brands: YourTal for rewards from local businesses, SnapApps for receipts that file themselves, Free Tax Returns for a deduction worksheet, and Spambank for an email address that keeps your real inbox clean. One sign-in, one privacy notice, one standard."
   ogImage="/og/brands.png"
 >
   <PageHero
-    title="Three apps people choose for their own reasons"
-    lede="Each one solves a real problem: rewards from local businesses, receipts that file themselves, a tax return with no deduction left behind. GOD connects them with one sign-in, one privacy notice and one standard."
+    title="Four brands, each with its own job"
+    lede="Each one solves a real problem: rewards from local businesses, receipts that file themselves, a tax return with no deduction left behind, and an inbox that stays clean. GOD connects them with one sign-in, one privacy notice and one standard."
     kicker="Our brands"
     crumbs={[{ href: "/", label: "Home" }, { label: "Our brands" }]}
   >
@@ -60,7 +63,7 @@ const stays = [
 
   <section class="sec" id="brands">
     <div class="wrap">
-      <h2 class="visually-hidden">The three brands</h2>
+      <h2 class="visually-hidden">The four brands</h2>
       <div class="panels">
         <article data-brand="yourtal" class="panel split" data-reveal>
           <div class="panel-text">
@@ -106,7 +109,7 @@ const stays = [
           <div class="panel-visual">
             <Browser
               src={saHome}
-              alt="The SnapApp home page: “The receipt app that reads every line”, beside a phone showing a receipt split into GST-free and taxable lines"
+              alt="The SnapApps home page: “The receipt app that reads every line”, beside a phone showing a receipt split into GST-free and taxable lines"
               url="snapapp.gaiada.com"
             />
           </div>
@@ -136,6 +139,27 @@ const stays = [
             />
           </div>
         </article>
+
+        <article data-brand="spambank" class="panel split flip" data-reveal>
+          <div class="panel-text">
+            <BrandLockup brand="spambank" name={spambank.name} />
+            <p class="said">{spambank.tagline}</p>
+            <p>{spambank.summary}</p>
+            <p class="small">
+              <b>For:</b> {spambank.serves}
+            </p>
+            <ul class="chips">
+              {spambank.facts.map((f) => (
+                <li class="chip">{f}</li>
+              ))}
+            </ul>
+            <span class={`status ${spambank.status.kind}`}>{spambank.status.label}</span>
+            <BrandLinks brand="spambank" />
+          </div>
+          <div class="panel-visual">
+            <MailMock view="inbox" />
+          </div>
+        </article>
       </div>
     </div>
   </section>
@@ -144,12 +168,13 @@ const stays = [
     <div class="wrap">
       <div class="sec-head split">
         <div data-reveal>
-          <p class="kicker">How the three connect</p>
+          <p class="kicker">How they connect</p>
           <h2>One sign-in, one notice, one profile</h2>
         </div>
         <p class="lede" data-reveal="2">
           The apps stay separate for the people who use them. What joins them is a shared way to
-          sign in and a shared standard for what GOD may count.
+          sign in and a shared standard for what GOD may count. Spambank uses the same sign-in and
+          adds nothing to the count.
         </p>
       </div>
       <ul class="ledger" data-reveal>
@@ -167,10 +192,11 @@ const stays = [
     <div class="wrap">
       <div class="sec-head" data-reveal>
         <p class="kicker">What each adds</p>
-        <h2>Three views of the same market</h2>
+        <h2>What each brand adds to the picture</h2>
         <p class="lede">
-          Each app contributes a different part of the picture. GOD joins them and counts the result
-          in groups, never as a list of people.
+          Each app contributes a different part of the picture, and Spambank contributes nothing
+          from your mail. GOD joins what the apps add and counts the result in groups, never as a
+          list of people.
         </p>
       </div>
       <ul class="feats" data-reveal="1">

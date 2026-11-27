@@ -34,8 +34,13 @@ describe("navigation helpers", () => {
 });
 
 describe("brands", () => {
-  it("lists the three GOD brands once each, with pages under /brands/", () => {
-    expect(BRANDS.map((b) => b.name)).toEqual(["YourTal", "SnapApp", "Free Tax Returns"]);
+  it("lists the four GOD brands once each, with pages under /brands/", () => {
+    expect(BRANDS.map((b) => b.name)).toEqual([
+      "YourTal",
+      "SnapApps",
+      "Free Tax Returns",
+      "Spambank",
+    ]);
     for (const b of BRANDS) expect(b.page.startsWith("/brands/")).toBe(true);
   });
 });

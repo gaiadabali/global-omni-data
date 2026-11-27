@@ -7,7 +7,7 @@ marked `[UNVERIFIED]`.
 
 ## 1. Direction
 
-- **Product.** GOD is the Australian holding company behind YourTal, SnapApp and Free Tax Returns. It turns what
+- **Product.** GOD is the Australian holding company behind YourTal, SnapApps and Free Tax Returns. It turns what
   people do in those apps, with their consent, into aggregate insight for brands. The site's job: make a brand
   manager trust GOD enough to ask a question, and make anyone else understand exactly what GOD does with data.
 - **Character.** Exact, accountable, quietly warm. It counts carefully and says plainly what it will not do.
@@ -62,10 +62,11 @@ heroes, no bento grids, no equal three-card rows unless the three things truly a
 | Path                        | Page                                                      | In the main nav     |
 | --------------------------- | --------------------------------------------------------- | ------------------- |
 | `/`                         | Home                                                      | logo                |
-| `/brands/`                  | Our brands (overview of the three)                        | "Our brands"        |
+| `/brands/`                  | Our brands (overview of the four)                         | "Our brands"        |
 | `/brands/yourtal/`          | YourTal                                                   | via Our brands      |
-| `/brands/snapapp/`          | SnapApp                                                   | via Our brands      |
+| `/brands/snapapp/`          | SnapApps                                                  | via Our brands      |
 | `/brands/free-tax-returns/` | Free Tax Returns                                          | via Our brands      |
+| `/brands/spambank/`         | Spambank (added 2026-11-27, section 8)                    | via Our brands      |
 | `/for-brands/`              | Insight for brands                                        | "For brands"        |
 | `/how-it-works/`            | How it works: the data journey and the safeguards         | "How it works"      |
 | `/privacy/`                 | Trust & privacy: principles, the teen standard, security  | "Trust"             |
@@ -85,7 +86,7 @@ buttons.
 
 1. **Hero** (night band, split: text left, dotted Australia right)
    - h1: **Know your market by what Australians actually do**
-   - lede: GOD is the group behind YourTal, SnapApp and Free Tax Returns. People use each app for its own reasons.
+   - lede: GOD is the group behind YourTal, SnapApps and Free Tax Returns. People use each app for its own reasons.
      With their consent, we count what they do by suburb, age and occupation, so a brand can understand its market
      without ever seeing a person in it.
    - actions: **See what brands get** (primary) · **How it works**
@@ -104,7 +105,7 @@ buttons.
        answer a question or two, earn points and spend them on vouchers at the businesses they watched. Facts:
        teens join from 13 with a guardian's approval; businesses only ever see grouped results. Status: in staging
        review.
-     - SnapApp, "The receipt app that reads every line." Photograph a docket and SnapApp reads each line, splits
+     - SnapApps, "The receipt app that reads every line." Photograph a docket and SnapApps reads each line, splits
        GST-free from taxable, checks it is a valid tax invoice and keeps a true copy for five years. Facts: 10 free
        scans, then 10 cents a scan; work expenses can go straight to Free Tax Returns. Status: Android beta, iPhone
        in development.
@@ -136,7 +137,7 @@ buttons.
    one privacy notice and one standard.
 2. Three large brand panels (mark, tagline, who it is for, status, device frame, link to the page and the live site).
 3. **How the three connect** (h2): one sign-in ("Sign in with YourTal"), one notice, one profile; what each app adds
-   to the picture (YourTal: interests and area; SnapApp: where and what people buy; FTR: occupation and income
+   to the picture (YourTal: interests and area; SnapApps: where and what people buy; FTR: occupation and income
    bracket).
 4. What stays inside each app (the TFN, bank details, identity documents and return lines never leave FTR; receipt
    images are never copied to GOD).
@@ -161,9 +162,9 @@ buttons.
    What it never shares: anything for ad targeting of teens.
 7. Screens note: screens are from YourTal's staging app, which runs on demo data.
 
-### 3.4 SnapApp `/brands/snapapp/`
+### 3.4 SnapApps `/brands/snapapp/`
 
-1. Hero: h1 **The receipt app that reads every line** (SnapApp's own line). Lede: Photograph a docket. SnapApp reads
+1. Hero: h1 **The receipt app that reads every line** (SnapApps' own line). Lede: Photograph a docket. SnapApps reads
    each line, splits GST-free from taxable, checks it is a valid tax invoice and keeps a true copy for five years.
    Then it shows you where the money went. Browser frame: snapapp.gaiada.com.
 2. **Snap. Read. Sorted.** (the product's three steps).
@@ -176,7 +177,7 @@ buttons.
    expire, no subscription.
 6. **Deductions to Free Tax Returns**: tick a work line, send the file through YourTal sign-in; the file carries no
    merchant names and no images; you review each line in FTR.
-7. **What SnapApp adds to GOD**: where people shop (the merchant's suburb and postcode printed on the receipt),
+7. **What SnapApps adds to GOD**: where people shop (the merchant's suburb and postcode printed on the receipt),
    what they buy by category, spending in bands. It never uses your phone's location; photo GPS is stripped.
 8. Status: Android beta, iPhone in development.
 
@@ -239,7 +240,7 @@ buttons.
 
 ### 3.9 About `/about/`
 
-1. Hero: **The company behind three useful apps** / Global Omni Data holds and joins up what YourTal, SnapApp and
+1. Hero: **The company behind three useful apps** / Global Omni Data holds and joins up what YourTal, SnapApps and
    Free Tax Returns learn, so each app can stay simple for the people who use it.
 2. **What GOD does and doesn't do** (two columns).
 3. **Why a holding company**: one sign-in, one standard, one place for the rules.
@@ -298,24 +299,24 @@ place a brand colour is written, with light and dark values, checked by `src/lib
   `brand` prop) or one brand card. In that scope the indigo accent (links, kickers, step numbers, focus ring, primary
   button) becomes the brand's. Header, footer, the night bands and the other pages are untouched.
 - **A logo sits on the ground it was drawn for.** YourTal (yellow line art): always Charcoal `#363636`. Free Tax Returns:
-  the reversed logo on navy `#101529`. SnapApp: white in light mode, Ink `#0F172A` in dark mode. The small marks use the
-  same logic: a Charcoal tile for YourTal, a light tile for the Free Tax Returns arrow, and none for SnapApp's rounded
+  the reversed logo on navy `#101529`. SnapApps: white in light mode, Ink `#0F172A` in dark mode. The small marks use the
+  same logic: a Charcoal tile for YourTal, a light tile for the Free Tax Returns arrow, and none for SnapApps' rounded
   square.
 - **Brand page hero.** Logo plate above the h1; a "stage" plate in the brand colour behind the device frame (orange for
-  SnapApp with Ink captions, Charcoal for YourTal, navy for Free Tax Returns, each with a short accent rule inside); a
+  SnapApps with Ink captions, Charcoal for YourTal, navy for Free Tax Returns, each with a short accent rule inside); a
   primary "Visit <host>" button in the brand fill. Brand cards (home, /brands/) use the quiet tint of the brand colour
   behind the device instead of the full stage.
 - **Links to each brand's own site.** Every brand card, every brand hero and the footer carry a "Visit <host>" link with
   `target="_blank"`, `rel="noopener"` and a hidden note in the accessible name ("opens YourTal's own site in a new tab").
   The visible text is contained in the accessible name (WCAG 2.5.3). The addresses are written only in
-  `src/lib/brands.ts`. SnapApp and YourTal are staging hosts today, so their final domains may change in that one file.
-  SnapApp's page also notes its web app, `snapapp.app.gaiada.com`.
+  `src/lib/brands.ts`. SnapApps and YourTal are staging hosts today, so their final domains may change in that one file.
+  SnapApps' page also notes its web app, `snapapp.app.gaiada.com`.
 
 ### Colour tokens (hex; contrast checked against the page papers `#F5F6FA` and `#0A0C17`)
 
 | Brand            | Fill, text on fill                                      | Accent text on light | Accent text on dark | Notes                                                                                                             |
 | ---------------- | ------------------------------------------------------- | -------------------- | ------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| SnapApp          | `#EA542D`, Ink `#0F172A` (4.9:1)                        | `#B2300F` (5.8:1)    | `#FF8A66`           | White on orange only for large text. Orange is never body text on light.                                          |
+| SnapApps         | `#EA542D`, Ink `#0F172A` (4.9:1)                        | `#B2300F` (5.8:1)    | `#FF8A66`           | White on orange only for large text. Orange is never body text on light.                                          |
 | YourTal          | `#FFDA00`, Ink `#0F172A` (13:1)                         | `#705700` (6.4:1)    | `#FFDA00`           | Yellow is never text on a light ground. Plate Charcoal `#363636`.                                                 |
 | Free Tax Returns | navy `#101529`, white; dark mode: green `#54BE92`, navy | `#1B7352` (5.4:1)    | `#54BE92`           | Green only as a fill, or as text on navy or dark. The guide lists `#34D399`; the logo file is `#54BE92` and wins. |
 
@@ -327,7 +328,59 @@ place a brand colour is written, with light and dark values, checked by `src/lib
   (section 6, "Deliberately left out"). The logo is shown as approved, at a size where the line can be read. If the
   founder or the brand's lawyer would rather not show it on GOD's site, the fix is to supply a logo version without the
   line; nothing in the code needs to change except the file.
-- YourTal's mascot, SnapApp's wordmark and poster, and the navy Free Tax Returns logo were supplied but are not used.
+- YourTal's mascot, SnapApps' wordmark and poster, and the navy Free Tax Returns logo were supplied but are not used.
+
+## 8. Spambank, the fourth brand (added 2026-11-27)
+
+Founder, 2026-11-27: Spambank is its own brand even though it lives inside the apps. It has no site of its own, so its page
+here, `/brands/spambank/`, is its website. It is listed in `src/lib/brands.ts` with `kind: "feature"`, no `href`, and
+`availableIn: [snapapp, yourtal, ftr]`; its card and page send people to the three apps instead of to a site.
+
+### Spambank identity v1, created 2026-11-27 for the GOD site, founder to approve
+
+- **Mark.** A rounded tile, a white envelope with a flap line, and a small check dot at the corner: a clean inbox. It reads
+  at 24 px. No padlock or shield, so it does not look like a bank or an antivirus.
+- **Wordmark.** "Spambank" in Nunito ExtraBold outlines (OFL 1.1, see `CREDITS.md`): rounded, friendly, easy.
+- **Colour.** A calm cerulean teal, apart from SnapApps orange, YourTal yellow, Free Tax Returns navy and green, and GOD
+  indigo. Fill `#0B7285` with white text (5.6:1); accent text on light `#0A6275` (6.4:1); on dark `#67D4EA` with `#06303B` on
+  the fill; plate and stage deep teal `#0A4A5A` with white text (9.8:1). Tokens are in `src/styles/brands.css` and the same
+  test checks them.
+- **Draft tagline: "Your real inbox, kept clean."** Written for this site. Founder to approve. It is the one line on the
+  site that Spambank did not write itself.
+- **Files.** `spambank-mark.svg`, `spambank-mark-reversed.svg`, `spambank-lockup.svg`, `spambank-lockup-reversed.svg` in
+  `src/assets/brands/` and `god/brand-assets/svg/`.
+
+### What the page says, and where each line comes from
+
+Sources: `god/spambank/PLAN.md` and `BUILD.md`, and the founder's brief of 2026-11-27.
+
+| Claim on the site                                                                                                      | Source                                           |
+| ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| One free address per person, a short generated name, shared across SnapApps, YourTal and Free Tax Returns; one mailbox | PLAN S2, BUILD (one mailbox per YourTal account) |
+| Spam and bulk mail go to Junk automatically; one-tap unsubscribe; read, write and search                               | PLAN section 3, BUILD unsubscribe design         |
+| Works in phone mail apps over IMAP with app passwords                                                                  | PLAN (devices), BUILD B3                         |
+| Statements mailed to the address can be imported into SnapApps, opt-in                                                 | PLAN section 3, BUILD (`statementsToSnapApp`)    |
+| Adults only, no mailbox on teen accounts                                                                               | PLAN D5, BUILD C1                                |
+| Deleting a YourTal account erases the mailbox                                                                          | BUILD (`spambank-erase-sweep`)                   |
+| GOD never reads or uses the contents of anyone's email; Spambank adds nothing to what GOD counts                       | Founder brief 2026-11-27                         |
+| In staging testing, not open to the public; Android and web, iPhone later                                              | Founder brief 2026-11-27                         |
+
+Left out on purpose: "mail is deleted after 30 days" (the only 30-day purge in the plan is for ingest bookkeeping rows, not
+mail, so the claim is not supported and was dropped until the founder confirms a retention rule); the auto-reply to
+brands and the sender lead list (founder decision pending); anything about a mail address on `mail.yourtal.gaiada.com`;
+any claim about scanning, targeting, profiles or selling data.
+
+### Illustrations
+
+The Mail screens are drawn in HTML and CSS (`MailMock`, `AddressCard`, `OneMailbox`) with made-up sample mail from made-up
+senders, and the caption says so. They use fixed light colours (`--sbui-*`) because they depict the app's own screen.
+
+### Still open
+
+- The Group Privacy Notice (`/privacy-notice/`, v1.0) names three brands and does not mention Spambank or mailboxes. It is a
+  legal text; the owner and the lawyer decide how it covers Spambank. The site does not edit it for this.
+- `/for-brands/`, `/privacy/` and `/how-it-works/` still describe the three apps, which is right: Spambank adds nothing to
+  the counts.
 
 ## 6. Content sources
 
@@ -336,7 +389,7 @@ PLAN = `god/god-holding/PLAN.md`, CL = this repo's `CLAUDE.md`. Read 2026-11-27.
 
 | Claim on the site                                                                                                                                       | Source                                                                                      |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| GOD holds YourTal, SnapApp, FTR; one profile; brands get aggregates only                                                                                | PLAN §1; CL intro                                                                           |
+| GOD holds YourTal, SnapApps, FTR; one profile; brands get aggregates only                                                                               | PLAN §1; CL intro                                                                           |
 | One group privacy notice, required at registration; existing users accept at next sign-in                                                               | PLAN §3                                                                                     |
 | Groups under 10 show as "<10"; sensitive categories use a higher threshold                                                                              | PLAN §3, §6.2; CL rule 5                                                                    |
 | Teens counted only in groups of 20+; no teen profile; teen profiles not openable; no alcohol, vape, gambling, sensitive categories; no ad targeting     | CL rule 5; PLAN §3, §5; founder brief 2026-11-27                                            |
@@ -353,13 +406,13 @@ PLAN = `god/god-holding/PLAN.md`, CL = this repo's `CLAUDE.md`. Read 2026-11-27.
 | YourTal: campaign review, targeting by interests and districts, grouped reports, team roles                                                             | YT `messages/en-AU/studio.json`                                                             |
 | YourTal teens: 13+, guardian approval by email, half daily limit, quiet hours 9pm to 7am, no streaks, no area, no interest profiling, no group under 20 | YT `messages/en-AU/public.json` (pages.terms, pages.privacy)                                |
 | YourTal status: building toward a staging review; demo data                                                                                             | YT `README.md`, `TASKS.md` L5-7                                                             |
-| SnapApp: "The receipt app that reads every line."; GST split; tax-invoice check; five-year copy                                                         | SA `apps/web/src/app/(marketing)/_home/hero.tsx`, `page.tsx:16`                             |
-| SnapApp checks: tax invoice, ABN checksum, GST one eleventh, lines add up, buyer at $1,000+                                                             | SA `(marketing)/how-it-works/journey.tsx`                                                   |
-| SnapApp: budgets, goals, subscriptions, household sharing, CSV, offline                                                                                 | SA `(marketing)/_home/bento.tsx`                                                            |
-| SnapApp pricing: 10 free scans, 10 c a scan, packs $5/$10/$25, credits never expire                                                                     | SA `(marketing)/pricing/credit-packs.ts`                                                    |
-| SnapApp to FTR: work lines, via YourTal sign-in, no merchant names or images                                                                            | SA `apps/mobile/release-notes.json` (2026-11-26), `SendToFtrCard.tsx`, `docs/DEDUCTIONS.md` |
-| SnapApp: photo GPS stripped, never indexed                                                                                                              | SA `(marketing)/legal/privacy/page.tsx`                                                     |
-| SnapApp status: Android beta, iPhone in development                                                                                                     | SA `(marketing)/download/page.tsx`, `_home/faq.tsx`                                         |
+| SnapApps: "The receipt app that reads every line."; GST split; tax-invoice check; five-year copy                                                        | SA `apps/web/src/app/(marketing)/_home/hero.tsx`, `page.tsx:16`                             |
+| SnapApps checks: tax invoice, ABN checksum, GST one eleventh, lines add up, buyer at $1,000+                                                            | SA `(marketing)/how-it-works/journey.tsx`                                                   |
+| SnapApps: budgets, goals, subscriptions, household sharing, CSV, offline                                                                                | SA `(marketing)/_home/bento.tsx`                                                            |
+| SnapApps pricing: 10 free scans, 10 c a scan, packs $5/$10/$25, credits never expire                                                                    | SA `(marketing)/pricing/credit-packs.ts`                                                    |
+| SnapApps to FTR: work lines, via YourTal sign-in, no merchant names or images                                                                           | SA `apps/mobile/release-notes.json` (2026-11-26), `SendToFtrCard.tsx`, `docs/DEDUCTIONS.md` |
+| SnapApps: photo GPS stripped, never indexed                                                                                                             | SA `(marketing)/legal/privacy/page.tsx`                                                     |
+| SnapApps status: Android beta, iPhone in development                                                                                                    | SA `(marketing)/download/page.tsx`, `_home/faq.tsx`                                         |
 | FTR: free worksheet, copy totals into the ATO return, no sign-up, no fees, never sends to the ATO                                                       | FTR `src/app/page.tsx`, `README.md`, `docs/manual/10-faq-and-privacy.md`                    |
 | FTR three steps                                                                                                                                         | FTR `src/app/page.tsx:259-306`                                                              |
 | FTR features: occupation worksheets, cheat sheet by ATO label, PDF, guides, past years, OTP sign-in                                                     | FTR `docs/manual/05-cheat-sheet-and-pdf.md`, `src/lib/llms.ts`, guide routes                |
@@ -369,7 +422,7 @@ PLAN = `god/god-holding/PLAN.md`, CL = this repo's `CLAUDE.md`. Read 2026-11-27.
 
 - FTR's "40+ years' experience", "100,000 Australians", "100% audit-proof" and occupation maximums: marketing claims
   that are not independently sourced.
-- SnapApp's "9 checks" (the how-it-works page says four rules) and any accuracy figure (the product forbids one).
-- SnapApp's competitor comparison (legal risk on a parent site) and any "Australian-hosted" claim (it is not).
+- SnapApps' "9 checks" (the how-it-works page says four rules) and any accuracy figure (the product forbids one).
+- SnapApps' competitor comparison (legal risk on a parent site) and any "Australian-hosted" claim (it is not).
 - YourTal's internal cost-per-prospect figures; any "launched" wording for YourTal.
 - User counts, revenue, partners, testimonials, awards and people's names: none exist that can be published.
