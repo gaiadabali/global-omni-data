@@ -58,20 +58,20 @@ heroes, no bento grids, no equal three-card rows unless the three things truly a
 
 ## 2. Sitemap
 
-| Path                        | Page                                                             | In the main nav     |
-| --------------------------- | ---------------------------------------------------------------- | ------------------- |
-| `/`                         | Home                                                             | logo                |
-| `/brands/`                  | Our brands (overview of the three)                               | "Our brands"        |
-| `/brands/yourtal/`          | YourTal                                                          | via Our brands      |
-| `/brands/snapapp/`          | SnapApp                                                          | via Our brands      |
-| `/brands/free-tax-returns/` | Free Tax Returns                                                 | via Our brands      |
-| `/for-brands/`              | Insight for brands                                               | "For brands"        |
-| `/how-it-works/`            | How it works: the data journey and the safeguards                | "How it works"      |
-| `/privacy/`                 | Trust & privacy: principles, the teen standard, security         | "Trust"             |
-| `/privacy-notice/`          | Group Privacy Notice (placeholder until legal supplies the text) | footer              |
-| `/about/`                   | About GOD                                                        | "About"             |
-| `/contact/`                 | Contact                                                          | button "Talk to us" |
-| `/404.html`                 | Not found                                                        | none                |
+| Path                        | Page                                                      | In the main nav     |
+| --------------------------- | --------------------------------------------------------- | ------------------- |
+| `/`                         | Home                                                      | logo                |
+| `/brands/`                  | Our brands (overview of the three)                        | "Our brands"        |
+| `/brands/yourtal/`          | YourTal                                                   | via Our brands      |
+| `/brands/snapapp/`          | SnapApp                                                   | via Our brands      |
+| `/brands/free-tax-returns/` | Free Tax Returns                                          | via Our brands      |
+| `/for-brands/`              | Insight for brands                                        | "For brands"        |
+| `/how-it-works/`            | How it works: the data journey and the safeguards         | "How it works"      |
+| `/privacy/`                 | Trust & privacy: principles, the teen standard, security  | "Trust"             |
+| `/privacy-notice/`          | Group Privacy Notice v1.0 (adult text and #teens section) | footer              |
+| `/about/`                   | About GOD                                                 | "About"             |
+| `/contact/`                 | Contact                                                   | button "Talk to us" |
+| `/404.html`                 | Not found                                                 | none                |
 
 The old footer linked `/privacy/#notice`, so the notice gets its own placeholder page. `/brands/` keeps its URL.
 

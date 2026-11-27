@@ -1,122 +1,238 @@
 ---
 import Base from "../layouts/Base.astro";
 import PageHero from "../components/PageHero.astro";
-import Icon from "../components/Icon.astro";
-import { CONTACT_EMAIL } from "../lib/site";
+import { NOTICE, effectiveLabel, groupLabel, privacyEmail } from "../lib/notice";
 
-const covers = [
-  { h: "What GOD holds", p: "The fields GOD copies from each app, and the ones it never copies." },
-  { h: "Why it holds them", p: "The purpose: counting groups so brands can understand a market." },
-  { h: "Who sees it", p: "What brands receive, what staff can open, and when a look is logged." },
-  {
-    h: "How long it keeps it",
-    p: "How long data stays, and what happens when you delete your account.",
-  },
-  {
-    h: "How to download or delete",
-    p: "Where to find export and delete in YourTal, SnapApp and Free Tax Returns.",
-  },
-  { h: "How to complain", p: "Who to contact, and what happens next." },
-];
+const email = privacyEmail();
+const effective = effectiveLabel();
+const group = groupLabel();
+// One string, so formatting cannot add spaces inside the brackets.
+const oaic = `(<a href="https://www.oaic.gov.au/" rel="noopener">oaic.gov.au</a>)`;
 ---
 
 <Base
-  title="Group Privacy Notice: being finalised | GOD (Global Omni Data)"
-  description="The full GOD Group Privacy Notice is being finalised with legal review and will be published here. Meanwhile, read how GOD handles data or contact us."
+  title="GOD Group Privacy Notice | GOD (Global Omni Data)"
+  description="How the GOD group combines what you do in YourTal, SnapApp and Free Tax Returns into one profile, what businesses receive, and your choices. Includes a short version for teens."
   ogImage="/og/privacy.png"
 >
   <PageHero
-    kicker="Group Privacy Notice"
-    title="The full notice is on its way"
-    lede="The GOD Group Privacy Notice is being finalised with legal review. It will be published on this page once it is ready."
+    kicker={`Version ${NOTICE.version}, effective ${effective}`}
+    title="GOD Group Privacy Notice"
+    lede="How the GOD group combines what you do in our apps, and what that means for you."
     crumbs={[
       { href: "/", label: "Home" },
       { href: "/privacy/", label: "Trust and privacy" },
       { label: "Group Privacy Notice" },
     ]}
   >
-    <a class="btn btn-primary" href="/privacy/">
-      How GOD handles data
-      <Icon name="arrow" />
-    </a>
-    <a class="btn btn-line" href={`mailto:${CONTACT_EMAIL}`}>
-      Email {CONTACT_EMAIL}
+    <a class="btn btn-line" href="#teens">
+      For teens
     </a>
   </PageHero>
 
-  <section class="sec" id="covers">
-    <div class="wrap split">
-      <div>
-        <p class="kicker">What it will cover</p>
-        <h2>Six questions, answered in plain language</h2>
-        <p class="lede">
-          One notice applies to YourTal, SnapApp and Free Tax Returns. It will describe real
-          processing, not boilerplate.
-        </p>
-      </div>
-      <ol class="steps">
-        {covers.map((c, i) => (
-          <li data-reveal={String((i % 6) + 1)}>
-            <h3>{c.h}</h3>
-            <p>{c.p}</p>
-          </li>
-        ))}
-      </ol>
+  <section class="sec" id="adult">
+    <div class="wrap">
+      <article class="notice">
+        <section id="who-we-are">
+          <h2>Who we are</h2>
+          <p>
+            YourTal, SnapApp and Free Tax Returns are brands of {group}. In this notice "we" means
+            the GOD group.
+          </p>
+        </section>
+
+        <section id="what-this-covers">
+          <h2>What this notice covers</h2>
+          <p>
+            It explains how the GOD group combines what you do in our apps into one profile, and how
+            we use that profile to give businesses insight about their markets. Each app's own
+            privacy policy still explains how that app runs your account.
+          </p>
+        </section>
+
+        <section id="what-we-combine">
+          <h2>What we combine</h2>
+          <p>
+            If you use more than one of our apps, we connect your accounts into one profile. We
+            combine:
+          </p>
+          <ul>
+            <li>
+              from YourTal: your age group, the area you chose, the interests you chose, the
+              campaigns you watch and save, and the points and vouchers you earn and use;
+            </li>
+            <li>
+              from SnapApp: what you buy and where, read from the receipts you scan (the shop, its
+              address, the date, the amount and the type of purchase);
+            </li>
+            <li>
+              from Free Tax Returns: your postcode, occupation, income range and the status of your
+              return.
+            </li>
+          </ul>
+          <p>
+            We never combine your name, email address, phone number, passwords, tax file number,
+            bank details, identity documents, receipt images or the detail of your tax return into
+            this profile.
+          </p>
+        </section>
+
+        <section id="location">
+          <h2>Where the location comes from</h2>
+          <p>
+            We know where a shop is from the address on your receipt. We do not track your phone's
+            location for this.
+          </p>
+        </section>
+
+        <section id="what-we-work-out">
+          <h2>What we work out</h2>
+          <p>
+            From your combined profile we work out your likely home and activity areas, your
+            interests, your spending pattern by category, and which shops and brands you return to.
+            We use this to describe groups of people. We do not use it to make decisions about you
+            that have legal or similarly significant effects.
+          </p>
+        </section>
+
+        <section id="what-businesses-receive">
+          <h2>What businesses receive</h2>
+          <p>
+            Businesses receive reports about groups of people, for example "38% of this café's
+            customers live within these six suburbs and 61% are aged 25 to 44". A business never
+            receives your profile, your name or any detail that identifies you. Groups smaller than
+            10 people are never shown to a business. We do not sell lists of people.
+          </p>
+        </section>
+
+        <section id="sensitive-purchases">
+          <h2>Health and other sensitive purchases</h2>
+          <p>
+            Purchases that may reveal your health, religion, sexuality or financial difficulty are
+            never used to build a profile of you. They are only counted in large groups.
+          </p>
+        </section>
+
+        <section id="who-can-see">
+          <h2>Who can see your profile</h2>
+          <p>
+            A small number of GOD staff, each of whom has signed a written confidentiality
+            agreement, can open a profile to check that our processing is correct. Profiles carry a
+            code instead of your name. Every time a profile is opened, the reason is recorded.
+          </p>
+        </section>
+
+        <section id="where-kept">
+          <h2>Where your data is kept</h2>
+          <p>
+            On our servers in Australia. We protect it with access controls, encryption in transit,
+            passkey sign-in for staff, and audit logs.
+          </p>
+        </section>
+
+        <section id="how-long">
+          <h2>How long we keep it</h2>
+          <p>
+            Detailed activity is kept for 24 months. Group totals, which do not identify anyone, may
+            be kept longer. If you delete your account in any of our apps, your data is removed from
+            the combined profile within {NOTICE.deletionWindow}.
+          </p>
+        </section>
+
+        <section id="your-choices">
+          <h2>Your choices</h2>
+          <p>
+            You can ask to see the data we hold about you, ask us to correct it, or delete your
+            account in any app. To stop your data being combined without deleting your account, ask
+            us through the app's account deletion or request form, or
+            <a href={`mailto:${email}`}>contact us</a>.
+          </p>
+        </section>
+
+        <section id="complaints">
+          <h2>Complaints</h2>
+          <p>
+            Contact our privacy officer at <a href={`mailto:${email}`}>{email}</a>. We reply within
+            30 days. If you are not satisfied, you can complain to the Office of the Australian
+            Information Commissioner <Fragment set:html={oaic} />.
+          </p>
+        </section>
+
+        <section id="changes">
+          <h2>Changes</h2>
+          <p>
+            If we change this notice in a way that affects you, we will ask you to accept the new
+            version the next time you sign in.
+          </p>
+        </section>
+      </article>
     </div>
   </section>
 
-  <section class="sec tint" id="meanwhile">
+  <section class="sec tint" id="teens">
     <div class="wrap">
-      <div class="sec-head">
-        <p class="kicker">In the meantime</p>
-        <h2>What you can read today</h2>
-      </div>
-      <div class="pair">
-        <div class="card">
-          <h3>How GOD handles data</h3>
-          <p>
-            The rules GOD keeps now: brands get aggregates only, small groups stay hidden, teens are
-            counted only in groups of 20 or more, and staff access is recorded.
-          </p>
-          <a class="go" href="/privacy/">
-            Trust and privacy
-            <Icon name="arrow" />
-          </a>
-        </div>
-        <div class="card">
-          <h3>Ask us directly</h3>
-          <p>
-            Have a question about your data or about the notice? Email us. We read every message and
-            reply within two business days.
-          </p>
-          <a class="go" href={`mailto:${CONTACT_EMAIL}`}>
-            {CONTACT_EMAIL}
-            <Icon name="arrow" />
-          </a>
-        </div>
-      </div>
+      <article class="notice">
+        <h2>For teens: how GOD uses your activity</h2>
+        <ul>
+          <li>YourTal, SnapApp and Free Tax Returns belong to one group called GOD.</li>
+          <li>
+            If you use more than one of them, we put your activity together: the area you chose, the
+            things you like and watch, and what you buy and where (from your receipts).
+          </li>
+          <li>
+            We use it to tell businesses about groups of young people, like "teens near Parramatta
+            often buy at these kinds of shops". We only do this for groups of at least 20.
+          </li>
+          <li>
+            No business ever sees you, your name or your own activity. Nobody uses this to pick ads
+            for you.
+          </li>
+          <li>We never use anything about alcohol, vapes, gambling or health for teens.</li>
+          <li>
+            Your parent or guardian agreed to this when they set up your account. Either of you can
+            ask us about it or delete your account at any time.
+          </li>
+        </ul>
+      </article>
     </div>
   </section>
 </Base>
 
 <style>
-  .pair {
+  .notice {
+    max-width: 44rem;
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 24px;
+    gap: 40px;
   }
-  .pair .card {
-    display: grid;
-    gap: 16px;
-    justify-items: start;
-    align-content: start;
+  .notice h2 {
+    margin-bottom: 12px;
   }
-  .pair .card p {
+  .notice p {
     color: var(--ink-2);
+    line-height: 1.65;
   }
-  @media (max-width: 720px) {
-    .pair {
-      grid-template-columns: minmax(0, 1fr);
-    }
+  .notice p + p,
+  .notice p + ul,
+  .notice ul + p {
+    margin-top: 16px;
+  }
+  .notice ul {
+    padding-left: 1.25rem;
+    display: grid;
+    gap: 10px;
+    color: var(--ink-2);
+    line-height: 1.65;
+  }
+  .notice a {
+    color: var(--indigo-ink);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .notice section[id],
+  #teens {
+    scroll-margin-top: 96px;
+  }
+  #teens .notice {
+    gap: 20px;
   }
 </style>
