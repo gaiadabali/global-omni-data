@@ -14,30 +14,31 @@ const mail = [
 ];
 ---
 
-<figure
-  class="om"
-  role="img"
-  aria-label="The Mail screen in SnapApps, YourTal and Free Tax Returns, each in its own colours, all showing the same three sample messages"
->
-  <ul class="apps">
-    {apps.map((k) => (
-      <li data-brand={k}>
-        <div class="bar">
-          <BrandMark brand={k} name={brand(k).name} />
-          <span class="mail">Mail</span>
-        </div>
-        <ul class="rows">
-          {mail.map((m) => (
-            <li>
-              <span class="from">{m.from}</span>
-              <span class="subject">{m.subject}</span>
-              <span class="time">{m.time}</span>
-            </li>
-          ))}
-        </ul>
-      </li>
-    ))}
-  </ul>
+<figure class="om">
+  <div
+    role="img"
+    aria-label="The Mail screen in SnapApps, YourTal and Free Tax Returns, each in its own colours, all showing the same three sample messages"
+  >
+    <ul class="apps">
+      {apps.map((k) => (
+        <li data-brand={k}>
+          <div class="bar">
+            <BrandMark brand={k} name={brand(k).name} />
+            <span class="mail">Mail</span>
+          </div>
+          <ul class="rows">
+            {mail.map((m) => (
+              <li>
+                <span class="from">{m.from}</span>
+                <span class="subject">{m.subject}</span>
+                <span class="time">{m.time}</span>
+              </li>
+            ))}
+          </ul>
+        </li>
+      ))}
+    </ul>
+  </div>
   <figcaption class="cap">One mailbox, the same sample mail in each app</figcaption>
 </figure>
 
